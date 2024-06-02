@@ -39,12 +39,13 @@ export class MappingDetailComponent implements OnInit {
   originalDetail: any;
   mappingDetail: any;
   availableFields: any[] = [];
+  classifications: any[] = [];
   editingIndex: number | null | undefined = null;
   hoverIndex: number | null | undefined = null;
   filteredDetail: any;
   // Paginator
   totalLength: number = 0;
-  pageSize: number = 10;
+  pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
 
@@ -58,6 +59,7 @@ export class MappingDetailComponent implements OnInit {
     if (mappingId) {
       this.loadMappingDetail(mappingId);
       this.loadFields(mappingId);
+      this.loadClassifications();
     }
   }
 
@@ -92,6 +94,23 @@ export class MappingDetailComponent implements OnInit {
       )
       .subscribe((fields) => (this.availableFields = fields.fields));
   }
+
+  loadClassifications() {
+    this.mappingsService.getClassifications().pipe(catchError((err) => {
+      console.error('Error loading classifications', err);
+      return of([]);
+    })
+    ).subscribe((data) => {
+      this.classifications = data.classifications;
+      console.log('Classifications:', this.classifications);
+    });
+  }
+
+  getClassificationInstruction(classification: string): string {
+    const found = this.classifications.find(c => c.value === classification);
+    return found ? found.instruction : '';
+  }
+
 
   isProfilePresent(fieldProfiles: any[], profileName: string): boolean {
     const profile = fieldProfiles.find((p) => p.name === profileName);

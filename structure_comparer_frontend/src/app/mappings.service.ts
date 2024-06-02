@@ -22,6 +22,11 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  getClassifications(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/classification`)
+      .pipe(catchError(this.handleError));
+  }
+
   getMappingFields(mappingId: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/mapping/${mappingId}/fields`)
       .pipe(catchError(this.handleError));
