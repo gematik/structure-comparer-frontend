@@ -1,5 +1,7 @@
 <div *ngIf="filteredDetail">
     <h2>{{ filteredDetail.name }}</h2>
+    <p>Version:{{filteredDetail.version}}, Status: {{filteredDetail.status}}</p>
+    <p>Last Updadated: {{filteredDetail.last_updated}}</p>
     <div fxLayout="row" fxLayoutAlign="end center">
         <mat-form-field fxFlex="40%">
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
@@ -15,9 +17,6 @@
                 <th mat-sort-header="{{ filteredDetail.target_profile }}">
                     {{ filteredDetail.target_profile }}
                 </th>
-                <ng-container>
-                    <th mat-sort-header="extra">Classification (extra)</th>
-                </ng-container>
                 <ng-container>
                     <th mat-sort-header="remark">Erläuterung</th>
                 </ng-container>
@@ -41,13 +40,7 @@
                         <ng-container *ngIf="isProfilePresent(field.profiles, profile)">X</ng-container>
                     </td>
                 </ng-container>
-                <td>
-                    {{ field.classification }}
-                    <ng-container *ngIf="field.extra && field.extra !== ''">
-                        ({{ field.extra }})
-                    </ng-container>
-                </td>
-
+            
                 <td (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
                     <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
                     <button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
