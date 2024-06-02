@@ -1,0 +1,130 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 20px;
+    padding: 0;
+    color: #333;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px; 
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    border: 1px solid #ccc; /* Leichtere Borders für eine feinere Linienführung */
+    padding: 10px; /* Mehr Platz im Inneren der Zellen */
+    text-align: left;
+}
+
+th {
+    background-color: #e9e9e9; /* Ein leicht grauer Hintergrund für Kopfzeilen */
+}
+
+/* Button-Styling */
+/* Zeilen-Hover-Styling */
+tr:hover {
+    background-color: #f5f5f5; /* Hintergrundfarbe beim Hovern */
+    border: 1px solid #007bff; /* Blaue Umrandung */
+}
+
+button {
+    background-color: #007BFF; /* Lebendige Button-Farbe */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin: 4px 2px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3; /* Dunklere Farbe beim Überfahren mit der Maus */
+}
+
+/* Button-Styling mit Icons */
+button.confirm {
+    background-color: #28a745; /* Grün für Übernehmen */
+    padding: 5px 10px;
+}
+
+button.confirm:hover {
+    background-color: #218838; /* Dunkleres Grün beim Hovern */
+}
+
+button.cancel {
+    background-color: #dc3545; /* Rot für Abbrechen */
+    padding: 5px 10px;
+}
+
+button.cancel:hover {
+    background-color: #c82333; /* Dunkleres Rot beim Hovern */
+}
+
+button i {
+    color: white; /* Weiße Icons */
+}
+
+tr:hover {
+    background-color: #f5f5f5; /* Hover-Effekt für Zeilen */
+}
+/* Farbstil für Zeilen basierend auf ihrer Klassifikation */
+table tbody tr.row-use {
+    background-color: #E3FCEF; /* Hellerer Ton für alle 'row-use' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-not-use {
+    background-color: #FFEBE6; /* Hellerer Ton für alle 'row-not-use' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-extension {
+    background-color: #FFFAE6; /* Hellerer Ton für alle 'row-extension' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-manual {
+    background-color: #B3F5FF; /* Hellerer Ton für alle 'row-manual' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-other {
+    background-color: #FFBDAD; /* Hellerer Ton für alle 'row-other' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-empty {
+    background-color: #F0F0F0; /* Hellerer Ton für alle 'row-empty' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-copy-from {
+    background-color: #D6EAF8; /* Hellerer Ton für alle 'row-copy-from' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-copy-to {
+    background-color: #D1F2EB; /* Hellerer Ton für alle 'row-copy-to' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-fixed {
+    background-color: #FCF3CF; /* Hellerer Ton für alle 'row-fixed' Zeilen */
+    color: #000000;
+}
+
+table tbody tr.row-medication-service {
+    background-color: #FADBD8; /* Hellerer Ton für alle 'row-medication-service' Zeilen */
+    color: #000000;
+}
+
+/* Stile für Wrapper der DataTable, falls verwendet */
+.dataTables_wrapper {
+    margin: 20px 0;
+}

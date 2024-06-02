@@ -1,0 +1,141 @@
+<div *ngIf="filteredDetail">
+    <h2>{{ filteredDetail.name }}</h2>
+    <div fxLayout fxLayoutAlign="center center">
+      <mat-form-field fxFlex="40%">
+        <input
+          matInput
+          type="text"
+          (keyup)="handleTable($event).filter()"
+          placeholder="Filter"
+        />
+      </mat-form-field>
+    </div>
+    <table
+      id="resultsTable"
+      class="display"
+      style="width: 100%"
+      matSort
+      (matSortChange)="handleTable($event).sorter()"
+    >
+      <thead>
+        <tr>
+          <th mat-sort-header="name">Property</th>
+          <ng-container *ngFor="let profile of filteredDetail.source_profiles">
+            <th mat-sort-header="{{ profile }}">{{ profile }}</th>
+          </ng-container>
+          <th mat-sort-header="{{ filteredDetail.target_profile }}">
+            {{ filteredDetail.target_profile }}
+          </th>
+          <ng-container>
+            <th mat-sort-header="extra">Classification (extra)</th>
+          </ng-container>
+          <ng-container>
+            <th mat-sort-header="remark">Erläuterung</th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let field of filteredDetail.fields; let i = index"
+          [ngClass]="getClassificationCssClass(field.classification)"
+        >
+          <td>
+            {{ field.name }}
+            <ng-container *ngIf="field.extension">
+              <br />({{ field.extension }})
+            </ng-container>
+          </td>
+          <ng-container
+            *ngFor="
+              let profile of filteredDetail.source_profiles.concat(
+                filteredDetail.target_profile
+              )
+            "
+          >
+            <td>
+              <ng-container *ngIf="isProfilePresent(field.profiles, profile)"
+                >X</ng-container
+              >
+            </td>
+          </ng-container>
+          <td>
+            {{ field.classification }}
+            <ng-container *ngIf="field.extra && field.extra !== ''">
+              ({{ field.extra }})
+            </ng-container>
+          </td>
+  
+          <td
+            (mouseenter)="handleEdit(i).startHover()"
+            (mouseleave)="handleEdit().stopHover()"
+          >
+            <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
+            <button
+              *ngIf="hoverIndex === i && editingIndex !== i"
+              (click)="handleEdit(i).startEdit()"
+            >
+              Ändern
+            </button>
+            <div *ngIf="editingIndex === i">
+              <div>Aktueller Stand: {{ field.remark }}</div>
+              <select [(ngModel)]="field.userClassification">
+                <option value="use">
+                  Eigenschaft und Wert werden übernommen
+                </option>
+                <option value="not_use">Wird nicht übernommen</option>
+                <option value="empty">
+                  Bleibt vorerst leer, da keine Quellinformationen
+                </option>
+                <option value="extension">
+                  Extension und Values werden übernommen
+                </option>
+                <option value="copy_from">
+                  Wird aus folgender Eigenschaft übernommen:
+                </option>
+                <option value="copy_to">
+                  Wird in folgende Eigenschaft übernommen:
+                </option>
+                <option value="fixed">
+                  Wird fix auf folgenden Wert gesetzt:
+                </option>
+              </select>
+              <div
+                *ngIf="
+                  field.userClassification === 'copy_to' ||
+                  field.userClassification === 'copy_from'
+                "
+              >
+                <select [(ngModel)]="field.targetField">
+                  <option
+                    *ngFor="let availableField of availableFields"
+                    [value]="availableField.id"
+                  >
+                    {{ availableField.name }}
+                  </option>
+                </select>
+              </div>
+              <div *ngIf="field.userClassification === 'fixed'">
+                <input type="text" [(ngModel)]="field.fixedValue" />
+              </div>
+              <button class="confirm" (click)="confirmChanges(field)">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="cancel" (click)="handleEdit().cancelEdit()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <mat-paginator
+      (page)="handleTable($event).paginator()"
+      [length]="totalLength"
+      [pageSize]="pageSize"
+      [showFirstLastButtons]="false"
+      [pageSizeOptions]="pageSizeOptions"
+      [pageIndex]="pageIndex"
+      aria-label="Select page"
+    >
+    </mat-paginator>
+  </div>

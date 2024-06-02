@@ -1,0 +1,28 @@
+h2 {
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .mapping-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .mapping-item {
+    margin-bottom: 10px;
+  }
+  
+  .mapping-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .mapping-link:hover, .mapping-link:focus {
+    text-decoration: underline;
+    color: #0056b3;
+  }
+  
+  p {
+    color: #666;
+  }
+  
