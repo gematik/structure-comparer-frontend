@@ -1,12 +1,36 @@
 <div *ngIf="mappings.length; else noMappings">
-    <h2>Verfügbare Mapping Übersichten</h2>
-    <ul class="mapping-list">
-      <li *ngFor="let mapping of mappings" class="mapping-item">
-        <a [routerLink]="['/mapping', mapping.id]" class="mapping-link">{{ mapping.name }}</a>
-      </li>
-    </ul>
-  </div>
-  <ng-template #noMappings>
-    <p>Keine Mappings gefunden.</p>
-  </ng-template>
-  
+  <h2>Verfügbare Mapping Übersichten</h2>
+  <table class="mapping-table">
+      <thead>
+          <tr>
+              <th>Name</th>
+              <th>Last Updated</th>
+              <th>Version</th>
+              <th>Status</th>
+              <th>Sources</th>
+              <th>Target</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr *ngFor="let mapping of mappings">
+              <td><a [routerLink]="['/mapping', mapping.id]" class="mapping-link">{{ mapping.name }}</a></td>
+              <td>{{ mapping.last_updated }}</td>
+              <td>{{ mapping.version }}</td>
+              <td>{{ mapping.status }}</td>
+              <td>
+                  <ul>
+                      <li *ngFor="let source of mapping.sources">
+                          <a [href]="source.simplifier_url" target="_blank">{{ source.name }} ({{ source.version }})</a>
+                      </li>
+                  </ul>
+              </td>
+              <td>
+                  <a [href]="mapping.target.simplifier_url" target="_blank">{{ mapping.target.name }} ({{ mapping.target.version }})</a>
+              </td>
+          </tr>
+      </tbody>
+  </table>
+</div>
+<ng-template #noMappings>
+  <p>Keine Mappings gefunden.</p>
+</ng-template>

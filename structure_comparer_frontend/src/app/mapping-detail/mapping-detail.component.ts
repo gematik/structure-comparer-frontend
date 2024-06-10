@@ -102,7 +102,6 @@ export class MappingDetailComponent implements OnInit {
     })
     ).subscribe((data) => {
       this.classifications = data.classifications;
-      console.log('Classifications:', this.classifications);
     });
   }
 

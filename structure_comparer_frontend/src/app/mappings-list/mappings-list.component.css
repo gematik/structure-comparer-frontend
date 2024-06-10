@@ -1,28 +1,102 @@
 h2 {
-    color: #333;
-    margin-bottom: 15px;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 16px;
+  text-align: left;
+}
+
+.mapping-table thead tr {
+  background-color: #f2f2f2;
+}
+
+.mapping-table th, .mapping-table td {
+  border: 1px solid #ddd;
+  padding: 12px 15px;
+}
+
+.mapping-table th {
+  background-color: #007bff;
+  color: #ffffff;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.mapping-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.mapping-table tr:nth-of-type(even) {
+  background-color: #f9f9f9;
+}
+
+.mapping-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.mapping-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mapping-link:hover, .mapping-link:focus {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+.mapping-table ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mapping-table ul li {
+  margin-bottom: 5px;
+}
+
+p {
+  color: #666;
+  text-align: center;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .mapping-table thead {
+      display: none;
   }
-  
-  .mapping-list {
-    list-style-type: none;
-    padding: 0;
+
+  .mapping-table, .mapping-table tbody, .mapping-table tr, .mapping-table td {
+      display: block;
+      width: 100%;
   }
-  
-  .mapping-item {
-    margin-bottom: 10px;
+
+  .mapping-table tr {
+      margin-bottom: 15px;
   }
-  
-  .mapping-link {
-    color: #007bff;
-    text-decoration: none;
+
+  .mapping-table td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
   }
-  
-  .mapping-link:hover, .mapping-link:focus {
-    text-decoration: underline;
-    color: #0056b3;
+
+  .mapping-table td::before {
+      content: attr(data-label);
+      position: absolute;
+      left: 0;
+      width: 50%;
+      padding-left: 15px;
+      font-weight: 700;
+      text-align: left;
+      background-color: #f2f2f2;
   }
-  
-  p {
-    color: #666;
-  }
-  
+}

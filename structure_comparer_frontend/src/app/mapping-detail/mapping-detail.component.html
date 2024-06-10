@@ -1,8 +1,41 @@
 <div *ngIf="filteredDetail">
     <h2>{{ filteredDetail.name }}</h2>
-    <p>Version:{{filteredDetail.version}}, Status: {{filteredDetail.status}}</p>
-    <p>Last Updadated: {{filteredDetail.last_updated}}</p>
-    <div fxLayout="row" fxLayoutAlign="end center">
+    <div style="display: flex; justify-content: space-between;">
+        <div style="flex: 1;">
+            <ng-container *ngIf="filteredDetail.sources.length > 1; else singleSource">
+                <p>Source Profiles:</p>
+                <ul>
+                    <li *ngFor="let profile of filteredDetail.sources">
+                        <a [href]="profile.simplifier_url" target="_blank">{{ profile.profile_key }}</a>
+                    </li>
+                </ul>
+            </ng-container>
+            <ng-template #singleSource>
+                <p>Source Profile: 
+                    <a [href]="filteredDetail.sources[0].simplifier_url" target="_blank">{{ filteredDetail.sources[0].profile_key }}</a>
+                </p>
+            </ng-template>
+            
+            <p>Target Profile: 
+                <a [href]="filteredDetail.target.simplifier_url" target="_blank">{{ filteredDetail.target.profile_key }}</a>
+            </p>
+            <p>Version: {{ filteredDetail.version }}, Status: {{ filteredDetail.status }}</p>
+            <p>Last updated on: {{ filteredDetail.last_updated }}</p>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end;">
+            <div>
+                <h3>Color Legend:</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><span style="background-color: #DCF6E9;">&nbsp;&nbsp;&nbsp;&nbsp;</span> No action needed for this mapping</li>
+                    <li><span style="background-color: #FFEBE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Information will be removed or left empty in this mapping</li>
+                    <li><span style="background-color: #FFFAE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Special action required for this mapping</li>
+                    <li><span style="background-color: #ACF0F9;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Caution reference!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div style="flex: 1; display: flex; justify-content: flex-end;">
         <mat-form-field fxFlex="40%">
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
@@ -11,11 +44,11 @@
         <thead>
             <tr>
                 <th mat-sort-header="name">Property</th>
-                <ng-container *ngFor="let profile of filteredDetail.source_profiles">
-                    <th mat-sort-header="{{ profile }}">{{ profile }}</th>
+                <ng-container *ngFor="let profile of filteredDetail.sources">
+                    <th mat-sort-header="{{ profile.profile_key }}">{{ profile.profile_key }}</th>
                 </ng-container>
-                <th mat-sort-header="{{ filteredDetail.target_profile }}">
-                    {{ filteredDetail.target_profile }}
+                <th mat-sort-header="{{ filteredDetail.target.profile_key }}">
+                    {{ filteredDetail.target.profile_key }}
                 </th>
                 <ng-container>
                     <th mat-sort-header="remark">Erläuterung</th>
@@ -32,12 +65,12 @@
                     </ng-container>
                 </td>
                 <ng-container *ngFor="
-              let profile of filteredDetail.source_profiles.concat(
-                filteredDetail.target_profile
+              let profile of filteredDetail.sources.concat(
+                filteredDetail.target
               )
             ">
                     <td>
-                        <ng-container *ngIf="isProfilePresent(field.profiles, profile)">X</ng-container>
+                        <ng-container *ngIf="isProfilePresent(field.profiles, profile.profile_key)">X</ng-container>
                     </td>
                 </ng-container>
             
