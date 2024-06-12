@@ -230,35 +230,40 @@ export class MappingDetailComponent implements OnInit {
   }
 
   confirmChanges(field: any) {
+    let action: string;
     const updateData: any = {};
 
     switch (field.userClassification) {
       case 'copy_from':
+        action = 'copy_from';
+        updateData.target = field.targetField;
         break;
       case 'copy_to':
+        action = 'copy_to';
         updateData.target = field.targetField;
         break;
       case 'fixed':
+        action = 'fixed';
         updateData.fixed = field.fixedValue;
         break;
       case 'not_use':
-        updateData.target = null;
+        action = 'not_use';
         break;
       case 'use':
-        updateData.target = field.id;
+        action = 'use';
         break;
       case 'empty':
-        updateData.target = '';
+        action = 'empty';
         break;
       default:
         console.error('Unknown userClassification:', field.userClassification);
-        break;
+        return;
     }
 
     console.log('Update Data:', updateData);
 
     this.mappingsService
-      .updateMappingField(this.mappingDetail.id, field.id, updateData)
+      .updateMappingField(this.mappingDetail.id, field.id, action, updateData)
       .subscribe({
         next: () => {
           this.loadMappingDetail(this.mappingDetail.id);

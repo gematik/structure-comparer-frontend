@@ -32,8 +32,14 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  updateMappingField(mappingId: string, fieldId: string, updateData: { target?: string; fixed?: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/mapping/${mappingId}/field/${fieldId}`, updateData)
+  updateMappingField(mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
+    const requestUrl = `${this.baseUrl}/mapping/${mappingId}/field/${fieldId}/classification`;
+    const requestData = { action, ...updateData };
+    
+    console.log('Sending request to:', requestUrl);
+    console.log('Request data:', requestData);
+    
+    return this.http.post(requestUrl, requestData)
       .pipe(catchError(this.handleError));
   }
 
