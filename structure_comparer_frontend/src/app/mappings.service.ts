@@ -43,6 +43,37 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  listProjects(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/projects`)
+      .pipe(catchError(this.handleError));
+  }
+
+  initProject(projectName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/init_project`, { project_name: projectName })
+      .pipe(catchError(this.handleError));
+  }
+
+  createProject(projectName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/create_project`, { project_name: projectName })
+      .pipe(catchError(this.handleError));
+  }
+
+  addMapping(mappingData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/mappings`, mappingData)
+      .pipe(catchError(this.handleError));
+  }
+
+  updateMapping(mappingId: string, mappingData: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/mappings/${mappingId}`, mappingData)
+      .pipe(catchError(this.handleError));
+  }
+
+  deleteMapping(mappingId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/mappings/${mappingId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);

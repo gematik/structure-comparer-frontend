@@ -1,0 +1,13 @@
+<div>
+    <h2>Projects</h2>
+    <ul>
+      <li *ngFor="let project of projects">
+        <a (click)="loadProject(project)">{{ project }}</a>
+      </li>
+    </ul>
+    <div>
+      <h3>Create New Project</h3>
+      <input [(ngModel)]="newProjectName" placeholder="Project Name" />
+      <button (click)="createProject()">Create</button>
+    </div>
+  </div>

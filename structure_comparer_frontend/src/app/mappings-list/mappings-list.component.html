@@ -1,36 +1,120 @@
-<div *ngIf="mappings.length; else noMappings">
-  <h2>Verfügbare Mapping Übersichten</h2>
-  <table class="mapping-table">
+<div>
+    <h2>Verfügbare Mapping Übersichten</h2>
+    <table class="mapping-table">
       <thead>
-          <tr>
-              <th>Name</th>
-              <th>Last Updated</th>
-              <th>Version</th>
-              <th>Status</th>
-              <th>Sources</th>
-              <th>Target</th>
-          </tr>
+        <tr>
+          <th>Name</th>
+          <th>Last Updated</th>
+          <th>Version</th>
+          <th>Status</th>
+          <th>Sources</th>
+          <th>Target</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
-          <tr *ngFor="let mapping of mappings">
-              <td><a [routerLink]="['/mapping', mapping.id]" class="mapping-link">{{ mapping.name }}</a></td>
-              <td>{{ mapping.last_updated }}</td>
-              <td>{{ mapping.version }}</td>
-              <td>{{ mapping.status }}</td>
-              <td>
-                  <ul>
-                      <li *ngFor="let source of mapping.sources">
-                          <a [href]="source.simplifier_url" target="_blank">{{ source.name }} ({{ source.version }})</a>
-                      </li>
-                  </ul>
-              </td>
-              <td>
-                  <a [href]="mapping.target.simplifier_url" target="_blank">{{ mapping.target.name }} ({{ mapping.target.version }})</a>
-              </td>
-          </tr>
+        <tr *ngFor="let mapping of mappings">
+          <td data-label="Name">{{ generateMappingName(mapping) }}</td>
+          <td data-label="Last Updated">{{ mapping.last_updated }}</td>
+          <td data-label="Version">
+            <div *ngIf="editMappingId === mapping.id; else viewVersion">
+              <input [(ngModel)]="mapping.version" type="text" />
+            </div>
+            <ng-template #viewVersion>{{ mapping.version }}</ng-template>
+          </td>
+          <td data-label="Status">
+            <div *ngIf="editMappingId === mapping.id; else viewStatus">
+              <select [(ngModel)]="mapping.status">
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+              </select>
+            </div>
+            <ng-template #viewStatus>{{ mapping.status }}</ng-template>
+          </td>
+          <td data-label="Sources">
+            <div *ngIf="editMappingId === mapping.id; else viewSources">
+              <div *ngFor="let source of mapping.sources; let i = index" class="source-group">
+                <label>Source Name:</label>
+                <input [(ngModel)]="source.name" placeholder="Source Name" type="text" />
+                <label>Source URL:</label>
+                <input [(ngModel)]="source.simplifier_url" placeholder="Source URL" type="text" />
+                <label>Source Version:</label>
+                <input [(ngModel)]="source.version" placeholder="Source Version" type="text" />
+              </div>
+              <button (click)="addSource(mapping)">Add Source</button>
+            </div>
+            <ng-template #viewSources>
+              <ul>
+                <li *ngFor="let source of mapping.sources">
+                  <a [href]="source.simplifier_url" target="_blank">{{ source.name }} ({{ source.version }})</a>
+                </li>
+              </ul>
+            </ng-template>
+          </td>
+          <td data-label="Target">
+            <div *ngIf="editMappingId === mapping.id; else viewTarget" class="target-group">
+              <label>Target Name:</label>
+              <input [(ngModel)]="mapping.target.name" placeholder="Target Name" type="text" />
+              <label>Target URL:</label>
+              <input [(ngModel)]="mapping.target.simplifier_url" placeholder="Target URL" type="text" />
+              <label>Target Version:</label>
+              <input [(ngModel)]="mapping.target.version" placeholder="Target Version" type="text" />
+            </div>
+            <ng-template #viewTarget>
+              <a [href]="mapping.target.simplifier_url" target="_blank">{{ mapping.target.name }} ({{ mapping.target.version }})</a>
+            </ng-template>
+          </td>
+          <td data-label="Actions" class="action-icons">
+            <div *ngIf="editMappingId === mapping.id; else viewActions">
+              <fa-icon [icon]="faSave" (click)="updateMapping(mapping)" class="icon"></fa-icon>
+              <fa-icon [icon]="faTimes" (click)="cancelEdit()" class="icon"></fa-icon>
+            </div>
+            <ng-template #viewActions>
+              <fa-icon [icon]="faEye" [routerLink]="['/mapping', mapping.id]" class="icon"></fa-icon>
+              <fa-icon [icon]="faEdit" (click)="edit(mapping)" class="icon"></fa-icon>
+              <fa-icon [icon]="faTrash" (click)="deleteMapping(mapping.id)" class="icon"></fa-icon>
+            </ng-template>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="7">
+            <button (click)="newMapping = initializeNewMapping(); editMappingId = 'new'">+ Add New Mapping</button>
+          </td>
+        </tr>
+        <tr *ngIf="editMappingId === 'new'">
+          <td>{{ generateMappingName(newMapping) }}</td>
+          <td>N/A</td>
+          <td><input [(ngModel)]="newMapping.version" type="text" /></td>
+          <td>
+            <select [(ngModel)]="newMapping.status">
+              <option value="draft">Draft</option>
+              <option value="active">Active</option>
+            </select>
+          </td>
+          <td>
+            <div *ngFor="let source of newMapping.sources; let i = index" class="source-group">
+              <label>Source Name:</label>
+              <input [(ngModel)]="source.name" placeholder="Source Name" type="text" />
+              <label>Source URL:</label>
+              <input [(ngModel)]="source.simplifier_url" placeholder="Source URL" type="text" />
+              <label>Source Version:</label>
+              <input [(ngModel)]="source.version" placeholder="Source Version" type="text" />
+            </div>
+            <button (click)="addNewSource()">Add Source</button>
+          </td>
+          <td class="target-group">
+            <label>Target Name:</label>
+            <input [(ngModel)]="newMapping.target.name" placeholder="Target Name" type="text" />
+            <label>Target URL:</label>
+            <input [(ngModel)]="newMapping.target.simplifier_url" placeholder="Target URL" type="text" />
+            <label>Target Version:</label>
+            <input [(ngModel)]="newMapping.target.version" placeholder="Target Version" type="text" />
+          </td>
+          <td class="action-icons">
+            <fa-icon [icon]="faSave" (click)="addMapping()" class="icon"></fa-icon>
+            <fa-icon [icon]="faTimes" (click)="cancelEdit()" class="icon"></fa-icon>
+          </td>
+        </tr>
       </tbody>
-  </table>
-</div>
-<ng-template #noMappings>
-  <p>Keine Mappings gefunden.</p>
-</ng-template>
+    </table>
+  </div>
