@@ -1,0 +1,47 @@
+table {
+    padding: 8px;
+    border: 1px solid #ddd;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+  }
+
+  th {
+    padding: 8px;
+    border: 1px solid #ddd;
+    background-color: grey;
+    color: black;
+    text-align: left;
+  }
+  
+  td {
+    padding: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .project-item a {
+    cursor: pointer;
+    text-decoration: none;
+    color: #007bff;
+  }
+
+  .project-items {
+    width: 90%;
+  }
+
+  .project-actions {
+    width: 10%;
+  }
+  
+  .project-item a:hover {
+    text-decoration: underline;
+  }
+  
+  .icon {
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .icon:hover {
+    color: red;
+  }
