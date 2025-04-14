@@ -1,0 +1,22 @@
+<h1>Übersicht Projekt {{ projektname }}</h1>
+
+<h2>Liste der Packages</h2>
+<table>
+  <tr *ngFor="let package of packages">
+    <td><a href="#" (click)="onPackageClick(package)">{{ package }}</a></td>
+  </tr>
+</table>
+
+<h2>Liste von Vergleichen</h2>
+<table>
+  <tr *ngFor="let vergleich of vergleiche">
+    <td><a href="#" (click)="onVergleichClick(vergleich)">{{ vergleich }}</a></td>
+  </tr>
+</table>
+
+<h2>Liste von Mappings</h2>
+<table>
+  <tr *ngFor="let mapping of mappings">
+    <td><a href="#" (click)="onMappingClick(mapping)">{{ mapping }}</a></td>
+  </tr>
+</table></tr>

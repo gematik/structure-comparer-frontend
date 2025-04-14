@@ -3,7 +3,7 @@ import { MappingsService } from '../mappings.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Mapping, SourceProfile, TargetProfile } from '../mapping.model';
+import { Mapping, SourceProfile, TargetProfile } from '../models/mapping.model';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faEdit, faTrash, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
 
