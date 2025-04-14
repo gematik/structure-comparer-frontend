@@ -3,17 +3,25 @@ import { MappingsService } from '../mappings.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faEye, faEdit, faTrash, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })
 export class ProjectListComponent implements OnInit {
   projects: any[] = [];
   newProjectName: string = '';
+  faEye = faEye;
+  faEdit = faEdit;
+  faTrash = faTrash;
+  faSave = faSave;
+  faTimes = faTimes;
 
   constructor(private mappingsService: MappingsService, private router: Router) { }
 
