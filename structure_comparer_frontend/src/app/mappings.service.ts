@@ -58,6 +58,8 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  
+
   addMapping(mappingData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/mappings`, mappingData)
       .pipe(catchError(this.handleError));

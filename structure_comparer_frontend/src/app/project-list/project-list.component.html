@@ -9,9 +9,12 @@
         <td class="project-items">
           {{ project }}
         </td>
-        <td class="project-actions">
-          <span class="icon" (click)="loadProject(project)">&#x270E;</span> <!-- Pencil icon for update -->
+        <td>
         
+            <fa-icon [icon]="faEye" (click)="loadProject(project)" class="icon"></fa-icon>
+            <fa-icon [icon]="faEdit"  class="icon"></fa-icon>
+            <fa-icon [icon]="faTrash"  class="icon"></fa-icon>
+          
         </td>
       </tr>
     </table>

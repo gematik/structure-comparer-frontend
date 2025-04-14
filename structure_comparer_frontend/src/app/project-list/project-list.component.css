@@ -1,23 +1,4 @@
-table {
-    padding: 8px;
-    border: 1px solid #ddd;
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-  }
 
-  th {
-    padding: 8px;
-    border: 1px solid #ddd;
-    background-color: grey;
-    color: black;
-    text-align: left;
-  }
-  
-  td {
-    padding: 8px;
-    border: 1px solid #ddd;
-  }
   
   .project-item a {
     cursor: pointer;
