@@ -4,11 +4,17 @@ html, body { height: 100%; }
 body {
     font-family: Arial, sans-serif;
     background-color: white;
-    margin: 20px;
+    
     padding: 0;
     color: #333;
 }
 
+table {
+    width: 100%;
+    height: auto;
+    border-collapse: collapse;
+    margin-bottom: 20px; /* Abstand nach unten für bessere Lesbarkeit */
+}
 
 
 th, td {
@@ -19,5 +25,9 @@ th, td {
 
 th {
     background-color: #e9e9e9; /* Ein leicht grauer Hintergrund für Kopfzeilen */
+}
+
+.m-20 {
+    margin: 20px;
 }
 
