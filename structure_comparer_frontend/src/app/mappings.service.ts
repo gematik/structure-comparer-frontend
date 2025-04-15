@@ -8,7 +8,7 @@ import * as tslib_1 from "tslib";
   providedIn: 'root'
 })
 export class MappingsService {
-  private baseUrl = 'http://127.0.0.1:5000';
+  private baseUrl = 'http://127.0.0.1:8000';
 
   constructor(private http: HttpClient) { }
 
@@ -49,7 +49,7 @@ export class MappingsService {
   }
 
   initProject(projectName: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/init_project`, { project_name: projectName })
+    return this.http.post(`${this.baseUrl}/init_project?project_name=${projectName}`, { project_name: projectName })
       .pipe(catchError(this.handleError));
   }
 

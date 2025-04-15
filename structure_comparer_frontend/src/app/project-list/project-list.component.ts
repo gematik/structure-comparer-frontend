@@ -34,7 +34,7 @@ export class ProjectListComponent implements OnInit {
 
   loadProject(projectName: string): void {
     this.mappingsService.initProject(projectName).subscribe(
-      () => this.router.navigate(['/mapping']),
+      () => this.router.navigate([`/edit-project`, projectName]),
       error => console.error(error)
     );
   }
