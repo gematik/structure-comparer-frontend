@@ -14,10 +14,14 @@
         <fa-icon [icon]="faTrash" class="icon"></fa-icon>
       </td>
     </tr>
+    <tr>
+      <td>
+        <input [(ngModel)]="newProjectName" placeholder="Project Name" />
+      </td>
+      <td  class="add-new-project">
+        <fa-icon [icon]="faPlus" (click)="createProject()" class="icon"></fa-icon>
+      </td>
+    </tr>
   </table>
-  <div>
-    <h3>Create New Project</h3>
-    <input [(ngModel)]="newProjectName" placeholder="Project Name" />
-    <button (click)="createProject()">Create</button>
-  </div>
+ 
 </div>

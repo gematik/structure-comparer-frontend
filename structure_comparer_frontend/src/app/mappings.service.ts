@@ -54,7 +54,7 @@ export class MappingsService {
   }
 
   createProject(projectName: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/create_project`, { project_name: projectName })
+    return this.http.post(`${this.baseUrl}/create_project/${projectName}`, { project_name: projectName })
       .pipe(catchError(this.handleError));
   }
 
