@@ -1,27 +1,36 @@
 <div class="m-20">
-  <h2>Projects</h2>
-  <table class="table">
+  <!-- Header mit h2, Input und Plus-Icon -->
+  <div class="header-row">
+    <h2 class="title">Projects</h2>
+
+    <div class="project-input-group">
+      <mat-form-field appearance="outline" class="project-input">
+        <mat-label>Project Name</mat-label>
+        <input matInput [(ngModel)]="newProjectName" />
+      </mat-form-field>
+
+      <fa-icon
+        [icon]="faPlus"
+        (click)="createProject()"
+        class="icon create-icon"
+      ></fa-icon>
+    </div>
+  </div>
+
+  <!-- Tabelle darunter -->
+  <table class="modern-table">
     <tr>
       <th>Project Name</th>
-      <th>Actions</th>
+      <th class="actions-column">Actions</th>
     </tr>
-    <tr *ngFor="let project of projects" >
+    <tr *ngFor="let project of projects">
       <td class="project-items">
         {{ project }}
       </td>
-      <td class="project-actions">
+      <td class="actions-column" >
         <fa-icon [icon]="faEdit" (click)="loadProject(project)" class="icon"></fa-icon>
         <fa-icon [icon]="faTrash" class="icon"></fa-icon>
       </td>
     </tr>
-    <tr>
-      <td>
-        <input [(ngModel)]="newProjectName" placeholder="Project Name" />
-      </td>
-      <td  class="add-new-project">
-        <fa-icon [icon]="faPlus" (click)="createProject()" class="icon"></fa-icon>
-      </td>
-    </tr>
   </table>
- 
 </div>
