@@ -1,28 +1,109 @@
+/* Gesamter Abstand um die Tabelle */
+.m-20 {
+  margin: 2rem;
+}
 
-  
-  .project-item a {
-    cursor: pointer;
-    text-decoration: none;
-    color: #007bff;
-  }
 
-  .project-items {
-    width: 90%;
-  }
 
-  .project-actions {
-    width: 10%;
-  }
+.modern-table th.actions-column,
+.modern-table td.actions-column {
+  width: 1%;
+  white-space: nowrap;
+  text-align: left;
+}
+
+/* Input-Zelle (Angular Material Input) */
+mat-form-field {
+  width: 100%;
+}
+
+/* Icons Styling */
+.icon {
+  margin-right: 10px;
+  cursor: pointer;
+  color: #4b5563;
+  transition: color 0.2s;
+}
+
+.icon:hover {
+  transform: scale(1.2);
   
-  .project-item a:hover {
-    text-decoration: underline;
-  }
-  
-  .icon {
-    cursor: pointer;
-    margin-left: 10px;
-  }
-  
-  .icon:hover {
-    color: red;
-  }
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #1f2937;
+}
+
+/* Zeile zum neuen Projekt hinzufügen */
+.add-new-project {
+  text-align: left;
+  padding-left: 16px;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.project-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.project-input {
+  width: 250px; 
+  font-size: 14px;
+}
+
+/* Material Field kompakter machen */
+.project-input .mat-form-field-wrapper {
+  padding: 0;
+  height: 32px;
+  margin: 0;
+}
+
+.project-input .mat-form-field-wrapper {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 36px !important;
+}
+
+.project-input .mat-form-field-flex {
+  height: 36px !important;
+  align-items: center !important;
+  padding: 0 !important;
+}
+
+.project-input .mat-form-field-infix {
+  padding: 0 8px !important;
+  height: 36px !important;
+  display: flex;
+  align-items: center;
+}
+
+.project-input input {
+  height: 36px !important;
+  font-size: 14px;
+  padding: 0 6px !important;
+  box-sizing: border-box;
+  line-height: 36px;
+}
+
+
+/* Icon angleichen */
+.create-icon {
+  cursor: pointer;
+  font-size: 24px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f2937; /* Optional: Angular Material Indigo */
+}
+
+.create-icon:hover {
+  transform: scale(1.2);
+  color: #1f2937; /* etwas dunkleres Indigo */
+  transition: transform 0.2s ease, color 0.2s ease;
+}

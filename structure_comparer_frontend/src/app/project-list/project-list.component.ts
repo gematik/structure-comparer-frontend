@@ -4,13 +4,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEye, faEdit, faTrash, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEdit, faTrash, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatInputModule, MatFormFieldModule],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })
@@ -20,7 +22,7 @@ export class ProjectListComponent implements OnInit {
   faEye = faEye;
   faEdit = faEdit;
   faTrash = faTrash;
-  faSave = faSave;
+  faPlus = faPlus
   faTimes = faTimes;
 
   constructor(private mappingsService: MappingsService, private router: Router) { }
