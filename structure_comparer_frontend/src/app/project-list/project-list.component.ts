@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MappingsService } from '../mappings.service';
+import { ProjectService } from '../project.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -25,7 +26,7 @@ export class ProjectListComponent implements OnInit {
   faPlus = faPlus
   faTimes = faTimes;
 
-  constructor(private mappingsService: MappingsService, private router: Router) { }
+  constructor(private mappingsService: MappingsService, private projectService: ProjectService, private router: Router) { }
 
   ngOnInit(): void {
     this.mappingsService.listProjects().subscribe(
@@ -34,10 +35,15 @@ export class ProjectListComponent implements OnInit {
     );
   }
 
+  
+
   loadProject(projectName: string): void {
     this.mappingsService.initProject(projectName).subscribe(
-      () => this.router.navigate([`/edit-project`, projectName]),
-      error => console.error(error)
+      (projectData) =>{
+        this.projectService.setProjectData(projectData);
+        this.router.navigate([`/edit-project`, projectName])
+      },
+        error => console.error(error)
     );
   }
 
@@ -47,8 +53,8 @@ export class ProjectListComponent implements OnInit {
       alert('Project name is required');
       return;
     }
-
-    this.mappingsService.createProject(this.newProjectName).subscribe(
+    let projectKey : string = this.newProjectName.replace(/\s+/g, '_').toLowerCase(); 
+    this.mappingsService.createProject(projectKey, this.newProjectName).subscribe(
       () => {
         this.projects.push(this.newProjectName);
         this.newProjectName = '';

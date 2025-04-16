@@ -9,5 +9,5 @@ export const routes: Routes = [
   { path: 'projects', component: ProjectListComponent },
   { path: 'mapping', component: MappingsListComponent }, 
   { path: 'mapping/:id', component: MappingDetailComponent },
-  { path: 'edit-project/:id', component: EditProjectComponent },
+  { path: 'edit-project/:projectKey', component: EditProjectComponent },
 ];

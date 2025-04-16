@@ -49,17 +49,19 @@ export class MappingsService {
   }
 
   initProject(projectName: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/init_project?project_name=${projectName}`, { project_name: projectName })
+    let projectKey: string = projectName.replace(/\s+/g, '_').toLowerCase();
+    return this.http.get(`${this.baseUrl}/project/${projectKey}`)
       .pipe(catchError(this.handleError));
   }
 
-  createProject(projectName: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/create_project/${projectName}`, { project_name: projectName })
+  createProject(projectKey: string, projectName: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/project/${projectKey}`, { name: projectName })
       .pipe(catchError(this.handleError));
   }
 
   
-
+  
+//
   addMapping(mappingData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/mappings`, mappingData)
       .pipe(catchError(this.handleError));
