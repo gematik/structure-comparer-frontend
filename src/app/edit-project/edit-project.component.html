@@ -1,45 +1,49 @@
 <div class="m-20">
-<h1>Übersicht Projekt {{ projectName }}</h1>
+  <h1>Übersicht Projekt {{ projectName }}</h1>
 
-<h2 class="section-heading">Liste der Packages</h2>
-<table class="modern-table">
-  <tr>
-    <th>Package Name</th>
-    <th>Aktionen</th>
-  </tr>
-  <tr *ngFor="let package of packages">
-    <td><a href="#">{{ package }}</a></td>
-    <td>
-      <fa-icon [icon]="faEdit" (click)="editPackage()" class="icon"></fa-icon>
-    </td>
-  </tr>
-</table>
+  <h2 class="section-heading">Liste der Packages</h2>
+  <table class="modern-table">
+    <tr>
+      <th>Package Name</th>
+      <th>Aktionen</th>
+    </tr>
+    <tr *ngFor="let package of packages">
+      <td>
+        <div *ngIf="package.display; else elseBlock">{{ package.display }} ({{ package.name }}#{{ package.version }})
+        </div>
+        <ng-template #elseBlock>{{ package.name }}#{{ package.version }}</ng-template>
+      </td>
+      <td>
+        <fa-icon [icon]="faEdit" (click)="editPackage()" class="icon"></fa-icon>
+      </td>
+    </tr>
+  </table>
 
-<h2 class="section-heading">Liste von Vergleichen</h2>
-<table class="modern-table">
-  <tr>
-    <th>Vergleich</th>
-    <th>Aktionen</th>
-  </tr>
-  <tr *ngFor="let comparison of comparisons">
-    <td><a href="#">{{ comparison }}</a></td>
-    <td>
-      <fa-icon [icon]="faEdit" (click)="editComparison()" class="icon"></fa-icon>
-    </td>
-  </tr>
-</table>
+  <h2 class="section-heading">Liste von Vergleichen</h2>
+  <table class="modern-table">
+    <tr>
+      <th>Vergleich</th>
+      <th>Aktionen</th>
+    </tr>
+    <tr *ngFor="let comparison of comparisons">
+      <td><a href="#">{{ comparison }}</a></td>
+      <td>
+        <fa-icon [icon]="faEdit" (click)="editComparison()" class="icon"></fa-icon>
+      </td>
+    </tr>
+  </table>
 
-<h2 class="section-heading">Liste von Mappings</h2>
-<table class="modern-table">
-  <tr>
-    <th>Mapping Name</th>
-    <th>Aktionen</th>
-  </tr>
-  <tr *ngFor="let mapping of mappings">
-    <td>{{ mapping.name }}</td>
-    <td>
-      <fa-icon [icon]="faEdit" (click)="editMapping()" class="icon"></fa-icon>
-    </td>
-  </tr>
-</table>
+  <h2 class="section-heading">Liste von Mappings</h2>
+  <table class="modern-table">
+    <tr>
+      <th>Mapping Name</th>
+      <th>Aktionen</th>
+    </tr>
+    <tr *ngFor="let mapping of mappings">
+      <td>{{ mapping.name }}</td>
+      <td>
+        <fa-icon [icon]="faEdit" (click)="editMapping()" class="icon"></fa-icon>
+      </td>
+    </tr>
+  </table>
 </div>

@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
-import { Mapping } from '../models/mapping.model';
-import { ProjectService } from '../project.service';
-import { Package } from '../models/package.model';
-import { Comparison } from '../models/comparison.model';
-import { MappingsListComponent } from '../mappings-list/mappings-list.component';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { MappingsService } from '../mappings.service';
-import { firstValueFrom } from 'rxjs';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome'; 
+import { firstValueFrom } from 'rxjs';
+import { MappingsListComponent } from '../mappings-list/mappings-list.component';
+import { MappingsService } from '../mappings.service';
+import { Comparison } from '../models/comparison.model';
+import { Mapping } from '../models/mapping.model';
+import { Package } from '../models/package.model';
+import { ProjectService } from '../project.service';
 @Component({
   selector: 'app-edit-project',
   standalone: true,
@@ -39,7 +39,8 @@ export class EditProjectComponent implements OnInit {
     if (this.projectData) {
       this.projectName = this.projectData.name;
       this.mappings = this.projectData.mappings;
-     
+      this.packages = this.projectData.packages
+
     } else {
       console.error('Project data could not be loaded!');
     }
@@ -61,15 +62,15 @@ export class EditProjectComponent implements OnInit {
   }
 
   editPackage() {
-    console.log('Bearbeite Package:', );
+    console.log('Bearbeite Package:',);
   }
 
   editComparison() {
-    console.log('Bearbeite Vergleich:', );
+    console.log('Bearbeite Vergleich:',);
   }
 
   editMapping() {
-    console.log('Bearbeite Mapping:', );
+    console.log('Bearbeite Mapping:',);
   }
 
 }
