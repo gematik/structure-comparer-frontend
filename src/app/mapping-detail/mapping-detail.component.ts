@@ -1,20 +1,20 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { MappingsService } from '../mappings.service';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
-import { catchError } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { MappingsService } from '../mappings.service';
 
 export interface IProfile {
   name: string;
   extra: string;
-  classification: string;
+  action: string;
   remark: string;
   [key: string]: any;
 }
@@ -36,13 +36,15 @@ export interface IProfile {
 })
 
 export class MappingDetailComponent implements OnInit {
-  originalDetail: any;
-  mappingDetail: any;
+  projectKey: string;
+  mappingId: string;
+  original: any;
+  mapping: any;
   availableFields: any[] = [];
   classifications: any[] = [];
   editingIndex: number | null | undefined = null;
   hoverIndex: number | null | undefined = null;
-  filteredDetail: any;
+  filtered: any;
   // Paginator
   totalLength: number = 0;
   pageSize: number = 200;
@@ -52,33 +54,34 @@ export class MappingDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    const mappingId = this.route.snapshot.paramMap.get('id');
-    if (mappingId) {
-      this.loadMappingDetail(mappingId);
+    this.projectKey = this.route.snapshot.paramMap.get('projectKey');
+    this.mappingId = this.route.snapshot.paramMap.get('mappingId');
+    if (projectKey && mappingId) {
+      this.loadMapping(projectKey, mappingId);
       this.loadFields(mappingId);
       this.loadClassifications();
     }
   }
 
-  loadMappingDetail(mappingId: string) {
+  loadMapping(projectKey: string, mappingId: string) {
     this.mappingsService
-      .getMappingDetail(mappingId)
+      .getMapping(projectKey, mappingId)
       .pipe(
         catchError((err) => {
           console.error('Error loading mapping detail', err);
           return of({});
         })
       )
-      .subscribe((mappingDetail) => {
-        this.totalLength = mappingDetail.fields.length;
-        this.originalDetail = mappingDetail;
-        this.mappingDetail = this.originalDetail;
-        this.filteredDetail = {
-          ...mappingDetail,
-          fields: mappingDetail.fields.slice(0, this.pageSize),
+      .subscribe((mapping) => {
+        this.totalLength = mapping.fields.length;
+        this.original = mapping;
+        this.mapping = this.original;
+        this.filtered = {
+          ...mapping,
+          fields: mapping.fields.slice(0, this.pageSize),
         };
       });
   }
@@ -105,7 +108,7 @@ export class MappingDetailComponent implements OnInit {
     });
   }
 
-  getClassificationInstruction(classification: string): string {
+  getClassificationInstruction(action: string): string {
     const found = this.classifications.find(c => c.value === classification);
     return found ? found.instruction : '';
   }
@@ -120,9 +123,9 @@ export class MappingDetailComponent implements OnInit {
     const paginator = () => {
       this.pageSize = e.pageSize;
       this.pageIndex = e.pageIndex;
-      this.filteredDetail = {
-        ...this.mappingDetail,
-        fields: this.mappingDetail.fields.slice(
+      this.filtered = {
+        ...this.mapping,
+        fields: this.mapping.fields.slice(
           this.pageSize * this.pageIndex,
           this.pageSize * (this.pageIndex + 1)
         ),
@@ -130,9 +133,9 @@ export class MappingDetailComponent implements OnInit {
     };
 
     const sorter = () => {
-      const data = this.filteredDetail.fields;
+      const data = this.filtered.fields;
       if (!e.active || e.direction === '') {
-        this.filteredDetail = { ...this.filteredDetail, fields: data };
+        this.filtered = { ...this.filtered, fields: data };
         return;
       }
       const sortedData = data.sort((a: IProfile, b: IProfile) => {
@@ -156,8 +159,8 @@ export class MappingDetailComponent implements OnInit {
         }
       });
 
-      this.filteredDetail = {
-        ...this.filteredDetail,
+      this.filtered = {
+        ...this.filtered,
         fields: sortedData,
       };
     };
@@ -173,15 +176,15 @@ export class MappingDetailComponent implements OnInit {
           record.extra?.toLowerCase().indexOf(val) >= 0
         );
       };
-      this.mappingDetail = {
-        ...this.mappingDetail,
-        fields: this.originalDetail.fields.filter(filterCond),
+      this.mapping = {
+        ...this.mapping,
+        fields: this.original.fields.filter(filterCond),
       };
-      this.totalLength = this.mappingDetail.fields.length;
+      this.totalLength = this.mapping.fields.length;
       this.pageIndex = 0;
-      this.filteredDetail = {
-        ...this.mappingDetail,
-        fields: this.mappingDetail.fields.slice(
+      this.filtered = {
+        ...this.mapping,
+        fields: this.mapping.fields.slice(
           this.pageSize * this.pageIndex,
           this.pageSize * (this.pageIndex + 1)
         ),
@@ -213,7 +216,7 @@ export class MappingDetailComponent implements OnInit {
     return { startHover, stopHover, startEdit, cancelEdit };
   };
 
-  getClassificationCssClass(classification: string): string {
+  getClassificationCssClass(action: string): string {
     const CSS_CLASS: { [key: string]: string } = {
       use: 'row-use',
       not_use: 'row-not-use',
@@ -263,10 +266,10 @@ export class MappingDetailComponent implements OnInit {
     console.log('Update Data:', updateData);
 
     this.mappingsService
-      .updateMappingField(this.mappingDetail.id, field.id, action, updateData)
+      .updateMappingField(this.mapping.id, field.id, action, updateData)
       .subscribe({
         next: () => {
-          this.loadMappingDetail(this.mappingDetail.id);
+          this.loadMapping(this.mapping.id);
         },
         error: (err) => console.error('Failed to update field', err),
       });

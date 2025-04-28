@@ -1,34 +1,40 @@
-<div *ngIf="filteredDetail">
-    <h2>{{ filteredDetail.name }}</h2>
+<div *ngIf="filtered">
+    test
+    <h2>{{ filtered.name }}</h2>
     <div style="display: flex; justify-content: space-between;">
         <div style="flex: 1;">
-            <ng-container *ngIf="filteredDetail.sources.length > 1; else singleSource">
+            <ng-container *ngIf="filtered.sources.length > 1; else singleSource">
                 <p>Source Profiles:</p>
                 <ul>
-                    <li *ngFor="let profile of filteredDetail.sources">
+                    <li *ngFor="let profile of filtered.sources">
                         <a [href]="profile.simplifier_url" target="_blank">{{ profile.profile_key }}</a>
                     </li>
                 </ul>
             </ng-container>
             <ng-template #singleSource>
-                <p>Source Profile: 
-                    <a [href]="filteredDetail.sources[0].simplifier_url" target="_blank">{{ filteredDetail.sources[0].profile_key }}</a>
+                <p>Source Profile:
+                    <a [href]="filtered.sources[0].simplifier_url" target="_blank">{{
+                        filtered.sources[0].profile_key }}</a>
                 </p>
             </ng-template>
-            
-            <p>Target Profile: 
-                <a [href]="filteredDetail.target.simplifier_url" target="_blank">{{ filteredDetail.target.profile_key }}</a>
+
+            <p>Target Profile:
+                <a [href]="filtered.target.simplifier_url" target="_blank">{{ filtered.target.profile_key
+                    }}</a>
             </p>
-            <p>Version: {{ filteredDetail.version }}, Status: {{ filteredDetail.status }}</p>
-            <p>Last updated on: {{ filteredDetail.last_updated }}</p>
+            <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
+            <p>Last updated on: {{ filtered.last_updated }}</p>
         </div>
         <div style="flex: 1; display: flex; justify-content: flex-end;">
             <div>
                 <h3>Color Legend:</h3>
                 <ul style="list-style: none; padding: 0;">
-                    <li><span style="background-color: #DCF6E9;">&nbsp;&nbsp;&nbsp;&nbsp;</span> No action needed for this mapping</li>
-                    <li><span style="background-color: #FFEBE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Information will be removed or left empty in this mapping</li>
-                    <li><span style="background-color: #FFFAE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Special action required for this mapping</li>
+                    <li><span style="background-color: #DCF6E9;">&nbsp;&nbsp;&nbsp;&nbsp;</span> No action needed for
+                        this mapping</li>
+                    <li><span style="background-color: #FFEBE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Information will be
+                        removed or left empty in this mapping</li>
+                    <li><span style="background-color: #FFFAE6;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Special action required
+                        for this mapping</li>
                     <li><span style="background-color: #ACF0F9;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Caution reference!</li>
                 </ul>
             </div>
@@ -44,11 +50,11 @@
         <thead>
             <tr>
                 <th mat-sort-header="name">Property</th>
-                <ng-container *ngFor="let profile of filteredDetail.sources">
+                <ng-container *ngFor="let profile of filtered.sources">
                     <th mat-sort-header="{{ profile.profile_key }}">{{ profile.profile_key }}</th>
                 </ng-container>
-                <th mat-sort-header="{{ filteredDetail.target.profile_key }}">
-                    {{ filteredDetail.target.profile_key }}
+                <th mat-sort-header="{{ filtered.target.profile_key }}">
+                    {{ filtered.target.profile_key }}
                 </th>
                 <ng-container>
                     <th mat-sort-header="remark">Erläuterung</th>
@@ -56,7 +62,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let field of filteredDetail.fields; let i = index"
+            <tr *ngFor="let field of filtered.fields; let i = index"
                 [ngClass]="getClassificationCssClass(field.classification)">
                 <td>
                     {{ field.name }}
@@ -65,15 +71,15 @@
                     </ng-container>
                 </td>
                 <ng-container *ngFor="
-              let profile of filteredDetail.sources.concat(
-                filteredDetail.target
+              let profile of filtered.sources.concat(
+                filtered.target
               )
             ">
                     <td>
                         <ng-container *ngIf="isProfilePresent(field.profiles, profile.profile_key)">X</ng-container>
                     </td>
                 </ng-container>
-            
+
                 <td (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
                     <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
                     <button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
