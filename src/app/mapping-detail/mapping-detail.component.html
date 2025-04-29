@@ -1,4 +1,4 @@
-<div *ngIf="filtered">
+<div class="m-20" *ngIf="filtered">
 
     <h2>{{ filtered.name }}</h2>
     <div style="display: flex; justify-content: space-between;">
@@ -7,19 +7,19 @@
                 <p>Source Profiles:</p>
                 <ul>
                     <li *ngFor="let profile of filtered.sources">
-                        <a [href]="profile.simplifier_url" target="_blank">{{ profile.profile_key }}</a>
+                        <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
                     </li>
                 </ul>
             </ng-container>
             <ng-template #singleSource>
                 <p>Source Profile:
-                    <a [href]="filtered.sources[0].simplifier_url" target="_blank">{{
-                        filtered.sources[0].profile_key }}</a>
+                    <a [href]="filtered.sources[0].url" target="_blank">{{
+                        filtered.sources[0].name }}</a>
                 </p>
             </ng-template>
 
             <p>Target Profile:
-                <a [href]="filtered.target.simplifier_url" target="_blank">{{ filtered.target.profile_key
+                <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name
                     }}</a>
             </p>
             <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
