@@ -36,6 +36,7 @@ export interface IProfile {
 })
 
 export class MappingDetailComponent implements OnInit {
+  
   projectKey: string;
   mappingId: string;
   original: any;
@@ -62,7 +63,7 @@ export class MappingDetailComponent implements OnInit {
     this.mappingId = this.route.snapshot.paramMap.get('mappingId') || '';
     if (this.projectKey && this.mappingId) {
       this.loadMapping(this.projectKey, this.mappingId);
-      this.loadFields(this.mappingId);
+      this.loadFields(this.projectKey, this.mappingId);
       this.loadClassifications();
     }
   }
@@ -77,6 +78,7 @@ export class MappingDetailComponent implements OnInit {
         })
       )
       .subscribe((mapping) => {
+        console.log('mapping', mapping);
         this.totalLength = mapping.fields.length;
         this.original = mapping;
         this.mapping = this.original;
@@ -84,12 +86,14 @@ export class MappingDetailComponent implements OnInit {
           ...mapping,
           fields: mapping.fields.slice(0, this.pageSize),
         };
+        
       });
+      
   }
 
-  loadFields(mappingId: string) {
+  loadFields(projectKey: string, mappingId: string) {
     this.mappingsService
-      .getMappingFields(mappingId)
+      .getMappingFields(projectKey, mappingId)
       .pipe(
         catchError((err) => {
           console.error('Error loading fields', err);
@@ -115,9 +119,10 @@ export class MappingDetailComponent implements OnInit {
   }
 
 
-  isProfilePresent(fieldProfiles: any[], profileName: string): boolean {
-    const profile = fieldProfiles.find((p) => p.name === profileName);
-    return !!profile?.present;
+  isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
+    console.log('fieldProfiles', fieldProfiles);
+    console.log('profileName', profileName);
+    return !!fieldProfiles[profileName];
   }
 
   handleTable = (e: any) => {

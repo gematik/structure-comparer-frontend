@@ -1,5 +1,5 @@
 <div *ngIf="filtered">
-    test
+    
     <h2>{{ filtered.name }}</h2>
     <div style="display: flex; justify-content: space-between;">
         <div style="flex: 1;">
@@ -46,15 +46,15 @@
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
     </div>
-    <table id="resultsTable" class="display" style="width: 100%" matSort (matSortChange)="handleTable($event).sorter()">
+    <table id="resultsTable" class="display" style="width: 100%" *ngIf="filtered?.fields?.length" matSort (matSortChange)="handleTable($event).sorter()">
         <thead>
             <tr>
                 <th mat-sort-header="name">Property</th>
                 <ng-container *ngFor="let profile of filtered.sources">
-                    <th mat-sort-header="{{ profile.profile_key }}">{{ profile.profile_key }}</th>
+                    <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
                 </ng-container>
-                <th mat-sort-header="{{ filtered.target.profile_key }}">
-                    {{ filtered.target.profile_key }}
+                <th mat-sort-header="{{ filtered.target.name }}">
+                    {{ filtered.target.name }}
                 </th>
                 <ng-container>
                     <th mat-sort-header="remark">Erläuterung</th>
@@ -76,7 +76,7 @@
               )
             ">
                     <td>
-                        <ng-container *ngIf="isProfilePresent(field.profiles, profile.profile_key)">X</ng-container>
+                        <ng-container *ngIf="isProfilePresent(field.profiles, profile.key)">X</ng-container>
                     </td>
                 </ng-container>
 

@@ -26,8 +26,8 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  getMappingFields(mappingId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/mapping/${mappingId}/fields`)
+  getMappingFields(projectKey: string, mappingId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/mapping/${mappingId}/field`)
       .pipe(catchError(this.handleError));
   }
 
