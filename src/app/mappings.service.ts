@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import * as tslib_1 from "tslib"; 
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +11,8 @@ export class MappingsService {
 
   constructor(private http: HttpClient) { }
 
-  getMappings(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/mappings`)
+  getMapping(projectKey: string, mappingId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/mapping/${mappingId}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -35,10 +34,10 @@ export class MappingsService {
   updateMappingField(mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
     const requestUrl = `${this.baseUrl}/mapping/${mappingId}/field/${fieldId}/classification`;
     const requestData = { action, ...updateData };
-    
+
     console.log('Sending request to:', requestUrl);
     console.log('Request data:', requestData);
-    
+
     return this.http.post(requestUrl, requestData)
       .pipe(catchError(this.handleError));
   }
@@ -59,9 +58,9 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  
-  
-//
+
+
+  //
   addMapping(mappingData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/mappings`, mappingData)
       .pipe(catchError(this.handleError));

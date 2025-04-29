@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 import { firstValueFrom } from 'rxjs';
@@ -26,7 +26,7 @@ export class EditProjectComponent implements OnInit {
   projectData: any;
   faEdit = faEdit; // Icon für den Edit-Button
 
-  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService) { }
+  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private router: Router) { }
   // Initialisierung der Komponente. Hier werden die Projektdaten geladen und bisher die Mappings herausgezogen
   async ngOnInit() {
     this.projectData = this.projectService.getProjectData();
@@ -59,6 +59,11 @@ export class EditProjectComponent implements OnInit {
       }
     }
     console.log('Project data:', this.projectData);
+  }
+
+  goToMapping(mappingId: string): void {
+    const projectKey = this.route.snapshot.paramMap.get('projectKey');
+    this.router.navigate([`/project`, projectKey, `mapping`, mappingId]);
   }
 
   editPackage() {

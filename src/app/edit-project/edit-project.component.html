@@ -42,7 +42,7 @@
     <tr *ngFor="let mapping of mappings">
       <td>{{ mapping.name }}</td>
       <td>
-        <fa-icon [icon]="faEdit" (click)="editMapping()" class="icon"></fa-icon>
+        <fa-icon [icon]="faEdit" (click)="goToMapping(mapping.id)" class="icon"></fa-icon>
       </td>
     </tr>
   </table>
