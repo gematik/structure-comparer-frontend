@@ -120,8 +120,7 @@ export class MappingDetailComponent implements OnInit {
 
 
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
-    console.log('fieldProfiles', fieldProfiles);
-    console.log('profileName', profileName);
+    
     return !!fieldProfiles[profileName];
   }
 
@@ -238,6 +237,7 @@ export class MappingDetailComponent implements OnInit {
     return CSS_CLASS[action] || '';
   }
 
+  // ToDo: Refactor. was ist targetField? was ist fixedValue?
   confirmChanges(field: any) {
     let action: string;
     const updateData: any = {};
@@ -265,7 +265,7 @@ export class MappingDetailComponent implements OnInit {
         action = 'empty';
         break;
       default:
-        console.error('Unknown userClassification:', field.userClassification);
+        console.error('Unknown userClassification:', field.use);
         return;
     }
 

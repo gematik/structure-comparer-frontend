@@ -1,5 +1,5 @@
 <div *ngIf="filtered">
-    
+
     <h2>{{ filtered.name }}</h2>
     <div style="display: flex; justify-content: space-between;">
         <div style="flex: 1;">
@@ -46,7 +46,8 @@
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
     </div>
-    <table id="resultsTable" class="display" style="width: 100%" *ngIf="filtered?.fields?.length" matSort (matSortChange)="handleTable($event).sorter()">
+    <table id="resultsTable" class="display" style="width: 100%" *ngIf="filtered?.fields?.length" matSort
+        (matSortChange)="handleTable($event).sorter()">
         <thead>
             <tr>
                 <th mat-sort-header="name">Property</th>
@@ -87,13 +88,13 @@
                     </button>
                     <div *ngIf="editingIndex === i">
                         <div>Aktueller Stand: {{ field.remark }}</div>
-                        <select [(ngModel)]="field.userClassification">
-                            <option *ngFor="let classification of field.classifications_allowed"
+                        <select [(ngModel)]="field.remark">
+                            <option *ngFor="let classification of field.actions_allowed"
                                 [value]="classification">
                                 {{ getClassificationInstruction(classification) }}
                             </option>
                         </select>
-                        <div *ngIf="field.userClassification === 'copy_from'">
+                        <div *ngIf="field.use === 'copy_from'">
                             <span>Wird aus&nbsp;</span>
                             <select [(ngModel)]="field.targetField">
                                 <option *ngFor="let availableField of availableFields" [value]="availableField.id">
@@ -102,7 +103,7 @@
                             </select>
                             <span>&nbsp;übernommen</span>
                         </div>
-                        <div *ngIf="field.userClassification === 'copy_to'">
+                        <div *ngIf="field.use === 'copy_to'">
                             <span>Wird in&nbsp;</span>
                             <select [(ngModel)]="field.targetField">
                                 <option *ngFor="let availableField of availableFields" [value]="availableField.id">
