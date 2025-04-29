@@ -28,15 +28,15 @@ export class MappingsListComponent implements OnInit {
   constructor(private mappingsService: MappingsService) { }
 
   ngOnInit(): void {
-    this.loadMappings();
+   // this.loadMappings();
   }
 
-  loadMappings(): void {
+ /* loadMappings(): void {
     this.mappingsService.getMappings().subscribe(data => {
       this.mappings = data.mappings;
     });
   }
-
+*/
   initializeNewMapping(): Mapping {
     return {
       id: '',
@@ -51,14 +51,14 @@ export class MappingsListComponent implements OnInit {
 
   addMapping(): void {
     this.mappingsService.addMapping(this.newMapping).subscribe(() => {
-      this.loadMappings();
+     // this.loadMappings();
       this.newMapping = this.initializeNewMapping();
     });
   }
 
   updateMapping(mapping: Mapping): void {
     this.mappingsService.updateMapping(mapping.id, mapping).subscribe(() => {
-      this.loadMappings();
+     // this.loadMappings();
       this.editMappingId = null;
     });
   }
@@ -73,7 +73,7 @@ export class MappingsListComponent implements OnInit {
 
   deleteMapping(mappingId: string): void {
     this.mappingsService.deleteMapping(mappingId).subscribe(() => {
-      this.loadMappings();
+     // this.loadMappings();
     });
   }
 

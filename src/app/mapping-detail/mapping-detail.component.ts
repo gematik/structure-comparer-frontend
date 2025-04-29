@@ -54,14 +54,15 @@ export class MappingDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService
-  ) { }
+    
+  ) {this.projectKey = ""; this.mappingId = "";}
 
   ngOnInit(): void {
-    this.projectKey = this.route.snapshot.paramMap.get('projectKey');
-    this.mappingId = this.route.snapshot.paramMap.get('mappingId');
-    if (projectKey && mappingId) {
-      this.loadMapping(projectKey, mappingId);
-      this.loadFields(mappingId);
+    this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
+    this.mappingId = this.route.snapshot.paramMap.get('mappingId') || '';
+    if (this.projectKey && this.mappingId) {
+      this.loadMapping(this.projectKey, this.mappingId);
+      this.loadFields(this.mappingId);
       this.loadClassifications();
     }
   }
@@ -109,7 +110,7 @@ export class MappingDetailComponent implements OnInit {
   }
 
   getClassificationInstruction(action: string): string {
-    const found = this.classifications.find(c => c.value === classification);
+    const found = this.classifications.find(c => c.value === action);
     return found ? found.instruction : '';
   }
 
@@ -172,7 +173,7 @@ export class MappingDetailComponent implements OnInit {
           !val.length ||
           record.name.toLowerCase().indexOf(val) >= 0 ||
           record.remark.toLowerCase().indexOf(val) >= 0 ||
-          record.classification.toLowerCase().indexOf(val) >= 0 ||
+          record.action.toLowerCase().indexOf(val) >= 0 ||
           record.extra?.toLowerCase().indexOf(val) >= 0
         );
       };
@@ -229,7 +230,7 @@ export class MappingDetailComponent implements OnInit {
       fixed: 'row-fixed',
       medication_service: 'row-medication-service',
     };
-    return CSS_CLASS[classification] || '';
+    return CSS_CLASS[action] || '';
   }
 
   confirmChanges(field: any) {
@@ -269,7 +270,7 @@ export class MappingDetailComponent implements OnInit {
       .updateMappingField(this.mapping.id, field.id, action, updateData)
       .subscribe({
         next: () => {
-          this.loadMapping(this.mapping.id);
+          this.loadMapping(this.projectKey, this.mapping.id);
         },
         error: (err) => console.error('Failed to update field', err),
       });
