@@ -1,5 +1,5 @@
-<div *ngIf="filtered">
-    test
+<div class="m-20" *ngIf="filtered">
+
     <h2>{{ filtered.name }}</h2>
     <div style="display: flex; justify-content: space-between;">
         <div style="flex: 1;">
@@ -7,19 +7,19 @@
                 <p>Source Profiles:</p>
                 <ul>
                     <li *ngFor="let profile of filtered.sources">
-                        <a [href]="profile.simplifier_url" target="_blank">{{ profile.profile_key }}</a>
+                        <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
                     </li>
                 </ul>
             </ng-container>
             <ng-template #singleSource>
                 <p>Source Profile:
-                    <a [href]="filtered.sources[0].simplifier_url" target="_blank">{{
-                        filtered.sources[0].profile_key }}</a>
+                    <a [href]="filtered.sources[0].url" target="_blank">{{
+                        filtered.sources[0].name }}</a>
                 </p>
             </ng-template>
 
             <p>Target Profile:
-                <a [href]="filtered.target.simplifier_url" target="_blank">{{ filtered.target.profile_key
+                <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name
                     }}</a>
             </p>
             <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
@@ -46,15 +46,16 @@
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
     </div>
-    <table id="resultsTable" class="display" style="width: 100%" matSort (matSortChange)="handleTable($event).sorter()">
+    <table id="resultsTable" class="display" style="width: 100%" *ngIf="filtered?.fields?.length" matSort
+        (matSortChange)="handleTable($event).sorter()">
         <thead>
             <tr>
                 <th mat-sort-header="name">Property</th>
                 <ng-container *ngFor="let profile of filtered.sources">
-                    <th mat-sort-header="{{ profile.profile_key }}">{{ profile.profile_key }}</th>
+                    <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
                 </ng-container>
-                <th mat-sort-header="{{ filtered.target.profile_key }}">
-                    {{ filtered.target.profile_key }}
+                <th mat-sort-header="{{ filtered.target.name }}">
+                    {{ filtered.target.name }}
                 </th>
                 <ng-container>
                     <th mat-sort-header="remark">Erläuterung</th>
@@ -63,7 +64,7 @@
         </thead>
         <tbody>
             <tr *ngFor="let field of filtered.fields; let i = index"
-                [ngClass]="getClassificationCssClass(field.classification)">
+                [ngClass]="getClassificationCssClass(field.action)">
                 <td>
                     {{ field.name }}
                     <ng-container *ngIf="field.extension">
@@ -76,7 +77,7 @@
               )
             ">
                     <td>
-                        <ng-container *ngIf="isProfilePresent(field.profiles, profile.profile_key)">X</ng-container>
+                        <ng-container *ngIf="isProfilePresent(field.profiles, profile.key)">X</ng-container>
                     </td>
                 </ng-container>
 
@@ -87,13 +88,13 @@
                     </button>
                     <div *ngIf="editingIndex === i">
                         <div>Aktueller Stand: {{ field.remark }}</div>
-                        <select [(ngModel)]="field.userClassification">
-                            <option *ngFor="let classification of field.classifications_allowed"
+                        <select [(ngModel)]="field.remark">
+                            <option *ngFor="let classification of field.actions_allowed"
                                 [value]="classification">
                                 {{ getClassificationInstruction(classification) }}
                             </option>
                         </select>
-                        <div *ngIf="field.userClassification === 'copy_from'">
+                        <div *ngIf="field.use === 'copy_from'">
                             <span>Wird aus&nbsp;</span>
                             <select [(ngModel)]="field.targetField">
                                 <option *ngFor="let availableField of availableFields" [value]="availableField.id">
@@ -102,7 +103,8 @@
                             </select>
                             <span>&nbsp;übernommen</span>
                         </div>
-                        <div *ngIf="field.userClassification === 'copy_to'">
+                        <div *ngIf="field.use === 'copy_to'">
+                            
                             <span>Wird in&nbsp;</span>
                             <select [(ngModel)]="field.targetField">
                                 <option *ngFor="let availableField of availableFields" [value]="availableField.id">
@@ -111,7 +113,7 @@
                             </select>
                             <span>&nbsp;übernommen</span>
                         </div>
-                        <div *ngIf="field.userClassification === 'fixed'">
+                        <div *ngIf="field.use === 'fixed'">
                             <span>Wird fix auf&nbsp;</span>
                             <input type="text" [(ngModel)]="field.fixedValue" />
                             <span>&nbsp;gesetzt</span>
