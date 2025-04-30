@@ -39,7 +39,8 @@ export class EditProjectComponent implements OnInit {
     if (this.projectData) {
       this.projectName = this.projectData.name;
       this.mappings = this.projectData.mappings;
-      this.packages = this.projectData.packages
+      this.packages = this.projectData.packages;
+      this.comparisons = this.projectData.comparisons;
 
     } else {
       console.error('Project data could not be loaded!');
