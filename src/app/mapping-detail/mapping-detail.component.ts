@@ -242,7 +242,7 @@ export class MappingDetailComponent implements OnInit {
     let action: string;
     const updateData: any = {};
 
-    switch (field.userClassification) {
+    switch (field.use) {
       case 'copy_from':
         action = 'copy_from';
         updateData.target = field.targetField;

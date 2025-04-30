@@ -64,7 +64,7 @@
         </thead>
         <tbody>
             <tr *ngFor="let field of filtered.fields; let i = index"
-                [ngClass]="getClassificationCssClass(field.classification)">
+                [ngClass]="getClassificationCssClass(field.action)">
                 <td>
                     {{ field.name }}
                     <ng-container *ngIf="field.extension">
@@ -104,6 +104,7 @@
                             <span>&nbsp;übernommen</span>
                         </div>
                         <div *ngIf="field.use === 'copy_to'">
+                            
                             <span>Wird in&nbsp;</span>
                             <select [(ngModel)]="field.targetField">
                                 <option *ngFor="let availableField of availableFields" [value]="availableField.id">
@@ -112,7 +113,7 @@
                             </select>
                             <span>&nbsp;übernommen</span>
                         </div>
-                        <div *ngIf="field.userClassification === 'fixed'">
+                        <div *ngIf="field.use === 'fixed'">
                             <span>Wird fix auf&nbsp;</span>
                             <input type="text" [(ngModel)]="field.fixedValue" />
                             <span>&nbsp;gesetzt</span>
