@@ -67,6 +67,11 @@ export class EditProjectComponent implements OnInit {
     this.router.navigate([`/project`, projectKey, `mapping`, mappingId]);
   }
 
+  goToComparison(comparisonId: string): void {
+    const projectKey = this.route.snapshot.paramMap.get('projectKey');
+    this.router.navigate([`/project`, projectKey, `comparison`, comparisonId]);
+  }
+
   editPackage() {
     console.log('Bearbeite Package:',);
   }

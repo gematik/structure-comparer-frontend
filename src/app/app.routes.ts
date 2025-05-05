@@ -8,6 +8,7 @@ export const routes: Routes = [
   { path: '', redirectTo: '/projects', pathMatch: 'full' },
   { path: 'projects', component: ProjectListComponent },
   { path: 'edit-project/:projectKey', component: EditProjectComponent },
-  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent },
+  { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent },
+  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent }
  
 ];

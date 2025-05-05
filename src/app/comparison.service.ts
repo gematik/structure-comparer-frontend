@@ -14,6 +14,15 @@ export class ComparisonService {
 
   constructor(private http: HttpClient) { }
 
+  getComparisonData(projectKey: string, comparisonId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`) ;
+  }
+
+  // Hier überlegen, ob ich ComparisonData nicht vielleicht erst hier zusammenbaue?!
+  createComparison(projectKey: string, comparisonData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/project/${projectKey}/comparison`, comparisonData);
+  }
+
  
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
