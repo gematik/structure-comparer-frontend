@@ -2,8 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
-import { faPlus, width } from '@fortawesome/free-solid-svg-icons/faPlus';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
 import { MappingsListComponent } from '../mappings-list/mappings-list.component';
 import { MappingsService } from '../mappings.service';
@@ -14,6 +14,8 @@ import { ProjectService } from '../project.service';
 import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ComparisonService } from '../comparison.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+
 @Component({
   selector: 'app-edit-project',
   standalone: true,
@@ -31,7 +33,8 @@ export class EditProjectComponent implements OnInit {
   projectData: any;
   faEdit = faEdit; // Icon für den Edit-Button
   faPlus = faPlus; // Icon für den Plus-Button
-  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private comparisonServive: ComparisonService, private router: Router, private dialog: MatDialog) { }
+  faTrash = faTrash
+  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private comparisonService: ComparisonService, private router: Router, private dialog: MatDialog) { }
 
   // Initialisierung der Komponente. Hier werden die Projektdaten geladen und bisher die Mappings herausgezogen
   async ngOnInit() {
@@ -82,12 +85,28 @@ export class EditProjectComponent implements OnInit {
     console.log('Bearbeite Package:',);
   }
 
-  editComparison() {
-    console.log('Bearbeite Vergleich:',);
+  deleteComparisonWithConfirm(id: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: 'Willst du diesen Vergleich wirklich löschen?' }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.comparisonService.deleteComparison(this.projectKey, id).subscribe(() => {
+          this.comparisons = this.comparisons.filter(c => c.id !== id);
+        });
+      }
+    });
   }
 
-  editMapping() {
-    console.log('Bearbeite Mapping:',);
+  deleteComparison(comparionsonId: string) {
+   this.comparisonService.deleteComparison(this.projectKey, comparionsonId).subscribe(
+      response => { 
+        console.log('Comparison deleted successfully:', response);
+        this.comparisons = this.comparisons.filter(comparison => comparison.id !== comparionsonId);
+      },
+      error => {
+        console.error('Error deleting comparison:', error);
+      });
   }
 
   openAddComparisonDialogAndSave(projectKey: string) {
@@ -110,7 +129,7 @@ export class EditProjectComponent implements OnInit {
   }
   
   private saveComparison(projectKey: string, payload: any) {
-    this.comparisonServive.createComparison(projectKey, payload).subscribe(
+    this.comparisonService.createComparison(projectKey, payload).subscribe(
       comparison => {
         this.comparisons.push(comparison);
       },

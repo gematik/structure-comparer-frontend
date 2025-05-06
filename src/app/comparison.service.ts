@@ -23,6 +23,10 @@ export class ComparisonService {
     return this.http.post(`${this.baseUrl}/project/${projectKey}/comparison`, comparisonData);
   }
 
+  deleteComparison(projectKey: string, comparisonId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
+  }
+
  
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {

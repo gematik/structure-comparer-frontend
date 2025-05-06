@@ -33,6 +33,7 @@
       <td>{{ comparison.name }}</td>
       <td>
         <fa-icon [icon]="faEdit" (click)="goToComparison(comparison.id)" class="icon"></fa-icon>
+        <fa-icon [icon]="faTrash" (click)="deleteComparisonWithConfirm(comparison.id)" class="icon"></fa-icon>
       </td>
     </tr>
   </table>
