@@ -1,0 +1,15 @@
+/* Farbstil für Zeilen basierend auf ihrer Kompatibilität */
+table tbody tr.compatible {
+  background-color: #e4fce3; /* Hellerer Ton für alle 'row-use' Zeilen */
+  color: #000000;
+}
+
+table tbody tr.warning {
+  background-color: #FCF3CF; /* Gelber Ton für alle  Zeilen mit warning */
+  color: #000000;
+}
+
+table tbody tr.incompatible {
+  background-color: #fde4e3; /* Roter Ton für alle inkompatiblen Zeilen */
+  color: #000000;
+}

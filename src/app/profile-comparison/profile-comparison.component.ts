@@ -3,18 +3,39 @@ import { ComparisonService } from '../comparison.service';
 import { ActivatedRoute } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-profile-comparison',
   standalone: true,
-  imports: [],
+  imports: [
+      CommonModule,
+      FormsModule,
+      MatPaginatorModule,
+      MatSortModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatTableModule],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })
 export class ProfileComparisonComponent implements OnInit {
   projectKey: string;
   comparisonId: string;
+  comparison: any;
+  // Paginator
+  totalLength: number = 0;
+  pageSize: number = 200;
+  pageIndex: number = 0;
+  pageSizeOptions: number[] = [10, 50, 100, 200, 500];
+
 
   constructor(private route: ActivatedRoute,private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = "";}
 
@@ -40,11 +61,19 @@ export class ProfileComparisonComponent implements OnInit {
         )
         .subscribe((comparison) => {
           console.log('comparison', comparison);
-          
+          this.comparison = comparison;
           
           
         });
         
     }
 
+    loadComparisonCSSProperty(compatibility: string): string {
+      const CSS_CLASS: { [key: string]: string } = {
+        compatible: 'compatible',
+        warning: 'warning',
+        incompatible: 'incompatible',
+      };
+      return CSS_CLASS[compatibility] || '';
+    }
 }
