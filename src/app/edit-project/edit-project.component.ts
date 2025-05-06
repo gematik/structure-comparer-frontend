@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, width } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
 import { MappingsListComponent } from '../mappings-list/mappings-list.component';
 import { MappingsService } from '../mappings.service';
@@ -10,6 +11,9 @@ import { Comparison } from '../models/comparison.model';
 import { Mapping } from '../models/mapping.model';
 import { Package } from '../models/package.model';
 import { ProjectService } from '../project.service';
+import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ComparisonService } from '../comparison.service';
 @Component({
   selector: 'app-edit-project',
   standalone: true,
@@ -23,14 +27,16 @@ export class EditProjectComponent implements OnInit {
   comparisons: Comparison[] = [];
   mappings: Mapping[] = [];
   projectName: string = '';
+  projectKey: string = '';
   projectData: any;
   faEdit = faEdit; // Icon für den Edit-Button
+  faPlus = faPlus; // Icon für den Plus-Button
+  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private comparisonServive: ComparisonService, private router: Router, private dialog: MatDialog) { }
 
-  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private router: Router) { }
   // Initialisierung der Komponente. Hier werden die Projektdaten geladen und bisher die Mappings herausgezogen
   async ngOnInit() {
     this.projectData = this.projectService.getProjectData();
-
+    this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
     if (!this.projectData) {
       console.warn('Project data not found in service. Reloading...');
       await this.reloadProject();
@@ -63,13 +69,13 @@ export class EditProjectComponent implements OnInit {
   }
 
   goToMapping(mappingId: string): void {
-    const projectKey = this.route.snapshot.paramMap.get('projectKey');
-    this.router.navigate([`/project`, projectKey, `mapping`, mappingId]);
+
+    this.router.navigate([`/project`, this.projectKey, `mapping`, mappingId]);
   }
 
   goToComparison(comparisonId: string): void {
-    const projectKey = this.route.snapshot.paramMap.get('projectKey');
-    this.router.navigate([`/project`, projectKey, `comparison`, comparisonId]);
+
+    this.router.navigate([`/project`, this.projectKey, `comparison`, comparisonId]);
   }
 
   editPackage() {
@@ -83,5 +89,37 @@ export class EditProjectComponent implements OnInit {
   editMapping() {
     console.log('Bearbeite Mapping:',);
   }
+
+  openAddComparisonDialogAndSave(projectKey: string) {
+    this.dialog.open(AddComparisonDialogComponent, {
+      width: '400px',
+      data: { projectKey }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        const comparisonData = this.mapToApiPayload(result);
+        this.saveComparison(projectKey, comparisonData);
+      }
+    });
+  }
+  
+  private mapToApiPayload(result: any) {
+    return {
+      source_ids: [result.sourceProfileKey],
+      target_id: result.targetProfileKey
+    };
+  }
+  
+  private saveComparison(projectKey: string, payload: any) {
+    this.comparisonServive.createComparison(projectKey, payload).subscribe(
+      comparison => {
+        this.comparisons.push(comparison);
+      },
+      error => {
+        console.error('Fehler beim Erstellen des Vergleichs:', error);
+      }
+    );
+  }
+  
+
 
 }

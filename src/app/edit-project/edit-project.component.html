@@ -23,7 +23,11 @@
   <table class="modern-table">
     <tr>
       <th>Vergleich</th>
-      <th>Aktionen</th>
+      <th>Aktionen
+        <button (click)="openAddComparisonDialogAndSave(this.projectKey)" class="add-button" title="Neuen Vergleich hinzufügen">
+          <fa-icon [icon]="faPlus"></fa-icon>
+        </button>
+      </th>
     </tr>
     <tr *ngFor="let comparison of comparisons">
       <td>{{ comparison.name }}</td>

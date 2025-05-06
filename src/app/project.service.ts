@@ -26,6 +26,11 @@ export class ProjectService {
     this.currentProjectData = null;
   }
 
+  getProjectProfiles(projectKey: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/profile`)
+      .pipe(catchError(this.handleError));
+  }
+
   reloadProjectData(projectKey: string): Observable<any> {
      
     return this.http.get(`${this.baseUrl}/project/${projectKey}`)
