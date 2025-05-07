@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>Vergleich erstellen</h2>
+<mat-dialog-content>
+
+  <mat-form-field appearance="fill" class="wide">
+    <mat-label>Quell-Profil</mat-label>
+    <mat-select [(ngModel)]="sourceProfileKey">
+      <mat-optgroup *ngFor="let group of packageGroups" [label]="group.package">
+        <mat-option *ngFor="let profile of group.profiles" [value]="profile.key">
+          {{ profile.name }}
+        </mat-option>
+      </mat-optgroup>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill" class="wide">
+    <mat-label>Ziel-Profil</mat-label>
+    <mat-select [(ngModel)]="targetProfileKey">
+      <mat-optgroup *ngFor="let group of packageGroups" [label]="group.package">
+        <mat-option *ngFor="let profile of group.profiles" [value]="profile.key">
+          {{ profile.name }}
+        </mat-option>
+      </mat-optgroup>
+    </mat-select>
+  </mat-form-field>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Abbrechen</button>
+  <button mat-button color="primary" (click)="save()">Speichern</button>
+</mat-dialog-actions>

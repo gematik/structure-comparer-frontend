@@ -8,35 +8,26 @@ import { catchError } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class ProjectService {
+export class ComparisonService {
   private baseUrl = 'http://127.0.0.1:8000';
   private currentProjectData: any;
 
   constructor(private http: HttpClient) { }
 
-  setProjectData(data: any) {
-    this.currentProjectData = data;
+  getComparisonData(projectKey: string, comparisonId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`) ;
   }
 
-  getProjectData() {
-    return this.currentProjectData;
+  // Hier überlegen, ob ich ComparisonData nicht vielleicht erst hier zusammenbaue?!
+  createComparison(projectKey: string, comparisonData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/project/${projectKey}/comparison`, comparisonData);
   }
 
-  clearProjectData() {
-    this.currentProjectData = null;
+  deleteComparison(projectKey: string, comparisonId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
   }
 
-  getProjectProfiles(projectKey: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/profile`)
-      .pipe(catchError(this.handleError));
-  }
-
-  reloadProjectData(projectKey: string): Observable<any> {
-     
-    return this.http.get(`${this.baseUrl}/project/${projectKey}`)
-      .pipe(catchError(this.handleError));
-  }
-
+ 
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);
