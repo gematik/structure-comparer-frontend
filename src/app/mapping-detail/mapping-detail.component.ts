@@ -64,7 +64,7 @@ export class MappingDetailComponent implements OnInit {
     if (this.projectKey && this.mappingId) {
       this.loadMapping(this.projectKey, this.mappingId);
       this.loadFields(this.projectKey, this.mappingId);
-      this.loadClassifications();
+      this.loadActions();
     }
   }
 
@@ -103,19 +103,21 @@ export class MappingDetailComponent implements OnInit {
       .subscribe((fields) => (this.availableFields = fields.fields));
   }
 
-  loadClassifications() {
-    this.mappingsService.getClassifications().pipe(catchError((err) => {
+  loadActions() {
+    this.mappingsService.getActions().pipe(catchError((err) => {
       console.error('Error loading classifications', err);
       return of([]);
     })
     ).subscribe((data) => {
-      this.classifications = data.classifications;
+      console.log('actions', data);
+      this.classifications = data.actions;
+      console.log('classifications', this.classifications);
     });
   }
 
   getClassificationInstruction(action: string): string {
     const found = this.classifications.find(c => c.value === action);
-    return found ? found.instruction : '';
+    return found ? found.description : '';
   }
 
 
@@ -239,10 +241,11 @@ export class MappingDetailComponent implements OnInit {
 
   // ToDo: Refactor. was ist targetField? was ist fixedValue?
   confirmChanges(field: any) {
+    console.log('Confirming changes for field:', field);
     let action: string;
     const updateData: any = {};
-
-    switch (field.use) {
+    // Wieso muss in manchen fällen targetField benötigt? In einigen Fällen muss ein TargetField ausgewählt werden. Aktuell wird dem Anwender kein Feld zur Auswahl angezeigt! im HTML fixen
+    switch (field.action) {
       case 'copy_from':
         action = 'copy_from';
         updateData.target = field.targetField;
