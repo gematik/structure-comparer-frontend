@@ -239,13 +239,12 @@ export class MappingDetailComponent implements OnInit {
     return CSS_CLASS[action] || '';
   }
 
-  // ToDo: Refactor. was ist targetField? was ist fixedValue?
+  // ToDo: Es ist die Frage, was hier im Body sein muss?! Das ist aktuell das einzige Problem. Die Dokue ist da nicht so aussagekräftig.
   confirmChanges(field: any) {
     console.log('Confirming changes for field:', field);
     let action: string;
     const updateData: any = {};
-    // Wieso muss in manchen fällen targetField benötigt? In einigen Fällen muss ein TargetField ausgewählt werden. Aktuell wird dem Anwender kein Feld zur Auswahl angezeigt! im HTML fixen
-    switch (field.action) {
+    switch (field.remark) {
       case 'copy_from':
         action = 'copy_from';
         updateData.target = field.targetField;
@@ -275,7 +274,7 @@ export class MappingDetailComponent implements OnInit {
     console.log('Update Data:', updateData);
 
     this.mappingsService
-      .updateMappingField(this.mapping.id, field.id, action, updateData)
+      .updateMappingField(this.projectKey, this.mapping.id, field.name, action, updateData)
       .subscribe({
         next: () => {
           this.loadMapping(this.projectKey, this.mapping.id);

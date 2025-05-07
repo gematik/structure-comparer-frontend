@@ -32,8 +32,8 @@ export class MappingsService {
   }
 
   // Hier auf neues Vorgehen query umstellen. 
-  updateMappingField(mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
-    const requestUrl = `${this.baseUrl}/mapping/${mappingId}/field/${fieldId}/classification`;
+  updateMappingField(projectKey: string, mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
+    const requestUrl = `${this.baseUrl}/project/${projectKey}/mapping/${mappingId}/field/${fieldId}`;
     const requestData = { action, ...updateData };
     console.log('Request data:', requestData);
 
