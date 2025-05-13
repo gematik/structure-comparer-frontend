@@ -39,7 +39,7 @@
 
     <div style="flex: 1; display: flex; justify-content: flex-end;">
         <mat-form-field fxFlex="40%">
-            <input matInput type="text" placeholder="Filter" />
+            <input matInput type="text" placeholder="Filter" (keyup)="filterComparisonFields($event)" />
         </mat-form-field>
     </div>
     <div style="max-height: 600px; overflow: auto;">
