@@ -27,6 +27,7 @@ body {
     font-size: 14px;
     color: #333;
     border-right: 1px solid #e5e7eb;
+    table-layout: fixed;
   }
   
   /* Letzte Kopf-Zelle ohne rechte Grenze */
@@ -66,9 +67,18 @@ body {
 }
 
 .section-heading {
-  margin-top: 50px;
+  padding-top: 20px;
   
 }
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Sticky Header für Tabelle */
+.sticky-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* damit Inhalt darunter nicht durchscheint */
+  z-index: 2;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05);
+}

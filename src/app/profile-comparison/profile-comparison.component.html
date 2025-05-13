@@ -1,89 +1,78 @@
 <div class="m-20" *ngIf="comparison">
 
-  <h2>{{ comparison.name }}</h2>
-  <div style="display: flex; justify-content: space-between;">
-      <div style="flex: 1;">
-          <ng-container *ngIf="comparison.sources.length > 1; else singleSource">
-              <p>Source Profiles:</p>
-              <ul>
-                  <li *ngFor="let profile of comparison.sources">
-                      <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
-                  </li>
-              </ul>
-          </ng-container>
-          <ng-template #singleSource>
-              <p>Source Profile:
-                  <a [href]="comparison.sources[0].url" target="_blank">{{
-                      comparison.sources[0].name }}</a>
-              </p>
-          </ng-template>
+    <h2>{{ comparison.name }}</h2>
+    <div style="display: flex; justify-content: space-between;">
+        <div style="flex: 1;">
+            <ng-container *ngIf="comparison.sources.length > 1; else singleSource">
+                <p>Source Profiles:</p>
+                <ul>
+                    <li *ngFor="let profile of comparison.sources">
+                        <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
+                    </li>
+                </ul>
+            </ng-container>
+            <ng-template #singleSource>
+                <p>Source Profile:
+                    <a [href]="comparison.sources[0].url" target="_blank">{{
+                        comparison.sources[0].name }}</a>
+                </p>
+            </ng-template>
 
-          <p>Target Profile:
-              <a [href]="comparison.target.url" target="_blank">{{ comparison.target.name
-                  }}</a>
-          </p>
-        
-      </div>
-      <div style="flex: 1; display: flex; justify-content: flex-end;">
-          <div>
-              <h3>Color Legend:</h3>
-              <ul style="list-style: none; padding: 0;">
-                  <li><span style="background-color: #e4fce3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Compatible</li>
-                  <li><span style="background-color: #FCF3CF;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Warning</li>
-                  <li><span style="background-color: #fde4e3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Incompatible</li>
-                  
-              </ul>
-          </div>
-      </div>
-  </div>
+            <p>Target Profile:
+                <a [href]="comparison.target.url" target="_blank">{{ comparison.target.name
+                    }}</a>
+            </p>
 
-  <div style="flex: 1; display: flex; justify-content: flex-end;">
-      <mat-form-field fxFlex="40%">
-          <input matInput type="text"  placeholder="Filter" />
-      </mat-form-field>
-  </div>
-  <table id="resultsTable" class="display" style="width: 100%" *ngIf="comparison?.fields?.length" matSort
-     >
-      <thead>
-          <tr>
-              <th mat-sort-header="name">Property</th>
-              <ng-container *ngFor="let profile of comparison.sources">
-                  <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
-              </ng-container>
-              <th mat-sort-header="{{ comparison.target.name }}">
-                  {{ comparison.target.name }}
-              </th>
-              <ng-container>
-                  <th mat-sort-header="remark">Kompatibilität</th>
-              </ng-container>
-          </tr>
-      </thead>
-      <tbody>
-          <tr *ngFor="let field of comparison.fields; let i = index"
-             [ngClass]="loadComparisonCSSProperty(field.classification)" >
-              <td>
-                  {{ field.name }}
-                  <ng-container *ngIf="field.extension">
-                      <br />({{ field.extension }})
-                  </ng-container>
-              </td>
-              <ng-container *ngFor="
-            let profile of comparison.sources.concat(
-              comparison.target
-            )
-          ">
-                  <td>
-                    <ng-container *ngIf="field.profiles[profile.key] as p">
-                      Min: {{ p.min }}, Max: {{ p.max }}, Must Support: {{ p.must_support }}
+        </div>
+        <div style="flex: 1; display: flex; justify-content: flex-end;">
+            <div>
+                <h3>Color Legend:</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><span style="background-color: #e4fce3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Compatible</li>
+                    <li><span style="background-color: #FCF3CF;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Warning</li>
+                    <li><span style="background-color: #fde4e3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Incompatible</li>
+
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div style="flex: 1; display: flex; justify-content: flex-end;">
+        <mat-form-field fxFlex="40%">
+            <input matInput type="text" placeholder="Filter" />
+        </mat-form-field>
+    </div>
+    <div style="max-height: 600px; overflow: auto;">
+        <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="comparison?.fields?.length"
+            matSort>
+            <thead>
+                <tr>
+                    <th mat-sort-header="name">Property</th>
+                    <ng-container *ngFor="let profile of comparison.sources">
+                        <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
                     </ng-container>
-                  </td>
-              </ng-container>
+                    <th mat-sort-header="{{ comparison.target.name }}">{{ comparison.target.name }}</th>
+                    <th mat-sort-header="remark">Kompatibilität</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let field of comparison.fields; let i = index"
+                    [ngClass]="loadComparisonCSSProperty(field.classification)">
+                    <td>
+                        {{ field.name }}
+                        <ng-container *ngIf="field.extension"><br />({{ field.extension }})</ng-container>
+                    </td>
+                    <ng-container *ngFor="let profile of comparison.sources.concat(comparison.target)">
+                        <td>
+                            <ng-container *ngIf="field.profiles[profile.key] as p">
+                                Min: {{ p.min }}, Max: {{ p.max }}, Must Support: {{ p.must_support }}
+                            </ng-container>
+                        </td>
+                    </ng-container>
+                    <td>{{ field.classification }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-              <td >
-                 {{ field.classification }} 
-               </td>
-          </tr>
-      </tbody>
-  </table>
-  
 </div>
