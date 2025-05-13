@@ -21,8 +21,8 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  getClassifications(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/classification`)
+  getActions(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/action`)
       .pipe(catchError(this.handleError));
   }
 
@@ -31,9 +31,11 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  updateMappingField(mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
-    const requestUrl = `${this.baseUrl}/mapping/${mappingId}/field/${fieldId}/classification`;
+  // Hier auf neues Vorgehen query umstellen. 
+  updateMappingField(projectKey: string, mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
+    const requestUrl = `${this.baseUrl}/project/${projectKey}/mapping/${mappingId}/field/${fieldId}`;
     const requestData = { action, ...updateData };
+    console.log('Request data:', requestData);
 
     console.log('Sending request to:', requestUrl);
     console.log('Request data:', requestData);
