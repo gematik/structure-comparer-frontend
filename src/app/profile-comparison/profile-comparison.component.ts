@@ -10,7 +10,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
-
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-profile-comparison',
@@ -22,7 +22,8 @@ import { CommonModule } from '@angular/common';
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTableModule],
+    MatTableModule,
+  MatIconModule],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })
@@ -36,6 +37,7 @@ export class ProfileComparisonComponent implements OnInit {
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
   originalFields: any[] = [];
+  expandedRow: number | null = null;
 
 
   constructor(private route: ActivatedRoute, private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = ""; }
@@ -77,6 +79,10 @@ export class ProfileComparisonComponent implements OnInit {
     };
     return CSS_CLASS[compatibility] || '';
   }
+
+  toggleRow(index: number) {
+  this.expandedRow = this.expandedRow === index ? null : index;
+}
 
   filterComparisonFields(event: Event): void {
     const input = (event.target as HTMLInputElement).value.trim().toLowerCase();
