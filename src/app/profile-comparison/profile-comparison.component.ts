@@ -11,7 +11,6 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatTableDataSource } from '@angular/material/table';
 
 
 
@@ -26,8 +25,8 @@ import { MatTableDataSource } from '@angular/material/table';
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
-    MatExpansionModule,
-  MatTableDataSource],
+    MatExpansionModule
+  ],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })
@@ -41,9 +40,7 @@ export class ProfileComparisonComponent implements OnInit {
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
   originalFields: any[] = [];
-  displayedColumns: string[] = ['name', 'classification']; // anpassen je nach Spalten
-dataSource = new MatTableDataSource<any>();
-expandedElement: any | null = null;
+
 
 
   constructor(private route: ActivatedRoute, private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = ""; }
