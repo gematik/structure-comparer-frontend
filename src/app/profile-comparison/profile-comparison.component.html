@@ -43,7 +43,9 @@
         </mat-form-field>
     </div>
   <mat-accordion multi class="comparison-accordion" *ngIf="comparison?.fields?.length">
-  <mat-expansion-panel *ngFor="let field of comparison.fields">
+  <mat-expansion-panel
+  *ngFor="let field of comparison.fields"
+  [ngClass]="field.classification">
     <mat-expansion-panel-header>
       <mat-panel-title>
         {{ field.name }}
