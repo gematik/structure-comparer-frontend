@@ -10,7 +10,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
-
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-profile-comparison',
@@ -22,7 +22,8 @@ import { CommonModule } from '@angular/common';
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTableModule],
+    MatTableModule,
+  MatIconModule],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })

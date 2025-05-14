@@ -13,3 +13,69 @@ table tbody tr.incompatible {
   background-color: #fde4e3; /* Roter Ton für alle inkompatiblen Zeilen */
   color: #000000;
 }
+
+.button-expand-table {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  color: rgba(0, 0, 0, 0.54);
+  transition: transform 0.2s ease;
+}
+
+.button-expand-table:hover {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.button-expand-table.rotated {
+  transform: rotate(180deg);
+}
+
+.default-td {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+  border-top: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-th {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inner-detail-table {
+  width: 90%;
+  border-collapse: collapse;
+
+  background-color: #fafafa;
+  font-size: 13px;
+  margin: 16px auto;
+}
+
+.inner-detail-table th,
+.inner-detail-table td {
+  border: 1px solid #ddd;
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.inner-detail-table th {
+  background-color: #f3f3f3;
+  font-weight: 600;
+  color: #333;
+}
+
+.inner-detail-table td {
+  color: #444;
+}
