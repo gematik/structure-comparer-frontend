@@ -82,3 +82,23 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   z-index: 2;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05);
 }
+
+.default-td {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+  border-top: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-th {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

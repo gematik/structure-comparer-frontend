@@ -33,25 +33,7 @@ table tbody tr.incompatible {
   transform: rotate(180deg);
 }
 
-.default-td {
-  padding: 8px 12px;
-  font-size: 14px;
-  vertical-align: middle;
-  border-top: 1px solid #e0e0e0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.default-th {
-  padding: 8px 12px;
-  font-size: 14px;
-  vertical-align: middle;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .inner-detail-table {
   width: 90%;

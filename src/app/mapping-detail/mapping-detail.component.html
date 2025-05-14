@@ -46,85 +46,85 @@
             <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
     </div>
- <div style="max-height: 600px; overflow: auto;">
-  <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="filtered?.fields?.length" matSort
-      (matSortChange)="handleTable($event).sorter()">
-      <thead>
-          <tr>
-              <th mat-sort-header="name">Property</th>
-              <ng-container *ngFor="let profile of filtered.sources">
-                  <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
-              </ng-container>
-              <th mat-sort-header="{{ filtered.target.name }}">
-                  {{ filtered.target.name }}
-              </th>
-              <ng-container>
-                  <th mat-sort-header="remark">Erläuterung</th>
-              </ng-container>
-          </tr>
-      </thead>
-      <tbody>
-          <tr *ngFor="let field of filtered.fields; let i = index"
-              [ngClass]="getClassificationCssClass(field.action)">
-              <td>
-                  {{ field.name }}
-                  <ng-container *ngIf="field.extension">
-                      <br />({{ field.extension }})
-                  </ng-container>
-              </td>
-              <ng-container *ngFor="let profile of filtered.sources.concat(filtered.target)">
-                  <td>
-                      <ng-container *ngIf="isProfilePresent(field.profiles, profile.key)">X</ng-container>
-                  </td>
-              </ng-container>
-              <td (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
-                  <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
-                  <button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
-                      Ändern
-                  </button>
-                  <div *ngIf="editingIndex === i">
-                      <div>Aktueller Stand: {{ field.remark }} {{ field.action }}</div>
-                      <select [(ngModel)]="field.remark">
-                          <option *ngFor="let classification of field.actions_allowed" [value]="classification">
-                              {{ getClassificationInstruction(classification) }}
-                          </option>
-                      </select>
+    <div style="max-height: 600px; overflow: auto;">
+        <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="filtered?.fields?.length"
+            matSort (matSortChange)="handleTable($event).sorter()">
+            <thead>
+                <tr>
+                    <th class="default-th" mat-sort-header="name">Property</th>
+                    <ng-container *ngFor="let profile of filtered.sources">
+                        <th class="default-th" mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
+                    </ng-container>
+                    <th class="default-th" mat-sort-header="{{ filtered.target.name }}">
+                        {{ filtered.target.name }}
+                    </th>
+                    <ng-container>
+                        <th class="default-th" mat-sort-header="remark">Erläuterung</th>
+                    </ng-container>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let field of filtered.fields; let i = index"
+                    [ngClass]="getClassificationCssClass(field.action)">
+                    <td class="default-td">
+                        {{ field.name }}
+                        <ng-container *ngIf="field.extension">
+                            <br />({{ field.extension }})
+                        </ng-container>
+                    </td>
+                    <ng-container *ngFor="let profile of filtered.sources.concat(filtered.target)">
+                        <td class="default-td">
+                            <ng-container *ngIf="isProfilePresent(field.profiles, profile.key)">X</ng-container>
+                        </td>
+                    </ng-container>
+                    <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
+                        <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
+                        <button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
+                            Ändern
+                        </button>
+                        <div *ngIf="editingIndex === i">
+                            <div>Aktueller Stand: {{ field.remark }} {{ field.action }}</div>
+                            <select [(ngModel)]="field.remark">
+                                <option *ngFor="let classification of field.actions_allowed" [value]="classification">
+                                    {{ getClassificationInstruction(classification) }}
+                                </option>
+                            </select>
 
-                      <div *ngIf="field.remark === 'copy_from'">
-                          <span>Wird aus&nbsp;</span>
-                          <select [(ngModel)]="field.targetField">
-                              <option *ngFor="let availableField of availableFields" [value]="availableField.id">
-                                  {{ availableField.name }}
-                              </option>
-                          </select>
-                          <span>&nbsp;übernommen</span>
-                      </div>
-                      <div *ngIf="field.remark === 'copy_to'">
-                          <span>Wird in&nbsp;</span>
-                          <select [(ngModel)]="field.targetField">
-                              <option *ngFor="let availableField of availableFields" [value]="availableField.id">
-                                  {{ availableField.name }}
-                              </option>
-                          </select>
-                          <span>&nbsp;übernommen</span>
-                      </div>
-                      <div *ngIf="field.remark === 'fixed'">
-                          <span>Wird fix auf&nbsp;</span>
-                          <input type="text" [(ngModel)]="field.fixedValue" />
-                          <span>&nbsp;gesetzt</span>
-                      </div>
-                      <button class="confirm" (click)="confirmChanges(field)">
-                          <i class="fas fa-check"></i>
-                      </button>
-                      <button class="cancel" (click)="handleEdit().cancelEdit()">
-                          <i class="fas fa-times"></i>
-                      </button>
-                  </div>
-              </td>
-          </tr>
-      </tbody>
-  </table>
-</div>
+                            <div *ngIf="field.remark === 'copy_from'">
+                                <span>Wird aus&nbsp;</span>
+                                <select [(ngModel)]="field.targetField">
+                                    <option *ngFor="let availableField of availableFields" [value]="availableField.id">
+                                        {{ availableField.name }}
+                                    </option>
+                                </select>
+                                <span>&nbsp;übernommen</span>
+                            </div>
+                            <div *ngIf="field.remark === 'copy_to'">
+                                <span>Wird in&nbsp;</span>
+                                <select [(ngModel)]="field.targetField">
+                                    <option *ngFor="let availableField of availableFields" [value]="availableField.id">
+                                        {{ availableField.name }}
+                                    </option>
+                                </select>
+                                <span>&nbsp;übernommen</span>
+                            </div>
+                            <div *ngIf="field.remark === 'fixed'">
+                                <span>Wird fix auf&nbsp;</span>
+                                <input type="text" [(ngModel)]="field.fixedValue" />
+                                <span>&nbsp;gesetzt</span>
+                            </div>
+                            <button class="confirm" (click)="confirmChanges(field)">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="cancel" (click)="handleEdit().cancelEdit()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
 
     <mat-paginator (page)="handleTable($event).paginator()" [length]="totalLength" [pageSize]="pageSize"
