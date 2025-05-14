@@ -13,3 +13,27 @@ table tbody tr.incompatible {
   background-color: #fde4e3; /* Roter Ton für alle inkompatiblen Zeilen */
   color: #000000;
 }
+
+.table-container {
+  max-height: 600px;
+  overflow: auto;
+}
+
+.mat-header-cell {
+  background: white;
+  z-index: 10;
+}
+
+.comparison-accordion {
+  width: 100%;
+}
+
+.detail-content {
+  padding: 10px 20px;
+  background: #fafafa;
+  border-left: 4px solid #ccc;
+}
+
+mat-expansion-panel {
+  margin-bottom: 8px;
+}

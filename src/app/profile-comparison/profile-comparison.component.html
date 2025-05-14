@@ -42,37 +42,39 @@
             <input matInput type="text" placeholder="Filter" (keyup)="filterComparisonFields($event)" />
         </mat-form-field>
     </div>
-    <div style="max-height: 600px; overflow: auto;">
-        <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="comparison?.fields?.length"
-            matSort>
-            <thead>
-                <tr>
-                    <th mat-sort-header="name">Property</th>
-                    <ng-container *ngFor="let profile of comparison.sources">
-                        <th mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
-                    </ng-container>
-                    <th mat-sort-header="{{ comparison.target.name }}">{{ comparison.target.name }}</th>
-                    <th mat-sort-header="remark">Kompatibilität</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let field of comparison.fields; let i = index"
-                    [ngClass]="loadComparisonCSSProperty(field.classification)">
-                    <td>
-                        {{ field.name }}
-                        <ng-container *ngIf="field.extension"><br />({{ field.extension }})</ng-container>
-                    </td>
-                    <ng-container *ngFor="let profile of comparison.sources.concat(comparison.target)">
-                        <td>
-                            <ng-container *ngIf="field.profiles[profile.key] as p">
-                                Min: {{ p.min }}, Max: {{ p.max }}, Must Support: {{ p.must_support }}
-                            </ng-container>
-                        </td>
-                    </ng-container>
-                    <td>{{ field.classification }}</td>
-                </tr>
-            </tbody>
-        </table>
+  <mat-accordion multi class="comparison-accordion" *ngIf="comparison?.fields?.length">
+  <mat-expansion-panel *ngFor="let field of comparison.fields">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        {{ field.name }}
+      </mat-panel-title>
+      <mat-panel-description>
+        {{ field.classification }}
+      </mat-panel-description>
+    </mat-expansion-panel-header>
+
+    <div class="detail-content">
+      <p><strong>Classification:</strong> {{ field.classification }}</p>
+
+      <p *ngIf="field.extension"><strong>Extension:</strong> {{ field.extension }}</p>
+
+      <div>
+        <strong>Profiles:</strong>
+        <ul>
+          <li *ngFor="let profile of comparison.sources.concat(comparison.target)">
+            <ng-container *ngIf="field.profiles[profile.key] as p">
+              {{ profile.name }}: Min: {{ p.min }}, Max: {{ p.max }}, Must Support: {{ p.must_support }}
+            </ng-container>
+            <ng-container *ngIf="!field.profiles[profile.key]">
+              {{ profile.name }}: Nicht vorhanden
+            </ng-container>
+          </li>
+        </ul>
+      </div>
     </div>
+  </mat-expansion-panel>
+</mat-accordion>
+
+
 
 </div>
