@@ -10,6 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MappingsService } from '../mappings.service';
+import { MatButtonModule } from '@angular/material/button'; 
 
 export interface IProfile {
   name: string;
@@ -29,7 +30,8 @@ export interface IProfile {
     MatSortModule,
     MatFormFieldModule,
     MatInputModule,
-    MatTableModule
+    MatTableModule,
+    MatButtonModule
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -247,11 +249,11 @@ export class MappingDetailComponent implements OnInit {
     switch (field.remark) {
       case 'copy_from':
         action = 'copy_from';
-        updateData.target = field.targetField;
+        updateData.other = field.targetField;
         break;
       case 'copy_to':
         action = 'copy_to';
-        updateData.target = field.targetField;
+        updateData.other = field.targetField;
         break;
       case 'fixed':
         action = 'fixed';

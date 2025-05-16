@@ -1,0 +1,16 @@
+.col-wide {
+  width: 80%;
+}
+.col-narrow {
+  width: 20%;
+}
+
+.hover-highlight:hover {
+  background-color: #e0e0e0;
+  transition: background-color 0.2s ease;
+}
+.clickable-cell:hover {
+
+  cursor: pointer;
+  
+}

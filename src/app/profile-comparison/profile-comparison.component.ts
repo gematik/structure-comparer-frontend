@@ -10,19 +10,22 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
-
+import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button'; 
 
 @Component({
   selector: 'app-profile-comparison',
   standalone: true,
   imports: [
-      CommonModule,
-      FormsModule,
-      MatPaginatorModule,
-      MatSortModule,
-      MatFormFieldModule,
-      MatInputModule,
-      MatTableModule],
+    CommonModule,
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTableModule,
+  MatIconModule, 
+  MatButtonModule],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })
@@ -35,9 +38,11 @@ export class ProfileComparisonComponent implements OnInit {
   pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
+  originalFields: any[] = [];
+  expandedRow: number | null = null;
 
 
-  constructor(private route: ActivatedRoute,private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = "";}
+  constructor(private route: ActivatedRoute, private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = ""; }
 
   ngOnInit(): void {
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
@@ -51,29 +56,43 @@ export class ProfileComparisonComponent implements OnInit {
   }
 
   loadComparison(projectKey: string, comparisonId: string) {
-      this.comparisonService
-        .getComparisonData(projectKey, comparisonId)
-        .pipe(
-          catchError((err) => {
-            console.error('Error loading mapping detail', err);
-            return of({});
-          })
-        )
-        .subscribe((comparison) => {
-          console.log('comparison', comparison);
-          this.comparison = comparison;
-          
-          
-        });
-        
-    }
+    this.comparisonService
+      .getComparisonData(projectKey, comparisonId)
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading mapping detail', err);
+          return of({});
+        })
+      )
+      .subscribe((comparison) => {
+        console.log('comparison', comparison);
+        this.comparison = comparison;
+        this.originalFields = [...comparison.fields];
 
-    loadComparisonCSSProperty(compatibility: string): string {
-      const CSS_CLASS: { [key: string]: string } = {
-        compatible: 'compatible',
-        warning: 'warning',
-        incompatible: 'incompatible',
-      };
-      return CSS_CLASS[compatibility] || '';
-    }
+      });
+
+  }
+
+  loadComparisonCSSProperty(compatibility: string): string {
+    const CSS_CLASS: { [key: string]: string } = {
+      compatible: 'compatible',
+      warning: 'warning',
+      incompatible: 'incompatible',
+    };
+    return CSS_CLASS[compatibility] || '';
+  }
+
+  toggleRow(index: number) {
+  this.expandedRow = this.expandedRow === index ? null : index;
+}
+
+  filterComparisonFields(event: Event): void {
+    const input = (event.target as HTMLInputElement).value.trim().toLowerCase();
+
+    this.comparison.fields = this.originalFields.filter(field => {
+      const name = field.name?.toLowerCase() ?? '';
+      const classification = field.classification?.toLowerCase() ?? '';
+      return name.includes(input) || classification.includes(input);
+    });
+  }
 }

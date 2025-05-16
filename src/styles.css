@@ -27,6 +27,7 @@ body {
     font-size: 14px;
     color: #333;
     border-right: 1px solid #e5e7eb;
+    table-layout: fixed;
   }
   
   /* Letzte Kopf-Zelle ohne rechte Grenze */
@@ -66,9 +67,53 @@ body {
 }
 
 .section-heading {
-  margin-top: 50px;
+  padding-top: 20px;
   
 }
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Sticky Header für Tabelle */
+.sticky-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* damit Inhalt darunter nicht durchscheint */
+  z-index: 2;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05);
+}
+
+.default-td {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+  border-top: 1px solid #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.default-th {
+  padding: 8px 12px;
+  font-size: 14px;
+  vertical-align: middle;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mat-icon-button-sm {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  line-height: 28px !important;
+  padding: 0 !important;
+}
+
+.mat-icon-button-sm .mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+}

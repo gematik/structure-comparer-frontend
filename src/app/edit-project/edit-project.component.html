@@ -1,20 +1,21 @@
 <div class="m-20">
-  <h1>Übersicht Projekt {{ projectName }}</h1>
+  <h1>Übersicht Projekt "{{ projectName }}"</h1>
 
   <h2 class="section-heading">Liste der Packages</h2>
   <table class="modern-table">
     <tr>
-      <th>Package Name</th>
-      <th>Aktionen</th>
+      <th class="col-wide">Package Name</th>
+      <th class="col-narrow">Aktion</th>
     </tr>
     <tr *ngFor="let package of packages">
-      <td>
+      <td (click)="editPackage()">
         <div *ngIf="package.display; else elseBlock">{{ package.display }} ({{ package.name }}#{{ package.version }})
         </div>
         <ng-template #elseBlock>{{ package.name }}#{{ package.version }}</ng-template>
       </td>
       <td>
-        <fa-icon [icon]="faEdit" (click)="editPackage()" class="icon"></fa-icon>
+        <button mat-icon-button (click)="editPackage()" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
+        
       </td>
     </tr>
   </table>
@@ -22,18 +23,21 @@
   <h2 class="section-heading">Liste von Vergleichen</h2>
   <table class="modern-table">
     <tr>
-      <th>Vergleich</th>
-      <th>Aktionen
-        <button (click)="openAddComparisonDialogAndSave(this.projectKey)" class="add-button" title="Neuen Vergleich hinzufügen">
-          <fa-icon [icon]="faPlus"></fa-icon>
+      <th class="col-wide">Vergleich</th>
+      <th class="col-narrow">Aktion
+        <button mat-icon-button (click)="openAddComparisonDialogAndSave(this.projectKey)"  title="Neuen Vergleich hinzufügen" class="mat-icon-button-sm">
+          <mat-icon>add-box</mat-icon>
         </button>
       </th>
     </tr>
-    <tr *ngFor="let comparison of comparisons">
-      <td>{{ comparison.name }}</td>
+    <tr *ngFor="let comparison of comparisons" class="hover-highlight">
+      <td class="clickable-cell" (click)="goToComparison(comparison.id)">{{ comparison.name }}</td>
       <td>
-        <fa-icon [icon]="faEdit" (click)="goToComparison(comparison.id)" class="icon"></fa-icon>
-        <fa-icon [icon]="faTrash" (click)="deleteComparisonWithConfirm(comparison.id)" class="icon"></fa-icon>
+        <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" > <mat-icon >remove_red_eye</mat-icon> </button>
+        <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" >
+          <mat-icon>delete</mat-icon>
+        </button>
+        
       </td>
     </tr>
   </table>
@@ -41,13 +45,16 @@
   <h2 class="section-heading">Liste von Mappings</h2>
   <table class="modern-table">
     <tr>
-      <th>Mapping Name</th>
-      <th>Aktionen</th>
+      <th class="col-wide">Mapping Name</th>
+      <th class="col-narrow">Aktion</th>
     </tr>
-    <tr *ngFor="let mapping of mappings">
-      <td>{{ mapping.name }}</td>
+    <tr *ngFor="let mapping of mappings" class="hover-highlight">
+      <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>
       <td>
-        <fa-icon [icon]="faEdit" (click)="goToMapping(mapping.id)" class="icon"></fa-icon>
+        <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
+          <mat-icon>edit</mat-icon> 
+        </button>
+       
       </td>
     </tr>
   </table>
