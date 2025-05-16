@@ -102,3 +102,18 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.mat-icon-button-sm {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  line-height: 28px !important;
+  padding: 0 !important;
+}
+
+.mat-icon-button-sm .mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+}

@@ -79,7 +79,7 @@
                     </ng-container>
                     <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
                         <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
-                        <button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
+                        <button mat-button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()" >
                             Ändern
                         </button>
                         <div *ngIf="editingIndex === i">
@@ -113,10 +113,10 @@
                                 <input type="text" [(ngModel)]="field.fixedValue" />
                                 <span>&nbsp;gesetzt</span>
                             </div>
-                            <button class="confirm" (click)="confirmChanges(field)">
+                            <button mat-button  (click)="confirmChanges(field)" class="mat-icon-button-sm confirm">
                                 <i class="fas fa-check"></i>
                             </button>
-                            <button class="cancel" (click)="handleEdit().cancelEdit()">
+                            <button mat-button class="mat-icon-button-sm cancel" (click)="handleEdit().cancelEdit()">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>

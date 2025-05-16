@@ -6,12 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { ProjectService } from '../project.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button'; 
 
 
 @Component({
   selector: 'app-add-comparison-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatSelectModule, MatFormFieldModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatSelectModule, MatFormFieldModule, MatButtonModule],
   templateUrl: './add-comparison-dialog.component.html',
   styleUrl: './add-comparison-dialog.component.css'
 })

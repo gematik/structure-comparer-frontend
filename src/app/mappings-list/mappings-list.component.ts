@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { Mapping, SourceProfile, TargetProfile } from '../models/mapping.model';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEye, faEdit, faTrash, faSave, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { MatButtonModule } from '@angular/material/button'; 
 
 @Component({
   selector: 'app-mappings-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatButtonModule],
   templateUrl: './mappings-list.component.html',
   styleUrls: ['./mappings-list.component.css']
 })

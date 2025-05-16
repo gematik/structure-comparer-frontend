@@ -15,11 +15,13 @@ import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-compa
 import { MatDialog } from '@angular/material/dialog';
 import { ComparisonService } from '../comparison.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { MatButtonModule } from '@angular/material/button'; 
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [MappingsListComponent, CommonModule, FontAwesomeModule],
+  imports: [MappingsListComponent, CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })

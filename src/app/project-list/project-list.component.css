@@ -17,20 +17,6 @@ mat-form-field {
   width: 100%;
 }
 
-/* Icons Styling */
-.icon {
-  margin-right: 10px;
-  cursor: pointer;
-  color: #4b5563;
-  transition: color 0.2s;
-}
-
-.icon:hover {
-  transform: scale(1.2);
-  
-  transition: transform 0.2s ease, color 0.2s ease;
-  color: #1f2937;
-}
 
 /* Zeile zum neuen Projekt hinzufügen */
 .add-new-project {

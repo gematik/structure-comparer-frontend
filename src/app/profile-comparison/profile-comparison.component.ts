@@ -11,6 +11,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button'; 
 
 @Component({
   selector: 'app-profile-comparison',
@@ -23,7 +24,8 @@ import { MatIcon, MatIconModule } from '@angular/material/icon';
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
-  MatIconModule],
+  MatIconModule, 
+  MatButtonModule],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })

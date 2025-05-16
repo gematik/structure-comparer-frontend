@@ -9,11 +9,13 @@ import { faEye, faEdit, faTrash, faPlus, faTimes } from '@fortawesome/free-solid
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button'; 
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatInputModule, MatFormFieldModule],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatInputModule, MatFormFieldModule, MatButtonModule, MatIcon],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })

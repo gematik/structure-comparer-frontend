@@ -28,8 +28,11 @@
         {{ project }}
       </td>
       <td class="actions-column" >
-        <fa-icon [icon]="faEye" (click)="loadProject(project)" class="icon"></fa-icon>
-        <fa-icon [icon]="faTrash" class="icon"></fa-icon>
+        <button mat-icon-button (click)="loadProject(project)" >
+          <mat-icon>remove_red_eye</mat-icon>
+        </button>
+        <button mat-icon-button><mat-icon>delete</mat-icon></button>
+        
       </td>
     </tr>
   </table>
