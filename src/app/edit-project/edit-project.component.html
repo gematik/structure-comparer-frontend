@@ -8,7 +8,7 @@
       <th class="col-narrow">Aktion</th>
     </tr>
     <tr *ngFor="let package of packages">
-      <td>
+      <td (click)="editPackage()">
         <div *ngIf="package.display; else elseBlock">{{ package.display }} ({{ package.name }}#{{ package.version }})
         </div>
         <ng-template #elseBlock>{{ package.name }}#{{ package.version }}</ng-template>
@@ -30,8 +30,8 @@
         </button>
       </th>
     </tr>
-    <tr *ngFor="let comparison of comparisons">
-      <td>{{ comparison.name }}</td>
+    <tr *ngFor="let comparison of comparisons" class="hover-highlight">
+      <td class="clickable-cell" (click)="goToComparison(comparison.id)">{{ comparison.name }}</td>
       <td>
         <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" > <mat-icon >remove_red_eye</mat-icon> </button>
         <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" >
@@ -48,8 +48,8 @@
       <th class="col-wide">Mapping Name</th>
       <th class="col-narrow">Aktion</th>
     </tr>
-    <tr *ngFor="let mapping of mappings">
-      <td>{{ mapping.name }}</td>
+    <tr *ngFor="let mapping of mappings" class="hover-highlight">
+      <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>
       <td>
         <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
           <mat-icon>edit</mat-icon> 
