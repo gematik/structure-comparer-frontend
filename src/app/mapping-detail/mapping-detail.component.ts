@@ -11,6 +11,7 @@ import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MappingsService } from '../mappings.service';
 import { MatButtonModule } from '@angular/material/button'; 
+import { MatIcon } from '@angular/material/icon';
 
 export interface IProfile {
   name: string;
@@ -31,7 +32,8 @@ export interface IProfile {
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIcon
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -53,6 +55,7 @@ export class MappingDetailComponent implements OnInit {
   pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
+  expandedRow: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -121,6 +124,10 @@ export class MappingDetailComponent implements OnInit {
     const found = this.classifications.find(c => c.value === action);
     return found ? found.description : '';
   }
+
+   toggleRow(index: number) {
+  this.expandedRow = this.expandedRow === index ? null : index;
+}
 
 
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
