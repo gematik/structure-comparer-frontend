@@ -275,6 +275,12 @@ export class MappingDetailComponent implements OnInit {
       case 'empty':
         action = 'empty';
         break;
+      case 'use':
+        action = 'use';
+        break;
+      case 'manual':
+        action = 'manual';
+        break;
       default:
         console.error('Unknown userClassification:', field.use);
         return;
