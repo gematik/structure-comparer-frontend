@@ -12,6 +12,7 @@ import { catchError } from 'rxjs/operators';
 import { MappingsService } from '../mappings.service';
 import { MatButtonModule } from '@angular/material/button'; 
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltip } from '@angular/material/tooltip';
 
 export interface IProfile {
   name: string;
@@ -33,7 +34,8 @@ export interface IProfile {
     MatInputModule,
     MatTableModule,
     MatButtonModule,
-    MatIcon
+    MatIcon,
+    MatTooltip
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -127,6 +129,30 @@ export class MappingDetailComponent implements OnInit {
 
    toggleRow(index: number) {
   this.expandedRow = this.expandedRow === index ? null : index;
+}
+
+getRemarkTooltip(action: string): string {
+  switch (action) {
+    case 'use':
+      return 'No action needed for this mapping';
+    case 'not_use':
+    case 'empty':
+      return 'Information will be removed or left empty in this mapping';
+    case 'extension':
+    case 'manual':
+      return 'Special action required for this mapping';
+    case 'other':
+    case 'medication_service':
+      return 'Caution reference!';
+    case 'copy_from':
+      return 'This field copies its value from another source field';
+    case 'copy_to':
+      return 'This field copies its value into another field';
+    case 'fixed':
+      return 'This field has a fixed value';
+    default:
+      return 'No additional information';
+  }
 }
 
 

@@ -8,6 +8,33 @@ body {
     color: #333;
 }
 
+.pill {
+  padding: 2px 10px;
+  font-size: 13px;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+/* Kompatibilitäts-Pillen */
+.pill--compatible {
+  background-color: #e4fce3; /* Grünlich für kompatibel */
+  color: #000000;
+}
+
+.pill--warning {
+  background-color: #FCF3CF; /* Gelblich für Warnung */
+  color: #000000;
+}
+
+.pill--incompatible {
+  background-color: #fde4e3; /* Rötlich für inkompatibel */
+  color: #000000;
+}
+
+
 /* Modernes Tabellen-Design mit vertikalen Trennlinien */
 .modern-table {
     width: 100%;

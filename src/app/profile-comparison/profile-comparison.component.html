@@ -1,4 +1,4 @@
-<div class="m-20" *ngIf="comparison">
+<div class="m-20" *ngIf="comparison" >
 
   <h2>{{ comparison.name }}</h2>
   <div style="display: flex; justify-content: space-between;">
@@ -22,16 +22,7 @@
       </p>
 
     </div>
-    <div style="flex: 1; display: flex; justify-content: flex-end;">
-      <div>
-        <h3>Legende:</h3>
-        <ul style="list-style: none; padding: 0;">
-          <li><span style="background-color: #e4fce3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Compatible</li>
-          <li><span style="background-color: #FCF3CF;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Warning</li>
-          <li><span style="background-color: #fde4e3;">&nbsp;&nbsp;&nbsp;&nbsp;</span> Inkompatibel: Zielprofil strenger als Quellprofil</li>
-        </ul>
-      </div>
-    </div>
+    
   </div>
 
   <div style="flex: 1; display: flex; justify-content: flex-end;">
@@ -52,12 +43,12 @@
       </thead>
       <tbody>
         <ng-container *ngFor="let field of comparison.fields; let i = index">
-          <tr [ngClass]="loadComparisonCSSProperty(field.classification)">
+          <tr>
             <td class="default-td">{{ field.name }}</td>
             
             <td class="default-td">
               <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span style="flex: 1;">{{ field.classification }}</span>
+                <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="2000" [matTooltip]="getClassificationDescription(field.classification)">{{ field.classification }}</span>
                 <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
                   <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>

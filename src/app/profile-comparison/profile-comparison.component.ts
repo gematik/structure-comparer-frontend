@@ -11,7 +11,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button'; 
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-profile-comparison',
@@ -24,8 +25,9 @@ import { MatButtonModule } from '@angular/material/button';
     MatFormFieldModule,
     MatInputModule,
     MatTableModule,
-  MatIconModule, 
-  MatButtonModule],
+    MatIconModule,
+    MatButtonModule,
+    MatTooltip],
   templateUrl: './profile-comparison.component.html',
   styleUrl: './profile-comparison.component.css'
 })
@@ -82,9 +84,23 @@ export class ProfileComparisonComponent implements OnInit {
     return CSS_CLASS[compatibility] || '';
   }
 
+  getClassificationDescription(classification: string): string {
+    switch (classification) {
+      case 'compatible':
+        return 'This field is compatible between source and target.';
+      case 'warning':
+        return 'Warning: differences may cause issues.';
+      case 'incompatible':
+        return 'Incompatible: the target is more restrictive than the source.';
+      default:
+        return 'No additional information available.';
+    }
+  }
+
+
   toggleRow(index: number) {
-  this.expandedRow = this.expandedRow === index ? null : index;
-}
+    this.expandedRow = this.expandedRow === index ? null : index;
+  }
 
   filterComparisonFields(event: Event): void {
     const input = (event.target as HTMLInputElement).value.trim().toLowerCase();
