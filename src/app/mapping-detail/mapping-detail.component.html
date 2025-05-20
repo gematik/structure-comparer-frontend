@@ -61,8 +61,7 @@
             </thead>
             <tbody>
                 <ng-container *ngFor="let field of filtered.fields; let i = index">
-                <tr 
-                    [ngClass]="getClassificationCssClass(field.action)">
+                <tr>
                     <td class="default-td">
                         {{ field.name }}
                         <ng-container *ngIf="field.extension">
@@ -71,7 +70,7 @@
                     </td>
                     
                     <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
-                        <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
+                        <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action">{{ field.remark }}</span>
                         <button mat-button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()" >
                             Ändern
                         </button>

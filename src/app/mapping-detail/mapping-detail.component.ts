@@ -275,9 +275,7 @@ export class MappingDetailComponent implements OnInit {
       case 'empty':
         action = 'empty';
         break;
-      case 'use':
-        action = 'use';
-        break;
+      
       case 'manual':
         action = 'manual';
         break;

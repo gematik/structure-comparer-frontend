@@ -13,6 +13,30 @@ table {
 }
 
 
+.pill {
+  padding: 2px 10px;
+  font-size: 13px;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.copy_from {
+  background-color: #d0f0ff;
+  color: #004466;
+}
+
+.copy_to {
+  background-color: #ffe6cc;
+  color: #663300;
+}
+
+.fixed {
+  background-color: #d9fdd3;
+  color: #1e4620;
+}
 /* Button-Styling */
 /* Zeilen-Hover-Styling */
 tr:hover {
@@ -53,54 +77,44 @@ tr:hover {
     background-color: #f5f5f5; /* Hover-Effekt für Zeilen */
 }
 /* Farbstil für Zeilen basierend auf ihrer Klassifikation */
-table tbody tr.row-use {
-    background-color: #E3FCEF; /* Hellerer Ton für alle 'row-use' Zeilen */
-    color: #000000;
+.pill--use {
+  background-color: #E3FCEF;
 }
 
-table tbody tr.row-not-use {
-    background-color: #FFEBE6; /* Hellerer Ton für alle 'row-not-use' Zeilen */
-    color: #000000;
+.pill--not_use {
+  background-color: #FFEBE6;
 }
 
-table tbody tr.row-extension {
-    background-color: #FFFAE6; /* Hellerer Ton für alle 'row-extension' Zeilen */
-    color: #000000;
+.pill--extension {
+  background-color: #FFFAE6;
 }
 
-table tbody tr.row-manual {
-    background-color: #B3F5FF; /* Hellerer Ton für alle 'row-manual' Zeilen */
-    color: #000000;
+.pill--manual {
+  background-color: #B3F5FF;
 }
 
-table tbody tr.row-other {
-    background-color: #FFBDAD; /* Hellerer Ton für alle 'row-other' Zeilen */
-    color: #000000;
+.pill--other {
+  background-color: #FFBDAD;
 }
 
-table tbody tr.row-empty {
-    background-color: #F0F0F0; /* Hellerer Ton für alle 'row-empty' Zeilen */
-    color: #000000;
+.pill--empty {
+  background-color: #F0F0F0;
 }
 
-table tbody tr.row-copy-from {
-    background-color: #D6EAF8; /* Hellerer Ton für alle 'row-copy-from' Zeilen */
-    color: #000000;
+.pill--copy_from {
+  background-color: #D6EAF8;
 }
 
-table tbody tr.row-copy-to {
-    background-color: #D1F2EB; /* Hellerer Ton für alle 'row-copy-to' Zeilen */
-    color: #000000;
+.pill--copy_to {
+  background-color: #D1F2EB;
 }
 
-table tbody tr.row-fixed {
-    background-color: #FCF3CF; /* Hellerer Ton für alle 'row-fixed' Zeilen */
-    color: #000000;
+.pill--fixed {
+  background-color: #FCF3CF;
 }
 
-table tbody tr.row-medication-service {
-    background-color: #FADBD8; /* Hellerer Ton für alle 'row-medication-service' Zeilen */
-    color: #000000;
+.pill--medication_service {
+  background-color: #FADBD8;
 }
 
 /* Stile für Wrapper der DataTable, falls verwendet */
