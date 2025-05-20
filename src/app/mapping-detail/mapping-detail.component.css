@@ -20,15 +20,7 @@ tr:hover {
     border: 1px solid #007bff; /* Blaue Umrandung */
 }
 
-button {
-    background-color: #007BFF; /* Lebendige Button-Farbe */
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    margin: 4px 2px;
-    border-radius: 4px;
-    cursor: pointer;
-}
+
 
 button:hover {
     background-color: #0056b3; /* Dunklere Farbe beim Überfahren mit der Maus */

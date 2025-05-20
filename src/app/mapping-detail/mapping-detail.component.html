@@ -52,19 +52,16 @@
             <thead>
                 <tr>
                     <th class="default-th" mat-sort-header="name">Property</th>
-                    <ng-container *ngFor="let profile of filtered.sources">
-                        <th class="default-th" mat-sort-header="{{ profile.name }}">{{ profile.name }}</th>
-                    </ng-container>
-                    <th class="default-th" mat-sort-header="{{ filtered.target.name }}">
-                        {{ filtered.target.name }}
-                    </th>
+                   
                     <ng-container>
-                        <th class="default-th" mat-sort-header="remark">Erläuterung</th>
+                        <th class="default-th" mat-sort-header="remark">Mapping</th>
                     </ng-container>
+                    <th class="default-th" mat-sort-header="compatibility">Compatibility</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let field of filtered.fields; let i = index"
+                <ng-container *ngFor="let field of filtered.fields; let i = index">
+                <tr 
                     [ngClass]="getClassificationCssClass(field.action)">
                     <td class="default-td">
                         {{ field.name }}
@@ -72,11 +69,7 @@
                             <br />({{ field.extension }})
                         </ng-container>
                     </td>
-                    <ng-container *ngFor="let profile of filtered.sources.concat(filtered.target)">
-                        <td class="default-td">
-                            <ng-container *ngIf="isProfilePresent(field.profiles, profile.key)">X</ng-container>
-                        </td>
-                    </ng-container>
+                    
                     <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
                         <span *ngIf="editingIndex !== i">{{ field.remark }}</span>
                         <button mat-button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()" >
@@ -121,7 +114,41 @@
                             </button>
                         </div>
                     </td>
+                    <td> 
+                        <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
+                  <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+                    </td>
                 </tr>
+                 <tr *ngIf="expandedRow === i">
+            <td [attr.colspan]="2 + filtered.sources.length">
+              <div class="expanded-detail" style="padding: 0 16px;">
+               
+                <table class="inner-detail-table" style="width: 100%; margin-top: 10px;">
+                  <thead>
+                    <tr>
+                      <th  *ngFor="let profile of filtered.sources.concat(filtered.target)">{{ profile.name }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td *ngFor="let profile of filtered.sources.concat(filtered.target)">
+                        <ng-container *ngIf="field.profiles[profile.key] as p">
+                          Min: {{ p.min }}<br>
+                          Max: {{ p.max }}<br>
+                          Must Support: {{ p.must_support }}
+                        </ng-container>
+                        <ng-container *ngIf="!field.profiles[profile.key]">
+                          Nicht vorhanden
+                        </ng-container>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </td>
+          </tr>
+          </ng-container>
             </tbody>
         </table>
     </div>

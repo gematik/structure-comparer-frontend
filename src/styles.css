@@ -117,3 +117,22 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   height: 18px !important;
   line-height: 18px !important;
 }
+
+.button-expand-table {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: 8px;
+  color: rgba(0, 0, 0, 0.54);
+  transition: transform 0.2s ease;
+}
+
+.button-expand-table:hover {
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.button-expand-table.rotated {
+  transform: rotate(180deg);
+}

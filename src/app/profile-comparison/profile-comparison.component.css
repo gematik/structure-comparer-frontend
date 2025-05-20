@@ -14,24 +14,7 @@ table tbody tr.incompatible {
   color: #000000;
 }
 
-.button-expand-table {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-  margin-left: 8px;
-  color: rgba(0, 0, 0, 0.54);
-  transition: transform 0.2s ease;
-}
 
-.button-expand-table:hover {
-  color: rgba(0, 0, 0, 0.87);
-}
-
-.button-expand-table.rotated {
-  transform: rotate(180deg);
-}
 
 
 
