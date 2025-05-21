@@ -6,9 +6,12 @@ import { ProfileComparisonComponent } from './profile-comparison/profile-compari
 
 export const routes: Routes = [
   { path: '', redirectTo: '/projects', pathMatch: 'full' },
-  { path: 'projects', component: ProjectListComponent },
-  { path: 'edit-project/:projectKey', component: EditProjectComponent },
-  { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent },
-  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent }
- 
+  { path: 'projects', component: ProjectListComponent, data: { breadcrumb: 'Home'} },
+  { path: 'edit-project/:projectKey', component: EditProjectComponent, data: { breadcrumb: 'Edit Project'} },
+  { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent, data: { breadcrumb: 'Mapping Detail'} },
+  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent, data: { breadcrumb: 'Profile Comparison'} },
+  
+  
 ];
+
+

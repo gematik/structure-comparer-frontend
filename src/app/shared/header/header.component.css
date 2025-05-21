@@ -1,12 +1,16 @@
 .header {
   display: flex;
-  align-items: center;
+  flex-direction: column; /* wichtig: jetzt vertikal statt horizontal */
   padding: 1rem;
   margin: 0;
   background-color: #000e52;
 }
 
-
+.header-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem; /* Abstand zu den Breadcrumbs */
+}
 
 .logo {
   height: 60px;
@@ -17,4 +21,20 @@ h1 {
   font-size: 1.5rem;
   margin: 0;
   color: #fff;
+}
+
+.breadcrumb {
+  background: #eee;
+  padding: 8px;
+  color: #000;
+  font-size: 14px;
+}
+
+.breadcrumb a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
 }
