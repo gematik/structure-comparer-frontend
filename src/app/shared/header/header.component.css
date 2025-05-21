@@ -24,17 +24,28 @@ h1 {
 }
 
 .breadcrumb {
-  background: #eee;
-  padding: 8px;
-  color: #000;
+  background-color: #000e52;     /* Gleiche Farbe wie Header */
+  padding: 0.5rem 0;             /* Etwas vertikaler Platz */
   font-size: 14px;
+  color: #fff;                   /* Weißer Text */
 }
 
 .breadcrumb a {
-  color: #1976d2;
+  color: #fff;                   /* Links auch weiß */
   text-decoration: none;
+  font-weight: 500;
 }
 
 .breadcrumb a:hover {
   text-decoration: underline;
+  color: #cddbf9;                /* Etwas helleres Weiß-Blau beim Hover */
 }
+
+.breadcrumb span {
+  color: #fff;                   /* Letzter Breadcrumb auch weiß */
+}
+
+.breadcrumb separator {
+  margin: 0 4px;
+}
+
