@@ -27,6 +27,19 @@ export class ComparisonService {
     return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
   }
 
+   getClassificationDescription(classification: string): string {
+    switch (classification) {
+      case 'compatible':
+        return 'This field is compatible between source and target.';
+      case 'warning':
+        return 'Warning: differences may cause issues.';
+      case 'incompatible':
+        return 'Incompatible: the target is more restrictive than the source.';
+      default:
+        return 'No additional information available.';
+    }
+  }
+
  
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
