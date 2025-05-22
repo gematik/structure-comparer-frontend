@@ -1,4 +1,14 @@
 <header class="header">
-  <img src="assets/Gematik_Logo_White.png" alt="gematik Logo" class="logo" />
-  <h1>Structure Comparer</h1>
+  <div class="header-top">
+    <img src="assets/Gematik_Logo_White.png" alt="gematik Logo" class="logo" />
+    <h1>Structure Comparer</h1>
+  </div>
+
+  <nav class="breadcrumb">
+    <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+      <a *ngIf="!last" [routerLink]="crumb.url">{{ crumb.label }}</a>
+      <span *ngIf="last">{{ crumb.label }}</span>
+      <span *ngIf="!last"> / </span>
+    </ng-container>
+  </nav>
 </header>

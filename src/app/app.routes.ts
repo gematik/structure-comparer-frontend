@@ -5,10 +5,13 @@ import { ProjectListComponent } from './project-list/project-list.component';
 import { ProfileComparisonComponent } from './profile-comparison/profile-comparison.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/projects', pathMatch: 'full' },
-  { path: 'projects', component: ProjectListComponent },
-  { path: 'edit-project/:projectKey', component: EditProjectComponent },
-  { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent },
-  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent }
- 
+  { path: '', redirectTo: '/project', pathMatch: 'full' },
+  { path: 'project', component: ProjectListComponent, data: { breadcrumb: 'Home'} },
+  { path: 'project/:projectKey', component: EditProjectComponent, data: { breadcrumb: 'Project'} },
+  { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent, data: { breadcrumb: 'Mapping Detail'} },
+  { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent, data: { breadcrumb: 'Profile Comparison'} },
+  
+  
 ];
+
+
