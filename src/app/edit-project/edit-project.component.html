@@ -5,7 +5,11 @@
   <table class="modern-table">
     <tr>
       <th class="col-wide">Package Name</th>
-      <th class="col-narrow">Aktion</th>
+      <th class="col-narrow">Aktion
+        <button mat-icon-button (click)="openPackageUploadDialog(this.projectKey)"  title="Add new package" class="mat-icon-button-sm">
+          <mat-icon>add-box</mat-icon>
+        </button>
+      </th>
     </tr>
     <tr *ngFor="let package of packages">
       <td (click)="editPackage()">

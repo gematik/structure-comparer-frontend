@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Upload Package</h2>
+
+<mat-dialog-content class="upload-content">
+ <div class="file-upload-wrapper">
+  <label for="fileInput">Select ZIP file</label>
+  <input type="file" id="fileInput" (change)="onFileSelected($event)" />
+</div>
+
+  <div class="file-info" *ngIf="selectedFile">
+    <mat-icon>description</mat-icon>
+    {{ selectedFile.name }} ({{ selectedFile.size | number }} bytes)
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="upload()" [disabled]="!selectedFile">
+    Upload
+  </button>
+</mat-dialog-actions>

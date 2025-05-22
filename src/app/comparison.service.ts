@@ -15,10 +15,10 @@ export class ComparisonService {
   constructor(private http: HttpClient) { }
 
   getComparisonData(projectKey: string, comparisonId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`) ;
+    return this.http.get(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
   }
 
-  // Hier überlegen, ob ich ComparisonData nicht vielleicht erst hier zusammenbaue?!
+  
   createComparison(projectKey: string, comparisonData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/project/${projectKey}/comparison`, comparisonData);
   }
@@ -27,7 +27,7 @@ export class ComparisonService {
     return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
   }
 
-   getClassificationDescription(classification: string): string {
+  getClassificationDescription(classification: string): string {
     switch (classification) {
       case 'compatible':
         return 'This field is compatible between source and target.';
@@ -40,7 +40,7 @@ export class ComparisonService {
     }
   }
 
- 
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);
