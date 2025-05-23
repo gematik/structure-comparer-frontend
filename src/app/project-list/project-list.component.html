@@ -13,6 +13,7 @@
         [icon]="faPlus"
         (click)="createProject()"
         class="icon create-icon"
+        class="mat-icon-button-sm"
       ></fa-icon>
     </div>
   </div>
@@ -28,10 +29,10 @@
         {{ project }}
       </td>
       <td class="actions-column" >
-        <button mat-icon-button (click)="loadProject(project)" >
+        <button mat-icon-button (click)="loadProject(project)" class="mat-icon-button-sm" >
           <mat-icon>remove_red_eye</mat-icon>
         </button>
-        <button mat-icon-button><mat-icon>delete</mat-icon></button>
+        <button mat-icon-button class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>
         
       </td>
     </tr>

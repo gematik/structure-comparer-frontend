@@ -17,6 +17,7 @@ import { ComparisonService } from '../comparison.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatButtonModule } from '@angular/material/button'; 
 import { MatIcon } from '@angular/material/icon';
+import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 
 @Component({
   selector: 'app-edit-project',
@@ -36,7 +37,13 @@ export class EditProjectComponent implements OnInit {
   faEdit = faEdit; // Icon für den Edit-Button
   faPlus = faPlus; // Icon für den Plus-Button
   faTrash = faTrash
-  constructor(private route: ActivatedRoute, private mappingsService: MappingsService, private projectService: ProjectService, private comparisonService: ComparisonService, private router: Router, private dialog: MatDialog) { }
+  constructor(
+    private route: ActivatedRoute, 
+    private mappingsService: MappingsService, 
+    private projectService: ProjectService, 
+    private comparisonService: ComparisonService, 
+    private router: Router, 
+    private dialog: MatDialog) { }
 
   // Initialisierung der Komponente. Hier werden die Projektdaten geladen und bisher die Mappings herausgezogen
   async ngOnInit() {
@@ -82,6 +89,21 @@ export class EditProjectComponent implements OnInit {
 
     this.router.navigate([`/project`, this.projectKey, `comparison`, comparisonId]);
   }
+
+  openPackageUploadDialog(projectKey: string) {
+  const dialogRef = this.dialog.open(PackageUploadDialogComponent, {
+    width: '400px',
+    data: { projectKey }
+  });
+
+  // Brauche ich vielleicht nicht
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      console.log('Datei erhalten:', result);
+      // Hochladen oder weiterverarbeiten
+    }
+  });
+}
 
   editPackage() {
     console.log('Bearbeite Package:',);

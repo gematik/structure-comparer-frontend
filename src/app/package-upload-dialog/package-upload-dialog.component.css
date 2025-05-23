@@ -1,0 +1,33 @@
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 300px;
+  padding-top: 0.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px;
+  color: #444;
+}
+
+.file-upload-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 14px;
+}
+
+.file-upload-wrapper input[type='file'] {
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 4px;
+}
+

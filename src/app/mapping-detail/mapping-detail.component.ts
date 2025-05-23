@@ -13,6 +13,7 @@ import { MappingsService } from '../mappings.service';
 import { MatButtonModule } from '@angular/material/button'; 
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
+import { ComparisonService } from '../comparison.service';
 
 export interface IProfile {
   name: string;
@@ -61,7 +62,8 @@ export class MappingDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private mappingsService: MappingsService
+    private mappingsService: MappingsService,
+    private comparisonService: ComparisonService
     
   ) {this.projectKey = ""; this.mappingId = "";}
 
@@ -96,6 +98,10 @@ export class MappingDetailComponent implements OnInit {
         
       });
       
+  }
+
+  getTooltipComparison(classification: string): string {
+    return this.comparisonService.getClassificationDescription(classification);
   }
 
   loadFields(projectKey: string, mappingId: string) {
