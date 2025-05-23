@@ -14,7 +14,7 @@ export class PackageService {
 
   constructor(private http: HttpClient) { }
 
-  createPackage(projectKey: string, packageFile: any): Observable<any> {
+  createPackage(projectKey: string, packageFile: File): Observable<any> {
     return this.http.post(`${this.baseUrl}/project/${projectKey}/package`, packageFile)
       .pipe(catchError(this.handleError));
   }

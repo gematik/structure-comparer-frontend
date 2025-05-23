@@ -30,13 +30,13 @@ export class PackageUploadDialogComponent {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
 
-    if (file && file.name.endsWith('.zip')) {
+    if (file && file.name.endsWith('.tgz')) {
       const formData = new FormData();
       formData.append('file', file);
 
       this.selectedFile = file;
     } else {
-      console.warn('Bitte nur ZIP-Dateien hochladen.');
+      console.warn('Bitte nur tgz-Dateien hochladen.');
     }
   }
   upload() {
