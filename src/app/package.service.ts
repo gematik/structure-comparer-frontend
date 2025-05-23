@@ -14,10 +14,19 @@ export class PackageService {
 
   constructor(private http: HttpClient) { }
 
-  createPackage(projectKey: string, packageFile: File): Observable<any> {
-    return this.http.post(`${this.baseUrl}/project/${projectKey}/package`, packageFile)
-      .pipe(catchError(this.handleError));
-  }
+  createPackage(projectKey: string, packageFile: any): Observable<any> {
+   const fileWithMime = new File([packageFile], packageFile.name, { type: 'application/gzip' });
+
+  const formData = new FormData();
+  formData.append('file', fileWithMime); // explizit als gzip markieren
+
+
+  return this.http.post(
+  `${this.baseUrl}/project/${projectKey}/package`,
+  formData
+  
+).pipe(catchError(this.handleError));
+}
 
   
   private handleError(error: HttpErrorResponse) {
