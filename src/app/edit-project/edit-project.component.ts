@@ -135,7 +135,7 @@ export class EditProjectComponent implements OnInit {
 
   openAddComparisonDialogAndSave(projectKey: string) {
     this.dialog.open(AddComparisonDialogComponent, {
-      width: '400px',
+      width: '600px',
       data: { projectKey }
     }).afterClosed().subscribe(result => {
       if (result) {
