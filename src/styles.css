@@ -49,7 +49,7 @@ body {
   .modern-table th {
     text-align: left;
     padding: 12px 16px;
-    background-color: #f3f4f6;
+    background-color: #e5e7eb;
     font-weight: 600;
     font-size: 14px;
     color: #333;
@@ -105,7 +105,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .sticky-table thead th {
   position: sticky;
   top: 0;
-  background-color: f3f4f6; /* damit Inhalt darunter nicht durchscheint */
+  background-color: #e5e7eb; /* damit Inhalt darunter nicht durchscheint */
   z-index: 2;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05);
 }
