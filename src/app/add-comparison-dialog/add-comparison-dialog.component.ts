@@ -21,6 +21,7 @@ export class AddComparisonDialogComponent {
   projectKey: string;
   sourceProfileKey = '';
   targetProfileKey = '';
+  collapsedGroups = new Set<string>(); // enthält zugeklappte package-Namen
   
 
   packageGroups: { package: string; profiles: Profile[] }[] = [];
@@ -70,6 +71,18 @@ export class AddComparisonDialogComponent {
       }
     );
   }
+
+  toggleGroup(pkg: string): void {
+  if (this.collapsedGroups.has(pkg)) {
+    this.collapsedGroups.delete(pkg);
+  } else {
+    this.collapsedGroups.add(pkg);
+  }
+}
+
+isGroupCollapsed(pkg: string): boolean {
+  return this.collapsedGroups.has(pkg);
+}
 
 
   cancel(): void {

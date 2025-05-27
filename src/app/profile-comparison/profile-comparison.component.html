@@ -32,7 +32,7 @@
   </div>
 
   <div style="max-height: 600px; overflow: auto;">
-    <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="comparison?.fields?.length" matSort>
+    <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="comparison?.fields?.length" matSort>
       <thead>
         <tr>
           <th class="default-th" mat-sort-header="name">Property</th>
@@ -48,7 +48,7 @@
             
             <td class="default-td">
               <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field.classification)">{{ field.classification }}</span>
+                <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="100" [matTooltip]="getTooltipComparison(field.classification)">{{ field.classification }}</span>
                 <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
                   <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>

@@ -1,11 +1,11 @@
 <div class="m-20">
-  <h1>Übersicht Projekt "{{ projectName }}"</h1>
+  <h1>Overview for project "{{ projectName }}"</h1>
 
-  <h2 class="section-heading">Liste der Packages</h2>
+  <h2 class="section-heading">List of Packages</h2>
   <table class="modern-table">
     <tr>
       <th class="col-wide">Package Name</th>
-      <th class="col-narrow">Aktion
+      <th class="col-narrow">Action
         <button mat-icon-button (click)="openPackageUploadDialog(this.projectKey)"  title="Add new package" class="mat-icon-button-sm">
           <mat-icon>add-box</mat-icon>
         </button>
@@ -24,11 +24,11 @@
     </tr>
   </table>
 
-  <h2 class="section-heading">Liste von Vergleichen</h2>
+  <h2 class="section-heading">List of Comparisons</h2>
   <table class="modern-table">
     <tr>
-      <th class="col-wide">Vergleich</th>
-      <th class="col-narrow">Aktion
+      <th class="col-wide">Comparison</th>
+      <th class="col-narrow">Action
         <button mat-icon-button (click)="openAddComparisonDialogAndSave(this.projectKey)"  title="Neuen Vergleich hinzufügen" class="mat-icon-button-sm">
           <mat-icon>add-box</mat-icon>
         </button>
@@ -46,11 +46,11 @@
     </tr>
   </table>
 
-  <h2 class="section-heading">Liste von Mappings</h2>
+  <h2 class="section-heading">List of Mappings</h2>
   <table class="modern-table">
     <tr>
       <th class="col-wide">Mapping Name</th>
-      <th class="col-narrow">Aktion</th>
+      <th class="col-narrow">Action</th>
     </tr>
     <tr *ngFor="let mapping of mappings" class="hover-highlight">
       <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>

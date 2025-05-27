@@ -4,7 +4,7 @@
     <div style="display: flex; justify-content: space-between;">
         <div style="flex: 1;">
             <ng-container *ngIf="filtered.sources.length > 1; else singleSource">
-                <p>Source Profiles:</p>
+                <p>Source profile:</p>
                 <ul>
                     <li *ngFor="let profile of filtered.sources">
                         <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
@@ -12,13 +12,13 @@
                 </ul>
             </ng-container>
             <ng-template #singleSource>
-                <p>Source Profile:
+                <p>Source profile:
                     <a [href]="filtered.sources[0].url" target="_blank">{{
                         filtered.sources[0].name }}</a>
                 </p>
             </ng-template>
 
-            <p>Target Profile:
+            <p>Target profile:
                 <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name
                     }}</a>
             </p>
@@ -33,7 +33,7 @@
         </mat-form-field>
     </div>
     <div style="max-height: 600px; overflow: auto;">
-        <table id="resultsTable" class="display sticky-table" style="width: 100%" *ngIf="filtered?.fields?.length"
+        <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="filtered?.fields?.length"
             matSort (matSortChange)="handleTable($event).sorter()">
             <thead>
                 <tr>
@@ -107,12 +107,14 @@
                                 </button>
                             </div>
                         </td>
-                        <td>
+                        <td class="default-td">
+                           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> 
                             <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field.classification)">{{ field.classification }}</span>
                 
                             <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
                                 <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
                             </button>
+                            </div>
                         </td>
                     </tr>
                     <tr *ngIf="expandedRow === i">
@@ -132,10 +134,10 @@
                                                 <ng-container *ngIf="field.profiles[profile.key] as p">
                                                     Min: {{ p.min }}<br>
                                                     Max: {{ p.max }}<br>
-                                                    Must Support: {{ p.must_support }}
+                                                    Must-Support: {{ p.must_support }}
                                                 </ng-container>
                                                 <ng-container *ngIf="!field.profiles[profile.key]">
-                                                    Nicht vorhanden
+                                                   Unavailable
                                                 </ng-container>
                                             </td>
                                         </tr>

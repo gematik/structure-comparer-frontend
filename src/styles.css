@@ -49,7 +49,7 @@ body {
   .modern-table th {
     text-align: left;
     padding: 12px 16px;
-    background-color: #f3f4f6;
+    background-color: #e5e7eb;
     font-weight: 600;
     font-size: 14px;
     color: #333;
@@ -105,7 +105,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .sticky-table thead th {
   position: sticky;
   top: 0;
-  background-color: white; /* damit Inhalt darunter nicht durchscheint */
+  background-color: #e5e7eb; /* damit Inhalt darunter nicht durchscheint */
   z-index: 2;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05);
 }
@@ -162,4 +162,43 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .button-expand-table.rotated {
   transform: rotate(180deg);
+}
+
+.inner-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  font-size: 13px;
+  margin-top: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.inner-detail-table th,
+.inner-detail-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.inner-detail-table th {
+  background-color: #e5e7eb !important; /* Grauton (Tailwind: gray-200) */
+  font-weight: 600;
+  color: #111827 !important;            /* Dunkelgrau für bessere Lesbarkeit */
+  text-align: left;
+  padding: 8px 12px;
+}
+
+.inner-detail-table td {
+  color: #333;
+}
+
+.expanded-detail {
+  background-color: #f5f7fa;
+ 
+  padding: 16px;
+  margin: 4px 0;
+  border-radius: 4px;
 }
