@@ -32,8 +32,16 @@ export class ComparisonService {
       case 'compatible':
         return 'This field is compatible between source and target.';
       case 'warning':
-        return 'Warning: differences may cause issues.';
+        if (field.issues && field.issues.length > 0) {
+          return `The following elements lead to a warning: ${field.issues.join(', ')}.`;
+        } else {
+          return 'Warning: differences may cause issues.';
+        }
+        
       case 'incompatible':
+        if (field.issues && field.issues.length > 0) {
+          return `The following elements cause incompatibility: ${field.issues.join(', ')}.`;
+        }
         return 'Incompatible: the target is more restrictive than the source.';
       default:
         return 'No additional information available.';

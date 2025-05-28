@@ -1,4 +1,4 @@
-<div class="m-20" *ngIf="comparison" >
+<div class="m-20" *ngIf="comparison">
 
   <h2>{{ comparison.name }}</h2>
   <div style="display: flex; justify-content: space-between;">
@@ -22,7 +22,7 @@
       </p>
 
     </div>
-    
+
   </div>
 
   <div style="flex: 1; display: flex; justify-content: flex-end;">
@@ -32,12 +32,13 @@
   </div>
 
   <div style="max-height: 600px; overflow: auto;">
-    <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="comparison?.fields?.length" matSort>
+    <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="comparison?.fields?.length"
+      matSort>
       <thead>
         <tr>
           <th class="default-th" mat-sort-header="name">Property</th>
-          
-         
+
+
           <th class="default-th" mat-sort-header="classification">Classification</th>
         </tr>
       </thead>
@@ -45,10 +46,11 @@
         <ng-container *ngFor="let field of comparison.fields; let i = index">
           <tr>
             <td class="default-td">{{ field.name }}</td>
-            
+
             <td class="default-td">
               <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="100" [matTooltip]="getTooltipComparison(field)">{{ field.classification }}</span>
+                <span class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="100"
+                  [matTooltip]="getTooltipComparison(field)">{{ field.classification }}</span>
                 <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
                   <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
                 </button>
@@ -61,11 +63,11 @@
           <tr *ngIf="expandedRow === i">
             <td [attr.colspan]="2 + comparison.sources.length">
               <div class="expanded-detail" style="padding: 0 16px;">
-               
+
                 <table class="inner-detail-table" style="width: 100%; margin-top: 10px;">
                   <thead>
                     <tr>
-                      <th  *ngFor="let profile of comparison.sources.concat(comparison.target)">{{ profile.name }}</th>
+                      <th *ngFor="let profile of comparison.sources.concat(comparison.target)">{{ profile.name }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -75,6 +77,9 @@
                           Min: {{ p.min }}<br>
                           Max: {{ p.max }}<br>
                           Must Support: {{ p.must_support }}
+                          <ng-container *ngIf="p.ref_types">
+                            <br>Reference Types: {{ p.ref_types.join(', ') }}
+                          </ng-container>
                         </ng-container>
                         <ng-container *ngIf="!field.profiles[profile.key]">
                           Nicht vorhanden

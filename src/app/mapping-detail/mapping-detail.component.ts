@@ -100,8 +100,8 @@ export class MappingDetailComponent implements OnInit {
       
   }
 
-  getTooltipComparison(classification: string): string {
-    return this.comparisonService.getClassificationDescription(classification);
+  getTooltipComparison(field: any): string {
+    return this.comparisonService.getClassificationDescription(field);
   }
 
   loadFields(projectKey: string, mappingId: string) {

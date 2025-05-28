@@ -85,7 +85,7 @@ export class ProfileComparisonComponent implements OnInit {
   }
 
   getTooltipComparison(field: any): string {
-    console.log("Field: ", field.classification)
+    
     return this.comparisonService.getClassificationDescription(field);
   }
   
