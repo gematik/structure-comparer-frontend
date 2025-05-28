@@ -15,9 +15,10 @@ import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-compa
 import { MatDialog } from '@angular/material/dialog';
 import { ComparisonService } from '../comparison.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { MatButtonModule } from '@angular/material/button'; 
+import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
+import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 
 @Component({
   selector: 'app-edit-project',
@@ -38,11 +39,11 @@ export class EditProjectComponent implements OnInit {
   faPlus = faPlus; // Icon für den Plus-Button
   faTrash = faTrash
   constructor(
-    private route: ActivatedRoute, 
-    private mappingsService: MappingsService, 
-    private projectService: ProjectService, 
-    private comparisonService: ComparisonService, 
-    private router: Router, 
+    private route: ActivatedRoute,
+    private mappingsService: MappingsService,
+    private projectService: ProjectService,
+    private comparisonService: ComparisonService,
+    private router: Router,
     private dialog: MatDialog) { }
 
   // Initialisierung der Komponente. Hier werden die Projektdaten geladen und bisher die Mappings herausgezogen
@@ -91,23 +92,34 @@ export class EditProjectComponent implements OnInit {
   }
 
   openPackageUploadDialog(projectKey: string) {
-  const dialogRef = this.dialog.open(PackageUploadDialogComponent, {
-    width: '400px',
-    data: { projectKey }
-  });
-
-  // Brauche ich vielleicht nicht
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      console.log('Datei erhalten:', result);
-      // Hochladen oder weiterverarbeiten
-    }
-  });
-}
-
-  editPackage() {
-    console.log('Bearbeite Package:',);
+    const dialogRef = this.dialog.open(PackageUploadDialogComponent, {
+      width: '400px',
+      data: { projectKey }
+    });
+    // Brauche ich vielleicht nicht
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Datei erhalten:', result);
+        this.packages.push(result); // Füge das hochgeladene Paket zur Liste hinzu
+      }
+    });
   }
+
+  editPackage(currentName: string, projectKey: string, packageId: string) {
+
+    const dialogRef = this.dialog.open(UpdatePackageNameDialogComponent, {
+      width: '400px',
+      data: { currentName, projectKey, packageId }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== null) {
+        console.log('Neuer Name:', result);
+        // Jetzt z. B. API call zum Umbenennen
+      }
+    });
+  }
+
 
   deleteComparisonWithConfirm(id: string) {
     this.dialog.open(ConfirmDialogComponent, {
@@ -123,8 +135,8 @@ export class EditProjectComponent implements OnInit {
   }
 
   deleteComparison(comparionsonId: string) {
-   this.comparisonService.deleteComparison(this.projectKey, comparionsonId).subscribe(
-      response => { 
+    this.comparisonService.deleteComparison(this.projectKey, comparionsonId).subscribe(
+      response => {
         console.log('Comparison deleted successfully:', response);
         this.comparisons = this.comparisons.filter(comparison => comparison.id !== comparionsonId);
       },
@@ -141,17 +153,18 @@ export class EditProjectComponent implements OnInit {
       if (result) {
         const comparisonData = this.mapToApiPayload(result);
         this.saveComparison(projectKey, comparisonData);
+
       }
     });
   }
-  
+
   private mapToApiPayload(result: any) {
     return {
       source_ids: [result.sourceProfileKey],
       target_id: result.targetProfileKey
     };
   }
-  
+
   private saveComparison(projectKey: string, payload: any) {
     this.comparisonService.createComparison(projectKey, payload).subscribe(
       comparison => {
@@ -162,7 +175,7 @@ export class EditProjectComponent implements OnInit {
       }
     );
   }
-  
+
 
 
 }
