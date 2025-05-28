@@ -27,8 +27,8 @@ export class ComparisonService {
     return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
   }
 
-  getClassificationDescription(classification: string): string {
-    switch (classification) {
+  getClassificationDescription(field: any): string {
+    switch (field.classification) {
       case 'compatible':
         return 'This field is compatible between source and target.';
       case 'warning':
