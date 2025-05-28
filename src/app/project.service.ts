@@ -27,13 +27,14 @@ export class ProjectService {
   }
 
   getProjectProfiles(projectKey: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/profile`)
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/profile`)
       .pipe(catchError(this.handleError));
   }
 
   reloadProjectData(projectKey: string): Observable<any> {
-     
-    return this.http.get(`${this.baseUrl}/project/${projectKey}`)
+    const encodedProjectKey = encodeURIComponent(projectKey); 
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}`)
       .pipe(catchError(this.handleError));
   }
 

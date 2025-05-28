@@ -15,16 +15,21 @@ export class ComparisonService {
   constructor(private http: HttpClient) { }
 
   getComparisonData(projectKey: string, comparisonId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
+      const encodedComparisonId = encodeURIComponent(comparisonId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/comparison/${encodedComparisonId}`);
   }
 
   
   createComparison(projectKey: string, comparisonData: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/project/${projectKey}/comparison`, comparisonData);
+      const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post(`${this.baseUrl}/project/${encodedProjectKey}/comparison`, comparisonData);
   }
 
   deleteComparison(projectKey: string, comparisonId: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/project/${projectKey}/comparison/${comparisonId}`);
+      const encodedComparisonId = encodeURIComponent(comparisonId);
+      const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}/comparison/${encodedComparisonId}`);
   }
 
   getClassificationDescription(field: any): string {
