@@ -58,14 +58,14 @@
                         <td class="default-td" (mouseenter)="handleEdit(i).startHover()"
                             (mouseleave)="handleEdit().stopHover()">
                             <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action"
-                                [matTooltip]="getRemarkTooltip(field.action)" matTooltipPosition="above">{{ field.remark
+                                [matTooltip]="getRemarkTooltip(field.action)" matTooltipPosition="above">{{ getDescriptionForMapping(field.action)
                                 }}</span>
                             <button mat-button *ngIf="hoverIndex === i && editingIndex !== i"
                                 (click)="handleEdit(i).startEdit()">
                                 Ändern
                             </button>
                             <div *ngIf="editingIndex === i">
-                                <div>Aktueller Stand: {{ field.remark }} {{ field.action }}</div>
+                                <div>Aktueller Stand: {{ getDescriptionForMapping(field.action) }}</div>
                                 <select [(ngModel)]="field.remark">
                                     <option *ngFor="let classification of field.actions_allowed"
                                         [value]="classification">

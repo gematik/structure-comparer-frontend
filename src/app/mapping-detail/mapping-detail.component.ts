@@ -10,7 +10,7 @@ import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MappingsService } from '../mappings.service';
-import { MatButtonModule } from '@angular/material/button'; 
+import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ComparisonService } from '../comparison.service';
@@ -43,7 +43,7 @@ export interface IProfile {
 })
 
 export class MappingDetailComponent implements OnInit {
-  
+
   projectKey: string;
   mappingId: string;
   original: any;
@@ -64,8 +64,8 @@ export class MappingDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private comparisonService: ComparisonService
-    
-  ) {this.projectKey = ""; this.mappingId = "";}
+
+  ) { this.projectKey = ""; this.mappingId = ""; }
 
   ngOnInit(): void {
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
@@ -95,9 +95,13 @@ export class MappingDetailComponent implements OnInit {
           ...mapping,
           fields: mapping.fields.slice(0, this.pageSize),
         };
-        
+
       });
-      
+
+  }
+
+  getDescriptionForMapping(useValue: string): string | undefined {
+    return this.classifications.find(item => item.value === useValue)?.description;
   }
 
   getTooltipComparison(classification: string): string {
@@ -133,37 +137,37 @@ export class MappingDetailComponent implements OnInit {
     return found ? found.description : '';
   }
 
-   toggleRow(index: number) {
-  this.expandedRow = this.expandedRow === index ? null : index;
-}
-
-getRemarkTooltip(action: string): string {
-  switch (action) {
-    case 'use':
-      return 'No action needed for this mapping';
-    case 'not_use':
-    case 'empty':
-      return 'Information will be removed or left empty in this mapping';
-    case 'extension':
-    case 'manual':
-      return 'Special action required for this mapping';
-    case 'other':
-    case 'medication_service':
-      return 'Caution reference!';
-    case 'copy_from':
-      return 'This field copies its value from another source field';
-    case 'copy_to':
-      return 'This field copies its value into another field';
-    case 'fixed':
-      return 'This field has a fixed value';
-    default:
-      return 'No additional information';
+  toggleRow(index: number) {
+    this.expandedRow = this.expandedRow === index ? null : index;
   }
-}
+
+  getRemarkTooltip(action: string): string {
+    switch (action) {
+      case 'use':
+        return 'No action needed for this mapping';
+      case 'not_use':
+      case 'empty':
+        return 'Information will be removed or left empty in this mapping';
+      case 'extension':
+      case 'manual':
+        return 'Special action required for this mapping';
+      case 'other':
+      case 'medication_service':
+        return 'Caution reference!';
+      case 'copy_from':
+        return 'This field copies its value from another source field';
+      case 'copy_to':
+        return 'This field copies its value into another field';
+      case 'fixed':
+        return 'This field has a fixed value';
+      default:
+        return 'No additional information';
+    }
+  }
 
 
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
-    
+
     return !!fieldProfiles[profileName];
   }
 
@@ -307,7 +311,7 @@ getRemarkTooltip(action: string): string {
       case 'empty':
         action = 'empty';
         break;
-      
+
       case 'manual':
         action = 'manual';
         break;
