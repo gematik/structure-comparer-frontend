@@ -104,8 +104,8 @@ export class MappingDetailComponent implements OnInit {
     return this.classifications.find(item => item.value === useValue)?.description;
   }
 
-  getTooltipComparison(classification: string): string {
-    return this.comparisonService.getClassificationDescription(classification);
+  getTooltipComparison(field: any): string {
+    return this.comparisonService.getClassificationDescription(field);
   }
 
   loadFields(projectKey: string, mappingId: string) {

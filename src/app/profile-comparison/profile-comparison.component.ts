@@ -84,8 +84,9 @@ export class ProfileComparisonComponent implements OnInit {
     return CSS_CLASS[compatibility] || '';
   }
 
-  getTooltipComparison(classification: string): string {
-    return this.comparisonService.getClassificationDescription(classification);
+  getTooltipComparison(field: any): string {
+    
+    return this.comparisonService.getClassificationDescription(field);
   }
   
 

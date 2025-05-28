@@ -108,12 +108,16 @@
                             </div>
                         </td>
                         <td class="default-td">
-                           <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;"> 
-                            <span  class="pill" [ngClass]="'pill--' + field.classification" [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field.classification)">{{ field.classification }}</span>
-                
-                            <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
-                                <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
-                            </button>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <span class="pill" [ngClass]="'pill--' + field.classification"
+                                    [matTooltipHideDelay]="1000"
+                                    [matTooltip]="getTooltipComparison(field)">{{ field.classification
+                                    }}</span>
+
+                                <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
+                                    <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -135,9 +139,12 @@
                                                     Min: {{ p.min }}<br>
                                                     Max: {{ p.max }}<br>
                                                     Must-Support: {{ p.must_support }}
+                                                    <ng-container *ngIf="p.ref_types">
+                                                        <br>Reference Types: {{ p.ref_types.join(', ') }}
+                                                    </ng-container>
                                                 </ng-container>
                                                 <ng-container *ngIf="!field.profiles[profile.key]">
-                                                   Unavailable
+                                                    Unavailable
                                                 </ng-container>
                                             </td>
                                         </tr>
