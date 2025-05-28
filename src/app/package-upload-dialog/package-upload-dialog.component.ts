@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   standalone: true,
@@ -45,23 +46,23 @@ export class PackageUploadDialogComponent {
     }
   }
 
-  upload() {
-    if (this.selectedFile) {
-      console.log('Uploading:', this.selectedFile);
-      this.packageService
-        .createPackage(this.projectKey, this.selectedFile)
-        .subscribe({
-          next: response => {
-            console.log('Upload successful:', response);
-            this.dialogRef.close(this.selectedFile);
-          },
-          error: err => {
-            console.error('Upload failed:', err);
-            alert('Fehler beim Hochladen des Pakets.');
-          }
-        });
-    }
+  async upload(): Promise<any> {
+  if (!this.selectedFile) return;
+
+  try {
+    console.log('Uploading:', this.selectedFile);
+    const response = await firstValueFrom(
+      this.packageService.createPackage(this.projectKey, this.selectedFile)
+    );
+    console.log('Upload successful:', response);
+    this.dialogRef.close(response); // ← response statt file
+    return response;
+  } catch (err) {
+    console.error('Upload failed:', err);
+    alert('Fehler beim Hochladen des Pakets.');
+    return null;
   }
+}
 
   cancel() {
     this.dialogRef.close();

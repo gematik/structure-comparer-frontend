@@ -15,20 +15,30 @@ export class PackageService {
   constructor(private http: HttpClient) { }
 
   createPackage(projectKey: string, packageFile: any): Observable<any> {
-   const fileWithMime = new File([packageFile], packageFile.name, { type: 'application/gzip' });
+    const fileWithMime = new File([packageFile], packageFile.name, { type: 'application/gzip' });
 
-  const formData = new FormData();
-  formData.append('file', fileWithMime); // explizit als gzip markieren
+    const formData = new FormData();
+    formData.append('file', fileWithMime); // explizit als gzip markieren
 
 
-  return this.http.post(
-  `${this.baseUrl}/project/${projectKey}/package`,
-  formData
-  
-).pipe(catchError(this.handleError));
-}
+    return this.http.post(
+      `${this.baseUrl}/project/${projectKey}/package`,
+      formData
 
-  
+    ).pipe(catchError(this.handleError));
+  }
+
+  updatePackage(projectKey: string, packageId: string, packageName: string): Observable<any> {
+    const encodedPackageId = encodeURIComponent(packageId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}`,
+      {
+        "display": packageName
+      }
+    ).pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
       console.error('An error occurred:', error.error.message);

@@ -12,13 +12,13 @@
       </th>
     </tr>
     <tr *ngFor="let package of packages">
-      <td (click)="editPackage()">
+      <td >
         <div *ngIf="package.display; else elseBlock">{{ package.display }} ({{ package.name }}#{{ package.version }})
         </div>
         <ng-template #elseBlock>{{ package.name }}#{{ package.version }}</ng-template>
       </td>
       <td>
-        <button mat-icon-button (click)="editPackage()" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
+        <button mat-icon-button (click)="editPackage(this.package.display, this.projectKey, this.package.id )" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
         
       </td>
     </tr>
