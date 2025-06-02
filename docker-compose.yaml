@@ -1,0 +1,4 @@
+services:
+  frontend:
+    build: .
+    image: structure-comparer-frontend
