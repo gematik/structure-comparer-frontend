@@ -58,7 +58,7 @@
                         <td class="default-td" (mouseenter)="handleEdit(i).startHover()"
                             (mouseleave)="handleEdit().stopHover()">
                             <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action"
-                                [matTooltip]="getRemarkTooltip(field.action)" matTooltipPosition="above">{{ getDescriptionForMapping(field.action)
+                                [matTooltip]="getRemarkTooltip(field)" matTooltipPosition="above">{{ getDescriptionForMapping(field.action)
                                 }}</span>
                             <button mat-button *ngIf="hoverIndex === i && editingIndex !== i"
                                 (click)="handleEdit(i).startEdit()">
@@ -77,7 +77,7 @@
                                     <span>Wird aus&nbsp;</span>
                                     <select [(ngModel)]="field.targetField">
                                         <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.id">
+                                            [value]="availableField.name">
                                             {{ availableField.name }}
                                         </option>
                                     </select>
@@ -87,7 +87,7 @@
                                     <span>Wird in&nbsp;</span>
                                     <select [(ngModel)]="field.targetField">
                                         <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.id">
+                                            [value]="availableField.name">
                                             {{ availableField.name }}
                                         </option>
                                     </select>

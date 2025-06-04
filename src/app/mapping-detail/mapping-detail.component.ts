@@ -141,8 +141,9 @@ export class MappingDetailComponent implements OnInit {
     this.expandedRow = this.expandedRow === index ? null : index;
   }
 
-  getRemarkTooltip(action: string): string {
-    switch (action) {
+  getRemarkTooltip(field: any): string {
+    
+    switch (field.action) {
       case 'use':
         return 'No action needed for this mapping';
       case 'not_use':
@@ -155,11 +156,11 @@ export class MappingDetailComponent implements OnInit {
       case 'medication_service':
         return 'Caution reference!';
       case 'copy_from':
-        return 'This field copies its value from another source field';
+        return `This field copies its value from the following field: ${field.other}`
       case 'copy_to':
-        return 'This field copies its value into another field';
+        return `This field copies its value into the following field: ${field.other}`;
       case 'fixed':
-        return 'This field has a fixed value';
+        return `This field has a fixed value: ${field.fixed}`;
       default:
         return 'No additional information';
     }
