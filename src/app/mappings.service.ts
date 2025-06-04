@@ -45,13 +45,12 @@ export class MappingsService {
   }
 
   listProjects(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/projects`)
+    return this.http.get(`${this.baseUrl}/project`)
       .pipe(catchError(this.handleError));
   }
 
-  initProject(projectName: string): Observable<any> {
-    let projectKey: string = projectName.replace(/\s+/g, '_').toLowerCase();
-    return this.http.get(`${this.baseUrl}/project/${projectKey}`)
+  initProject(projectURL: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}${projectURL}`)
       .pipe(catchError(this.handleError));
   }
 

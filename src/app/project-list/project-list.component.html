@@ -12,7 +12,7 @@
       <fa-icon
         [icon]="faPlus"
         (click)="createProject()"
-        class="icon create-icon"
+       
         class="mat-icon-button-sm"
       ></fa-icon>
     </div>
@@ -24,12 +24,12 @@
       <th>Project name</th>
       <th class="actions-column">Actions</th>
     </tr>
-    <tr *ngFor="let project of projects">
+    <tr *ngFor="let project of projects.projects">
       <td class="project-items">
-        {{ project }}
+        {{ project.name }}
       </td>
       <td class="actions-column" >
-        <button mat-icon-button (click)="loadProject(project)" class="mat-icon-button-sm" >
+        <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm" >
           <mat-icon>remove_red_eye</mat-icon>
         </button>
         <button mat-icon-button class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>

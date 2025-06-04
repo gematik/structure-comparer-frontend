@@ -20,7 +20,7 @@ import { MatIcon } from '@angular/material/icon';
   styleUrls: ['./project-list.component.css']
 })
 export class ProjectListComponent implements OnInit {
-  projects: any[] = [];
+  projects: any = {};
   newProjectName: string = '';
   faEye = faEye;
   faEdit = faEdit;
@@ -35,15 +35,16 @@ export class ProjectListComponent implements OnInit {
       data => this.projects = data,
       error => console.error(error)
     );
+    console.log('Projects loaded:', this.projects);
   }
 
   
 
-  loadProject(projectName: string): void {
-    this.mappingsService.initProject(projectName).subscribe(
+  loadProject(projectURL: string): void {
+    this.mappingsService.initProject(projectURL).subscribe(
       (projectData) =>{
         this.projectService.setProjectData(projectData);
-        this.router.navigate([`/project`, projectName])
+        this.router.navigate([projectURL])
       },
         error => console.error(error)
     );
