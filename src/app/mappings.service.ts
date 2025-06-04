@@ -12,12 +12,15 @@ export class MappingsService {
   constructor(private http: HttpClient) { }
 
   getMapping(projectKey: string, mappingId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/mapping/${mappingId}`)
+     const encodedMappingId = encodeURIComponent(mappingId);
+      const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 
   getMappingDetail(mappingId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/mapping/${mappingId}`)
+     const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.get(`${this.baseUrl}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 
@@ -27,13 +30,18 @@ export class MappingsService {
   }
 
   getMappingFields(projectKey: string, mappingId: string): Observable<any> {
-    return this.http.get(`${this.baseUrl}/project/${projectKey}/mapping/${mappingId}/field`)
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field`)
       .pipe(catchError(this.handleError));
   }
 
   // Hier auf neues Vorgehen query umstellen. 
   updateMappingField(projectKey: string, mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
-    const requestUrl = `${this.baseUrl}/project/${projectKey}/mapping/${mappingId}/field/${fieldId}`;
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId); 
+    const encodedFieldId = encodeURIComponent(fieldId);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldId}`;
     const requestData = { action, ...updateData };
     console.log('Request data:', requestData);
 
@@ -55,7 +63,8 @@ export class MappingsService {
   }
 
   createProject(projectKey: string, projectName: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/project/${projectKey}`, { name: projectName })
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post(`${this.baseUrl}/project/${encodedProjectKey}`, { name: projectName })
       .pipe(catchError(this.handleError));
   }
 
@@ -63,17 +72,20 @@ export class MappingsService {
 
   //
   addMapping(mappingData: any): Observable<any> {
+
     return this.http.post(`${this.baseUrl}/mappings`, mappingData)
       .pipe(catchError(this.handleError));
   }
 
   updateMapping(mappingId: string, mappingData: any): Observable<any> {
-    return this.http.put(`${this.baseUrl}/mappings/${mappingId}`, mappingData)
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.put(`${this.baseUrl}/mappings/${encodedMappingId}`, mappingData)
       .pipe(catchError(this.handleError));
   }
 
   deleteMapping(mappingId: string): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/mappings/${mappingId}`)
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.delete(`${this.baseUrl}/mappings/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 

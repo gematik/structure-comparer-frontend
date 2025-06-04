@@ -15,6 +15,8 @@ export class PackageService {
   constructor(private http: HttpClient) { }
 
   createPackage(projectKey: string, packageFile: any): Observable<any> {
+      
+    const encodedProjectKey = encodeURIComponent(projectKey);
     const fileWithMime = new File([packageFile], packageFile.name, { type: 'application/gzip' });
 
     const formData = new FormData();
@@ -22,7 +24,7 @@ export class PackageService {
 
 
     return this.http.post(
-      `${this.baseUrl}/project/${projectKey}/package`,
+      `${this.baseUrl}/project/${encodedProjectKey}/package`,
       formData
 
     ).pipe(catchError(this.handleError));
