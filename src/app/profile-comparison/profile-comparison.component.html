@@ -74,12 +74,7 @@
                     <tr>
                       <td *ngFor="let profile of comparison.sources.concat(comparison.target)">
                         <ng-container *ngIf="field.profiles[profile.key] as p">
-                          Min: {{ p.min }}<br>
-                          Max: {{ p.max }}<br>
-                          Must Support: {{ p.must_support }}
-                          <ng-container *ngIf="p.ref_types">
-                            <br>Reference Types: {{ p.ref_types.join(', ') }}
-                          </ng-container>
+                          <div [innerHTML]="getDetailedFieldValue(field, p)"></div>
                         </ng-container>
                         <ng-container *ngIf="!field.profiles[profile.key]">
                           Nicht vorhanden

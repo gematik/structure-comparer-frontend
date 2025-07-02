@@ -1,0 +1,12 @@
+
+.field-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.field-row .emoji {
+  width: 1.5em;
+  text-align: center;
+  font-size: 1.2em;
+}
