@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -12,14 +12,14 @@ export class MappingsService {
   constructor(private http: HttpClient) { }
 
   getMapping(projectKey: string, mappingId: string): Observable<any> {
-     const encodedMappingId = encodeURIComponent(mappingId);
-      const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 
   getMappingDetail(mappingId: string): Observable<any> {
-     const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.get(`${this.baseUrl}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
@@ -39,7 +39,7 @@ export class MappingsService {
   // Hier auf neues Vorgehen query umstellen. 
   updateMappingField(projectKey: string, mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
-    const encodedMappingId = encodeURIComponent(mappingId); 
+    const encodedMappingId = encodeURIComponent(mappingId);
     const encodedFieldId = encodeURIComponent(fieldId);
     const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldId}`;
     const requestData = { action, ...updateData };
@@ -86,6 +86,17 @@ export class MappingsService {
   deleteMapping(mappingId: string): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.delete(`${this.baseUrl}/mappings/${encodedMappingId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  //temp
+  getStaticMapping(projectKey: string, mappingId: string, showRemarks: boolean, showWarnings: boolean): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    let params = new HttpParams()
+      .set('show_remarks', showRemarks)
+      .set('show_warnings', showWarnings);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/html`, { params, responseType: 'blob' })
       .pipe(catchError(this.handleError));
   }
 

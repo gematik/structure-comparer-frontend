@@ -24,6 +24,9 @@
             </p>
             <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
             <p>Last updated on: {{ filtered.last_updated }}</p>
+            <button mat-raised-button color="primary" (click)="getStaticMappings()">
+                Download mapping
+            </button>
         </div>
     </div>
 
@@ -58,7 +61,8 @@
                         <td class="default-td" (mouseenter)="handleEdit(i).startHover()"
                             (mouseleave)="handleEdit().stopHover()">
                             <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action"
-                                [matTooltip]="getRemarkTooltip(field)" matTooltipPosition="above">{{ getDescriptionForMapping(field.action)
+                                [matTooltip]="getRemarkTooltip(field)" matTooltipPosition="above">{{
+                                getDescriptionForMapping(field.action)
                                 }}</span>
                             <button mat-button *ngIf="hoverIndex === i && editingIndex !== i"
                                 (click)="handleEdit(i).startEdit()">
@@ -111,8 +115,8 @@
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                                 <span class="pill" [ngClass]="'pill--' + field.classification"
-                                    [matTooltipHideDelay]="1000"
-                                    [matTooltip]="getTooltipComparison(field)">{{ field.classification
+                                    [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field)">{{
+                                    field.classification
                                     }}</span>
 
                                 <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
