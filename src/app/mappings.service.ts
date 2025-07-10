@@ -43,11 +43,6 @@ export class MappingsService {
     const encodedFieldId = encodeURIComponent(fieldId);
     const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldId}`;
     const requestData = { action, ...updateData };
-    console.log('Request data:', requestData);
-
-    console.log('Sending request to:', requestUrl);
-    console.log('Request data:', requestData);
-
     return this.http.post(requestUrl, requestData)
       .pipe(catchError(this.handleError));
   }
@@ -94,8 +89,8 @@ export class MappingsService {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
     let params = new HttpParams()
-      .set('show_remarks', showRemarks)
-      .set('show_warnings', showWarnings);
+      .set('show_remarks', showRemarks.toString())
+      .set('show_warnings', showWarnings.toString());
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/html`, { params, responseType: 'blob' })
       .pipe(catchError(this.handleError));
   }

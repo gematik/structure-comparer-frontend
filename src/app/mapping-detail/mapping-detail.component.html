@@ -24,7 +24,7 @@
             </p>
             <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
             <p>Last updated on: {{ filtered.last_updated }}</p>
-            <button mat-raised-button color="primary" (click)="getStaticMappings()">
+            <button mat-raised-button color="primary" (click)="getStaticMappings()" aria-label="Download mapping">
                 Download mapping
             </button>
         </div>
