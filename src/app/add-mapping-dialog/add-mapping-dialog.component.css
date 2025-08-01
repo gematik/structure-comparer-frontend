@@ -1,0 +1,25 @@
+.dropdown {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5em;
+  margin-top: 0.25em;
+  font-size: 1rem;
+}
+
+.wide {
+  width: 100%;
+  margin-top: 1em;
+}
+
+.group-toggle {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 1px solid #eee;
+}
+
+.group-toggle:hover {
+  background-color: #f5f5f5;
+}
+
