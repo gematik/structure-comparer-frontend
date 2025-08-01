@@ -158,6 +158,30 @@ export class EditProjectComponent implements OnInit {
     });
   }
 
+  openAddMappingDialog(projectKey: string) {
+    this.dialog.open(AddComparisonDialogComponent, {
+      width: '600px',
+      data: { projectKey }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        const mappingData = this.mapToApiPayload(result);
+        this.saveMapping(projectKey, mappingData);
+
+      }
+    });
+  }
+
+  private saveMapping(projectKey: string, mappingData: any) {
+    this.mappingsService.addMapping(projectKey,mappingData).subscribe(
+      mapping => {
+        console.log('Mapping created successfully:', mapping);
+      },
+      error => {
+        console.error('Error creating mapping:', error);
+      }
+    );
+  }
+
   private mapToApiPayload(result: any) {
     return {
       source_ids: [result.sourceProfileKey],
