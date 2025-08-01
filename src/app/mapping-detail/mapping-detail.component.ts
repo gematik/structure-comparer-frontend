@@ -120,6 +120,35 @@ export class MappingDetailComponent implements OnInit {
       .subscribe((fields) => (this.availableFields = fields.fields));
   }
 
+  saveFile(blob: Blob, filename: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+
+  getStaticMappings() {
+    this.mappingsService
+      .getStaticMapping(this.projectKey, this.mappingId, true, true)
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading static mappings', err);
+          return of([]);
+        })
+      )
+      .subscribe((data) => {
+        console.log('static mappings', data);
+        this.saveFile(data, 'static-mapping.html');
+        //this.availableFields = data.fields;
+      });
+  }
+
+
   loadActions() {
     this.mappingsService.getActions().pipe(catchError((err) => {
       console.error('Error loading classifications', err);
@@ -142,7 +171,7 @@ export class MappingDetailComponent implements OnInit {
   }
 
   getRemarkTooltip(field: any): string {
-    
+
     switch (field.action) {
       case 'use':
         return 'No action needed for this mapping';
