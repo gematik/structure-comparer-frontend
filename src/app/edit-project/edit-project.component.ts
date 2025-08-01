@@ -19,6 +19,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
+import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 
 @Component({
   selector: 'app-edit-project',
@@ -159,7 +160,7 @@ export class EditProjectComponent implements OnInit {
   }
 
   openAddMappingDialog(projectKey: string) {
-    this.dialog.open(AddComparisonDialogComponent, {
+    this.dialog.open(AddMappingDialogComponent, {
       width: '600px',
       data: { projectKey }
     }).afterClosed().subscribe(result => {
