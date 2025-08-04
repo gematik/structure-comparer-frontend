@@ -176,6 +176,7 @@ export class EditProjectComponent implements OnInit {
     this.mappingsService.addMapping(projectKey,mappingData).subscribe(
       mapping => {
         console.log('Mapping created successfully:', mapping);
+        this.mappings.push(mapping); // Add the new mapping to the local list
       },
       error => {
         console.error('Error creating mapping:', error);
@@ -185,7 +186,7 @@ export class EditProjectComponent implements OnInit {
 
   private mapToApiPayload(result: any) {
     return {
-      source_ids: [result.sourceProfileKey],
+      source_ids: result.sourceProfileKeys || [result.sourceProfileKey], // Support both old and new format
       target_id: result.targetProfileKey
     };
   }

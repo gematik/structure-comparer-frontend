@@ -6,18 +6,19 @@ import { FormsModule } from '@angular/forms';
 import { ProjectService } from '../project.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatButtonModule } from '@angular/material/button'; 
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-add-mapping-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule],
   templateUrl: './add-mapping-dialog.component.html',
   styleUrl: './add-mapping-dialog.component.css'
 })
 export class AddMappingDialogComponent {
  projectKey: string;
-  sourceProfileKey = '';
+  sourceProfileKeys: string[] = [''];
   targetProfileKey = '';
   collapsedGroups = new Set<string>(); // enthält zugeklappte package-Namen
   
@@ -82,14 +83,31 @@ isGroupCollapsed(pkg: string): boolean {
   return this.collapsedGroups.has(pkg);
 }
 
+addSourceProfileSelector(): void {
+  this.sourceProfileKeys.push('');
+}
+
+removeSourceProfileSelector(index: number): void {
+  if (this.sourceProfileKeys.length > 1) {
+    this.sourceProfileKeys.splice(index, 1);
+  }
+}
+
+trackByIndex(index: number): number {
+  return index;
+}
+
 
   cancel(): void {
     this.dialogRef.close();
   }
 
   save(): void {
+    // Filter out empty profile keys
+    const validSourceProfileKeys = this.sourceProfileKeys.filter(key => key.trim() !== '');
+    
     this.dialogRef.close({
-      sourceProfileKey: this.sourceProfileKey,
+      sourceProfileKeys: validSourceProfileKeys,
       targetProfileKey: this.targetProfileKey
     });
   }
