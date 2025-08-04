@@ -46,9 +46,13 @@
           (click)="removeSourceProfileSelector(i)"
           type="button"
           title="Remove this source profile"
+          class="mat-icon-button-sm"
         >
           <mat-icon>remove</mat-icon>
         </button>
+        
+        <!-- Invisible spacer when remove button is not shown to maintain alignment -->
+        <div *ngIf="sourceProfileKeys.length <= 1" class="button-spacer-small"></div>
         
         <!-- Add button (only show on the last item) -->
         <button 
@@ -58,9 +62,13 @@
           (click)="addSourceProfileSelector()"
           type="button"
           title="Add another source profile"
+          class="mat-icon-button-sm"
         >
           <mat-icon>add</mat-icon>
         </button>
+        
+        <!-- Invisible spacer when add button is not shown to maintain alignment -->
+        <div *ngIf="i !== sourceProfileKeys.length - 1" class="button-spacer-small"></div>
       </div>
     </div>
   </div>

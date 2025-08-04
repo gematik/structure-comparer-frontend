@@ -25,7 +25,13 @@
 }
 
 .button-spacer {
-  width: 80px; /* Same width as button-group to maintain alignment */
+  width: 60px; /* Adjusted for smaller buttons: 2 * 28px + gap */
+  flex-shrink: 0;
+}
+
+.button-spacer-small {
+  width: 28px; /* Width of one small icon button */
+  height: 28px; /* Height of one small icon button */
   flex-shrink: 0;
 }
 
@@ -55,7 +61,7 @@
   display: flex;
   gap: 4px;
   align-items: center;
-  width: 80px; /* Fixed width for consistency */
+  width: 60px; /* Adjusted for smaller buttons: 2 * 28px + gap */
   flex-shrink: 0; /* Prevents the button group from shrinking */
   justify-content: flex-end;
 }
