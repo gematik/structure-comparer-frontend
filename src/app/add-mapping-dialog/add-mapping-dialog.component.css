@@ -11,6 +11,24 @@
   margin-top: 1em;
 }
 
+/* Container for consistent selector widths */
+.selector-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5em;
+}
+
+.selector-field {
+  flex: 1;
+  min-width: 0; /* Allows flex item to shrink below its content size */
+}
+
+.button-spacer {
+  width: 80px; /* Same width as button-group to maintain alignment */
+  flex-shrink: 0;
+}
+
 .source-profiles-container {
   margin-bottom: 1.5em;
 }
@@ -30,13 +48,16 @@
 
 .source-selector {
   flex: 1;
+  min-width: 0; /* Allows flex item to shrink below its content size */
 }
 
 .button-group {
   display: flex;
   gap: 4px;
   align-items: center;
-  min-width: 80px;
+  width: 80px; /* Fixed width for consistency */
+  flex-shrink: 0; /* Prevents the button group from shrinking */
+  justify-content: flex-end;
 }
 
 .group-toggle {

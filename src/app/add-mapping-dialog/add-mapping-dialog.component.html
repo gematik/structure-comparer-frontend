@@ -38,18 +38,6 @@
       </mat-form-field>
       
       <div class="button-group">
-        <!-- Add button (only show on the last item) -->
-        <button 
-          *ngIf="i === sourceProfileKeys.length - 1"
-          mat-icon-button 
-          color="primary" 
-          (click)="addSourceProfileSelector()"
-          type="button"
-          title="Add another source profile"
-        >
-          <mat-icon>add</mat-icon>
-        </button>
-        
         <!-- Remove button (only show if more than one selector) -->
         <button 
           *ngIf="sourceProfileKeys.length > 1"
@@ -61,38 +49,55 @@
         >
           <mat-icon>remove</mat-icon>
         </button>
+        
+        <!-- Add button (only show on the last item) -->
+        <button 
+          *ngIf="i === sourceProfileKeys.length - 1"
+          mat-icon-button 
+          color="primary" 
+          (click)="addSourceProfileSelector()"
+          type="button"
+          title="Add another source profile"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Target Profile Selection -->
-  <mat-form-field appearance="fill" class="wide">
-    <mat-label>Target-profile</mat-label>
-    <mat-select [(ngModel)]="targetProfileKey">
-      <ng-container *ngFor="let group of packageGroups">
-        <div
-          class="group-toggle"
-          (click)="toggleGroup(group.package)"
-          role="option"
-          tabindex="0"
-        >
-          <strong>
-            {{ group.package }}
-            {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
-          </strong>
-        </div>
-
-        <ng-container *ngIf="!isGroupCollapsed(group.package)">
-          <mat-option
-            *ngFor="let profile of group.profiles"
-            [value]="profile.key"
+  <div class="selector-container">
+    <mat-form-field appearance="fill" class="selector-field">
+      <mat-label>Target-profile</mat-label>
+      <mat-select [(ngModel)]="targetProfileKey">
+        <ng-container *ngFor="let group of packageGroups">
+          <div
+            class="group-toggle"
+            (click)="toggleGroup(group.package)"
+            role="option"
+            tabindex="0"
           >
-            {{ profile.name }}
-          </mat-option>
+            <strong>
+              {{ group.package }}
+              {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
+            </strong>
+          </div>
+
+          <ng-container *ngIf="!isGroupCollapsed(group.package)">
+            <mat-option
+              *ngFor="let profile of group.profiles"
+              [value]="profile.key"
+            >
+              {{ profile.name }}
+            </mat-option>
+          </ng-container>
         </ng-container>
-      </ng-container>
-    </mat-select>
-  </mat-form-field>
+      </mat-select>
+    </mat-form-field>
+    
+    <!-- Empty spacer to maintain alignment with source profile rows -->
+    <div class="button-spacer"></div>
+  </div>
 
 </mat-dialog-content>
 
