@@ -51,10 +51,10 @@ export class MappingsListComponent implements OnInit {
   }
 
   addMapping(): void {
-    this.mappingsService.addMapping(this.newMapping).subscribe(() => {
+   /* this.mappingsService.addMapping(this.newMapping).subscribe(() => {
      // this.loadMappings();
       this.newMapping = this.initializeNewMapping();
-    });
+    });*/
   }
 
   updateMapping(mapping: Mapping): void {

@@ -1,5 +1,9 @@
 
-// Necessary class to manage the project data across the application without making redundant API calls
+/**
+ * Service to manage project data and API communications
+ * Handles project-related HTTP requests and caches current project data
+ * to avoid redundant API calls across the application
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -9,39 +13,69 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ProjectService {
+  // Base URL for API endpoints
   private baseUrl = 'http://127.0.0.1:8000';
+  // Cached project data to avoid redundant API calls
   private currentProjectData: any;
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Stores project data in memory for quick access
+   * @param data The project data to cache
+   */
   setProjectData(data: any) {
     this.currentProjectData = data;
   }
 
+  /**
+   * Retrieves the currently cached project data
+   * @returns The cached project data or null if none exists
+   */
   getProjectData() {
     return this.currentProjectData;
   }
 
+  /**
+   * Clears the cached project data
+   */
   clearProjectData() {
     this.currentProjectData = null;
   }
 
+  /**
+   * Fetches all profiles for a specific project
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing the project's profiles
+   */
   getProjectProfiles(projectKey: string): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/profile`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Reloads project data from the server
+   * @param projectKey The unique identifier of the project to reload
+   * @returns Observable containing the updated project data
+   */
   reloadProjectData(projectKey: string): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey); 
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Handles HTTP errors and provides user-friendly error messages
+   * @param error The HTTP error response
+   * @returns Observable error with formatted message
+   */
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
+      // Client-side error
       console.error('An error occurred:', error.error.message);
     } else {
+      // Server-side error
       console.error(
         `Backend returned code ${error.status}, ` +
         `body was: ${error.error}`);

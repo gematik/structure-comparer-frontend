@@ -1,5 +1,9 @@
 
-// Necessary class to manage the project data across the application without making redundant API calls
+/**
+ * Service to manage profile comparison operations
+ * Handles creating, retrieving, and deleting profile comparisons
+ * Also provides utility methods for field classification descriptions
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -9,29 +13,53 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class ComparisonService {
+  // Base URL for API endpoints
   private baseUrl = 'http://127.0.0.1:8000';
+  // Cached project data (might be unused in this service)
   private currentProjectData: any;
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Retrieves comparison data for a specific comparison
+   * @param projectKey The unique identifier of the project
+   * @param comparisonId The unique identifier of the comparison
+   * @returns Observable containing the comparison data
+   */
   getComparisonData(projectKey: string, comparisonId: string): Observable<any> {
-      const encodedComparisonId = encodeURIComponent(comparisonId);
+    const encodedComparisonId = encodeURIComponent(comparisonId);
     const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/comparison/${encodedComparisonId}`);
   }
 
-  
+  /**
+   * Creates a new comparison between profiles
+   * @param projectKey The unique identifier of the project
+   * @param comparisonData The comparison configuration data
+   * @returns Observable containing the creation response
+   */
   createComparison(projectKey: string, comparisonData: any): Observable<any> {
-      const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.post(`${this.baseUrl}/project/${encodedProjectKey}/comparison`, comparisonData);
   }
 
+  /**
+   * Deletes a specific comparison
+   * @param projectKey The unique identifier of the project
+   * @param comparisonId The unique identifier of the comparison to delete
+   * @returns Observable containing the deletion response
+   */
   deleteComparison(projectKey: string, comparisonId: string): Observable<any> {
-      const encodedComparisonId = encodeURIComponent(comparisonId);
-      const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedComparisonId = encodeURIComponent(comparisonId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}/comparison/${encodedComparisonId}`);
   }
 
+  /**
+   * Provides human-readable descriptions for field classification results
+   * @param field The field object containing classification and issues
+   * @returns A descriptive string explaining the classification
+   */
   getClassificationDescription(field: any): string {
     switch (field.classification) {
       case 'compatible':
@@ -42,7 +70,6 @@ export class ComparisonService {
         } else {
           return 'Warning: differences may cause issues.';
         }
-        
       case 'incompatible':
         if (field.issues && field.issues.length > 0) {
           return `The following elements cause incompatibility: ${field.issues.join(', ')}.`;
@@ -53,11 +80,17 @@ export class ComparisonService {
     }
   }
 
-
+  /**
+   * Handles HTTP errors and provides user-friendly error messages
+   * @param error The HTTP error response
+   * @returns Observable error with formatted message
+   */
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
+      // Client-side error
       console.error('An error occurred:', error.error.message);
     } else {
+      // Server-side error
       console.error(
         `Backend returned code ${error.status}, ` +
         `body was: ${error.error}`);

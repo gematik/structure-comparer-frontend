@@ -50,7 +50,11 @@
   <table class="modern-table">
     <tr>
       <th class="col-wide">Mapping Name</th>
-      <th class="col-narrow">Action</th>
+      <th class="col-narrow">Action
+        <button mat-icon-button (click)="openAddMappingDialog(this.projectKey)"  title="Add new mapping" class="mat-icon-button-sm">
+          <mat-icon>add-box</mat-icon>
+        </button>
+      </th>
     </tr>
     <tr *ngFor="let mapping of mappings" class="hover-highlight">
       <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>

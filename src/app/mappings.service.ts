@@ -1,3 +1,7 @@
+/**
+ * Service to manage mapping-related operations and project management
+ * Handles CRUD operations for mappings, projects, and their fields
+ */
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
@@ -7,10 +11,17 @@ import { catchError } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class MappingsService {
+  // Base URL for API endpoints
   private baseUrl = 'http://127.0.0.1:8000';
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Retrieves a specific mapping within a project
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the mapping data
+   */
   getMapping(projectKey: string, mappingId: string): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     const encodedProjectKey = encodeURIComponent(projectKey);
@@ -18,17 +29,32 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Retrieves detailed information about a mapping
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the mapping details
+   */
   getMappingDetail(mappingId: string): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.get(`${this.baseUrl}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Retrieves all available actions for mappings
+   * @returns Observable containing the list of available actions
+   */
   getActions(): Observable<any> {
     return this.http.get(`${this.baseUrl}/action`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Retrieves all fields for a specific mapping
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the mapping fields
+   */
   getMappingFields(projectKey: string, mappingId: string): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     const encodedProjectKey = encodeURIComponent(projectKey);
@@ -36,7 +62,15 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-  // Hier auf neues Vorgehen query umstellen. 
+  /**
+   * Updates a specific field in a mapping with an action and data
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param fieldId The unique identifier of the field to update
+   * @param action The action to perform on the field
+   * @param updateData Object containing target and/or value properties for the update
+   * @returns Observable containing the update response
+   */
   updateMappingField(projectKey: string, mappingId: string, fieldId: string, action: string, updateData: { target?: string; value?: string }): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
@@ -47,16 +81,31 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Retrieves a list of all projects
+   * @returns Observable containing the list of projects
+   */
   listProjects(): Observable<any> {
     return this.http.get(`${this.baseUrl}/project`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Initializes a project using a provided URL
+   * @param projectURL The URL path for the project initialization
+   * @returns Observable containing the initialization response
+   */
   initProject(projectURL: string): Observable<any> {
     return this.http.get(`${this.baseUrl}${projectURL}`)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Creates a new project with the specified key and name
+   * @param projectKey The unique identifier for the new project
+   * @param projectName The display name for the new project
+   * @returns Observable containing the creation response
+   */
   createProject(projectKey: string, projectName: string): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.post(`${this.baseUrl}/project/${encodedProjectKey}`, { name: projectName })
@@ -65,26 +114,49 @@ export class MappingsService {
 
 
 
-  //
-  addMapping(mappingData: any): Observable<any> {
 
-    return this.http.post(`${this.baseUrl}/mappings`, mappingData)
+  /**
+   * Adds a new mapping to a project
+   * @param projectKey The unique identifier of the project
+   * @param mappingData The data for the new mapping
+   * @returns Observable containing the creation response
+   */
+  addMapping(projectKey: string, mappingData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/project/${projectKey}/mapping`, mappingData)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Updates an existing mapping
+   * @param mappingId The unique identifier of the mapping to update
+   * @param mappingData The updated mapping data
+   * @returns Observable containing the update response
+   */
   updateMapping(mappingId: string, mappingData: any): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.put(`${this.baseUrl}/mappings/${encodedMappingId}`, mappingData)
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Deletes a mapping
+   * @param mappingId The unique identifier of the mapping to delete
+   * @returns Observable containing the deletion response
+   */
   deleteMapping(mappingId: string): Observable<any> {
     const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.delete(`${this.baseUrl}/mappings/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 
-  //temp
+  /**
+   * Retrieves a static HTML representation of a mapping
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param showRemarks Whether to include remarks in the output
+   * @param showWarnings Whether to include warnings in the output
+   * @returns Observable containing the HTML blob response
+   */
   getStaticMapping(projectKey: string, mappingId: string, showRemarks: boolean, showWarnings: boolean): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
@@ -95,11 +167,17 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
-
+  /**
+   * Handles HTTP errors and provides user-friendly error messages
+   * @param error The HTTP error response
+   * @returns Observable error with formatted message
+   */
   private handleError(error: HttpErrorResponse) {
     if (error.error instanceof ErrorEvent) {
+      // Client-side error
       console.error('An error occurred:', error.error.message);
     } else {
+      // Server-side error
       console.error(
         `Backend returned code ${error.status}, ` +
         `body was: ${error.error}`);
