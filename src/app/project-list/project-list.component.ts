@@ -1,3 +1,7 @@
+/**
+ * Component for displaying and managing the list of projects
+ * Allows users to view, create, and navigate to individual projects
+ */
 import { Component, OnInit } from '@angular/core';
 import { MappingsService } from '../mappings.service';
 import { ProjectService } from '../project.service';
@@ -20,8 +24,12 @@ import { MatIcon } from '@angular/material/icon';
   styleUrls: ['./project-list.component.css']
 })
 export class ProjectListComponent implements OnInit {
+  // Object containing all projects data
   projects: any = {};
+  // Name for creating a new project
   newProjectName: string = '';
+  
+  // FontAwesome icons used in the template
   faEye = faEye;
   faEdit = faEdit;
   faTrash = faTrash;
@@ -30,6 +38,9 @@ export class ProjectListComponent implements OnInit {
 
   constructor(private mappingsService: MappingsService, private projectService: ProjectService, private router: Router) { }
 
+  /**
+   * Initializes the component by loading all available projects
+   */
   ngOnInit(): void {
     this.mappingsService.listProjects().subscribe(
       data => this.projects = data,
@@ -38,11 +49,14 @@ export class ProjectListComponent implements OnInit {
     console.log('Projects loaded:', this.projects);
   }
 
-  
-
+  /**
+   * Loads a specific project and navigates to its detail page
+   * @param projectURL The URL path of the project to load
+   */
   loadProject(projectURL: string): void {
     this.mappingsService.initProject(projectURL).subscribe(
       (projectData) =>{
+        // Cache the project data for use across the application
         this.projectService.setProjectData(projectData);
         this.router.navigate([projectURL])
       },
@@ -50,12 +64,17 @@ export class ProjectListComponent implements OnInit {
     );
   }
 
+  /**
+   * Creates a new project with the specified name
+   * Converts the name to a URL-safe key format
+   */
   createProject(): void {
     console.log('projekt',this.newProjectName);
     if (this.newProjectName.trim() === '') {
       alert('Project name is required');
       return;
     }
+    // Convert project name to URL-safe key (replace spaces with underscores, lowercase)
     let projectKey : string = this.newProjectName.replace(/\s+/g, '_').toLowerCase(); 
     this.mappingsService.createProject(projectKey, this.newProjectName).subscribe(
       () => {
