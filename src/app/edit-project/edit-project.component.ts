@@ -10,7 +10,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
-import { MappingsListComponent } from '../mappings-list/mappings-list.component';
+
 import { MappingsService } from '../mappings.service';
 import { Comparison } from '../models/comparison.model';
 import { Mapping } from '../models/mapping.model';
@@ -29,7 +29,7 @@ import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dia
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [MappingsListComponent, CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })

@@ -57,6 +57,13 @@ export class PackageService {
     ).pipe(catchError(this.handleError));
   }
 
+  deletePackage(projectKey: string, packageId: string): Observable<any> {
+    const encodedPackageId = encodeURIComponent(packageId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}`)
+      .pipe(catchError(this.handleError));
+  }
+
   /**
    * Handles HTTP errors and provides user-friendly error messages
    * @param error The HTTP error response
@@ -76,4 +83,5 @@ export class PackageService {
       'Something bad happened; please try again later.');
   }
 }
+
 
