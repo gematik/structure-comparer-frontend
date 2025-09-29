@@ -25,6 +25,7 @@ import { MatIcon } from '@angular/material/icon';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
+import { PackageService } from '../package.service';
 
 @Component({
   selector: 'app-edit-project',
@@ -56,7 +57,9 @@ export class EditProjectComponent implements OnInit {
     private projectService: ProjectService,
     private comparisonService: ComparisonService,
     private router: Router,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog,
+    private packageService: PackageService
+  ) { }
 
   /**
    * Initializes the component by loading project data
@@ -158,6 +161,20 @@ export class EditProjectComponent implements OnInit {
     });
   }
 
+  deletePackageWithConfirm(packageId: string, packageName: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: `Willst du das Package "${packageName}" wirklich löschen?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.packageService.deletePackage(this.projectKey, packageId).subscribe(() => {
+          // Remove the deleted package from the local array
+          this.packages = this.packages.filter(p => p.id !== packageId);
+        });
+      }
+    });
+  }
+
   /**
    * Deletes a comparison after user confirmation
    * @param id The ID of the comparison to delete
@@ -240,6 +257,20 @@ export class EditProjectComponent implements OnInit {
         console.error('Error creating mapping:', error);
       }
     );
+  }
+
+  deleteMappingWithConfirm(mappingId: string, mappingName: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: `Willst du die Zuordnung "${mappingName}" wirklich löschen?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe(() => {
+          // Remove the deleted mapping from the local array
+          this.mappings = this.mappings.filter(m => m.id !== mappingId);
+        });
+      }
+    });
   }
 
   /**
