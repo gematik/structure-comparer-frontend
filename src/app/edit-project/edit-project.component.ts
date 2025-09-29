@@ -161,6 +161,11 @@ export class EditProjectComponent implements OnInit {
     });
   }
 
+  /**
+   * Deletes a package after user confirmation and refreshes the component
+   * @param packageId The ID of the package to delete
+   * @param packageName The display name of the package for confirmation message
+   */
   deletePackageWithConfirm(packageId: string, packageName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
@@ -168,12 +173,31 @@ export class EditProjectComponent implements OnInit {
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.packageService.deletePackage(this.projectKey, packageId).subscribe(() => {
-          // Remove the deleted package from the local array
-          this.packages = this.packages.filter(p => p.id !== packageId);
+          this.refreshProjectData();
         });
       }
     });
   }
+
+  /**
+   * Refreshes project data without full page reload
+   * Recommended approach for better performance
+   */
+  private async refreshProjectData() {
+    try {
+      const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
+      this.projectData = data;
+      this.projectName = data.name;
+      this.mappings = data.mappings;
+      this.packages = data.packages;
+      this.comparisons = data.comparisons;
+      console.log('Project data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing project data:', error);
+    }
+  }
+
+
 
   /**
    * Deletes a comparison after user confirmation
@@ -259,6 +283,11 @@ export class EditProjectComponent implements OnInit {
     );
   }
 
+  /**
+   * Deletes a mapping after user confirmation and refreshes the data
+   * @param mappingId The ID of the mapping to delete
+   * @param mappingName The name of the mapping for confirmation message
+   */
   deleteMappingWithConfirm(mappingId: string, mappingName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
@@ -266,8 +295,8 @@ export class EditProjectComponent implements OnInit {
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe(() => {
-          // Remove the deleted mapping from the local array
-          this.mappings = this.mappings.filter(m => m.id !== mappingId);
+          // Refresh project data to show changes
+          this.refreshProjectData();
         });
       }
     });

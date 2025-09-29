@@ -19,7 +19,7 @@
       </td>
       <td>
         <button mat-icon-button (click)="editPackage(this.package.display, this.projectKey, this.package.id )" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
-        
+         <button mat-icon-button (click)="deletePackageWithConfirm(this.package.id, this.package.display)" class="mat-icon-button-sm" ><mat-icon>delete</mat-icon></button>
       </td>
     </tr>
   </table>
@@ -62,7 +62,7 @@
         <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
           <mat-icon>edit</mat-icon> 
         </button>
-       
+        <button mat-icon-button (click)="deleteMappingWithConfirm(mapping.id, mapping.name)" class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>
       </td>
     </tr>
   </table>
