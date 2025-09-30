@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
 
@@ -46,10 +46,17 @@ export class EditProjectComponent implements OnInit {
   projectKey: string = '';
   projectData: any;
   
+  // Loading states for different operations
+  isDeletingPackage = new Set<string>();    // Track which packages are being deleted
+  isDeletingMapping = new Set<string>();    // Track which mappings are being deleted
+  isDeletingComparison = new Set<string>(); // Track which comparisons are being deleted
+  isRefreshingData = false;                 // Track overall data refresh state
+  
   // FontAwesome icons for UI elements
-  faEdit = faEdit;   // Icon für den Edit-Button
-  faPlus = faPlus;   // Icon für den Plus-Button
-  faTrash = faTrash; // Icon für den Delete-Button
+  faEdit = faEdit;       // Icon für den Edit-Button
+  faPlus = faPlus;       // Icon für den Plus-Button
+  faTrash = faTrash;     // Icon für den Delete-Button
+  faSpinner = faSpinner; // Icon für Loading-Spinner
   
   constructor(
     private route: ActivatedRoute,
@@ -163,6 +170,7 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Deletes a package after user confirmation and refreshes the component
+   * Shows loading indicator during deletion process
    * @param packageId The ID of the package to delete
    * @param packageName The display name of the package for confirmation message
    */
@@ -172,35 +180,55 @@ export class EditProjectComponent implements OnInit {
       data: { message: `Willst du das Package "${packageName}" wirklich löschen?` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.packageService.deletePackage(this.projectKey, packageId).subscribe(() => {
-          this.refreshProjectData();
+        // Set loading state for this specific package
+        this.isDeletingPackage.add(packageId);
+        
+        this.packageService.deletePackage(this.projectKey, packageId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
+            // Remove loading state even on error
+            this.isDeletingPackage.delete(packageId);
+          }
         });
       }
     });
   }
 
   /**
-   * Refreshes project data without full page reload
-   * Recommended approach for better performance
+   * Deletes a mapping after user confirmation and refreshes the data
+   * Shows loading indicator during deletion process
+   * @param mappingId The ID of the mapping to delete
+   * @param mappingName The name of the mapping for confirmation message
    */
-  private async refreshProjectData() {
-    try {
-      const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
-      this.projectData = data;
-      this.projectName = data.name;
-      this.mappings = data.mappings;
-      this.packages = data.packages;
-      this.comparisons = data.comparisons;
-      console.log('Project data refreshed successfully');
-    } catch (error) {
-      console.error('Error refreshing project data:', error);
-    }
+  deleteMappingWithConfirm(mappingId: string, mappingName: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: `Willst du die Zuordnung "${mappingName}" wirklich löschen?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        // Set loading state for this specific mapping
+        this.isDeletingMapping.add(mappingId);
+        
+        this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting mapping:', error);
+            // Remove loading state even on error
+            this.isDeletingMapping.delete(mappingId);
+          }
+        });
+      }
+    });
   }
-
-
 
   /**
    * Deletes a comparison after user confirmation
+   * Shows loading indicator during deletion process
    * @param id The ID of the comparison to delete
    */
   deleteComparisonWithConfirm(id: string) {
@@ -209,28 +237,24 @@ export class EditProjectComponent implements OnInit {
       data: { message: 'Willst du diesen Vergleich wirklich löschen?' }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.comparisonService.deleteComparison(this.projectKey, id).subscribe(() => {
-          // Remove the deleted comparison from the local array
-          this.comparisons = this.comparisons.filter(c => c.id !== id);
+        // Set loading state for this specific comparison
+        this.isDeletingComparison.add(id);
+        
+        this.comparisonService.deleteComparison(this.projectKey, id).subscribe({
+          next: () => {
+            // Remove the deleted comparison from the local array
+            this.comparisons = this.comparisons.filter(c => c.id !== id);
+            // Clear loading state
+            this.isDeletingComparison.delete(id);
+          },
+          error: (error) => {
+            console.error('Error deleting comparison:', error);
+            // Remove loading state even on error
+            this.isDeletingComparison.delete(id);
+          }
         });
       }
     });
-  }
-
-  /**
-   * Deletes a comparison directly without confirmation dialog
-   * @param comparisonId The ID of the comparison to delete
-   */
-  deleteComparison(comparisonId: string) {
-    this.comparisonService.deleteComparison(this.projectKey, comparisonId).subscribe(
-      response => {
-        console.log('Comparison deleted successfully:', response);
-        // Remove the deleted comparison from the local array
-        this.comparisons = this.comparisons.filter(comparison => comparison.id !== comparisonId);
-      },
-      error => {
-        console.error('Error deleting comparison:', error);
-      });
   }
 
   /**
@@ -284,22 +308,20 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
-   * Deletes a mapping after user confirmation and refreshes the data
-   * @param mappingId The ID of the mapping to delete
-   * @param mappingName The name of the mapping for confirmation message
+   * Saves a new comparison to the project
+   * @param projectKey The key of the current project
+   * @param payload The comparison data to save
    */
-  deleteMappingWithConfirm(mappingId: string, mappingName: string) {
-    this.dialog.open(ConfirmDialogComponent, {
-      width: '300px',
-      data: { message: `Willst du die Zuordnung "${mappingName}" wirklich löschen?` }
-    }).afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe(() => {
-          // Refresh project data to show changes
-          this.refreshProjectData();
-        });
+  private saveComparison(projectKey: string, payload: any) {
+    this.comparisonService.createComparison(projectKey, payload).subscribe(
+      comparison => {
+        // Add the new comparison to the local list
+        this.comparisons.push(comparison);
+      },
+      error => {
+        console.error('Fehler beim Erstellen des Vergleichs:', error);
       }
-    });
+    );
   }
 
   /**
@@ -316,19 +338,56 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
-   * Saves a new comparison to the project
-   * @param projectKey The key of the current project
-   * @param payload The comparison data to save
+   * Refreshes project data without full page reload
+   * Shows loading indicator during refresh process
+   * Recommended approach for better performance
    */
-  private saveComparison(projectKey: string, payload: any) {
-    this.comparisonService.createComparison(projectKey, payload).subscribe(
-      comparison => {
-        // Add the new comparison to the local list
-        this.comparisons.push(comparison);
-      },
-      error => {
-        console.error('Fehler beim Erstellen des Vergleichs:', error);
-      }
-    );
+  private async refreshProjectData() {
+    this.isRefreshingData = true;
+    
+    try {
+      const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
+      this.projectData = data;
+      this.projectName = data.name;
+      this.mappings = data.mappings;
+      this.packages = data.packages;
+      this.comparisons = data.comparisons;
+      console.log('Project data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing project data:', error);
+    } finally {
+      // Clear all loading states after refresh is complete
+      this.isRefreshingData = false;
+      this.isDeletingPackage.clear();
+      this.isDeletingMapping.clear();
+      // Note: isDeletingComparison is managed separately since comparisons don't use refreshProjectData
+    }
+  }
+
+  /**
+   * Helper method to check if a specific package is being deleted
+   * @param packageId The ID of the package to check
+   * @returns true if the package is currently being deleted
+   */
+  isPackageDeleting(packageId: string): boolean {
+    return this.isDeletingPackage.has(packageId);
+  }
+
+  /**
+   * Helper method to check if a specific mapping is being deleted
+   * @param mappingId The ID of the mapping to check
+   * @returns true if the mapping is currently being deleted
+   */
+  isMappingDeleting(mappingId: string): boolean {
+    return this.isDeletingMapping.has(mappingId);
+  }
+
+  /**
+   * Helper method to check if a specific comparison is being deleted
+   * @param comparisonId The ID of the comparison to check
+   * @returns true if the comparison is currently being deleted
+   */
+  isComparisonDeleting(comparisonId: string): boolean {
+    return this.isDeletingComparison.has(comparisonId);
   }
 }

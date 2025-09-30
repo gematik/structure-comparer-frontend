@@ -19,7 +19,14 @@
       </td>
       <td>
         <button mat-icon-button (click)="editPackage(this.package.display, this.projectKey, this.package.id )" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
-         <button mat-icon-button (click)="deletePackageWithConfirm(this.package.id, this.package.display)" class="mat-icon-button-sm" ><mat-icon>delete</mat-icon></button>
+         <!-- Für Packages -->
+<button 
+  [disabled]="isPackageDeleting(package.id)" 
+  (click)="deletePackageWithConfirm(package.id, package.name)">
+  <fa-icon [icon]="isPackageDeleting(package.id) ? faSpinner : faTrash" 
+           [spin]="isPackageDeleting(package.id)"></fa-icon>
+  {{ isPackageDeleting(package.id) ? 'Wird gelöscht...' : 'Löschen' }}
+</button>
       </td>
     </tr>
   </table>
@@ -38,10 +45,13 @@
       <td class="clickable-cell" (click)="goToComparison(comparison.id)">{{ comparison.name }}</td>
       <td>
         <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" > <mat-icon >remove_red_eye</mat-icon> </button>
-        <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" >
-          <mat-icon>delete</mat-icon>
-        </button>
-        
+        <!-- Für Comparisons -->
+<button 
+  [disabled]="isComparisonDeleting(comparison.id)" 
+  (click)="deleteComparisonWithConfirm(comparison.id)">
+  <fa-icon [icon]="isComparisonDeleting(comparison.id) ? faSpinner : faTrash" 
+           [spin]="isComparisonDeleting(comparison.id)"></fa-icon>
+</button>
       </td>
     </tr>
   </table>
@@ -62,8 +72,20 @@
         <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
           <mat-icon>edit</mat-icon> 
         </button>
-        <button mat-icon-button (click)="deleteMappingWithConfirm(mapping.id, mapping.name)" class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>
+        <!-- Für Mappings -->
+<button 
+  [disabled]="isMappingDeleting(mapping.id)" 
+  (click)="deleteMappingWithConfirm(mapping.id, mapping.name)">
+  <fa-icon [icon]="isMappingDeleting(mapping.id) ? faSpinner : faTrash" 
+           [spin]="isMappingDeleting(mapping.id)"></fa-icon>
+</button>
       </td>
     </tr>
   </table>
+
+  <!-- Globaler Loading-Indicator beim Data Refresh -->
+<div *ngIf="isRefreshingData" class="loading-overlay">
+  <fa-icon [icon]="faSpinner" [spin]="true"></fa-icon>
+  Daten werden aktualisiert...
+</div>
 </div>
