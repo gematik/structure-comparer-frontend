@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEdit, faTrash, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
 
@@ -22,6 +22,7 @@ import { ComparisonService } from '../comparison.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
@@ -30,7 +31,7 @@ import { PackageService } from '../package.service';
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon, MatProgressSpinnerModule],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })
@@ -46,17 +47,13 @@ export class EditProjectComponent implements OnInit {
   projectKey: string = '';
   projectData: any;
   
-  // Loading states for different operations
-  isDeletingPackage = new Set<string>();    // Track which packages are being deleted
-  isDeletingMapping = new Set<string>();    // Track which mappings are being deleted
-  isDeletingComparison = new Set<string>(); // Track which comparisons are being deleted
-  isRefreshingData = false;                 // Track overall data refresh state
+  // Loading state for global operations
+  isLoading = false;  // Track global loading state
   
   // FontAwesome icons for UI elements
-  faEdit = faEdit;       // Icon für den Edit-Button
-  faPlus = faPlus;       // Icon für den Plus-Button
-  faTrash = faTrash;     // Icon für den Delete-Button
-  faSpinner = faSpinner; // Icon für Loading-Spinner
+  faEdit = faEdit;   // Icon für den Edit-Button
+  faPlus = faPlus;   // Icon für den Plus-Button
+  faTrash = faTrash; // Icon für den Delete-Button
   
   constructor(
     private route: ActivatedRoute,
@@ -105,9 +102,9 @@ export class EditProjectComponent implements OnInit {
       try {
         const data = await firstValueFrom(this.projectService.reloadProjectData(projectKey));
         this.projectData = data;
-        console.log('Projekt geladen:', data);
+        console.log('Project loaded:', data);
       } catch (error) {
-        console.error('Fehler beim Laden des Projekts:', error);
+        console.error('Error loading project:', error);
       }
     }
     console.log('Project data:', this.projectData);
@@ -141,7 +138,7 @@ export class EditProjectComponent implements OnInit {
     
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Datei erhalten:', result);
+        console.log('File received:', result);
         // Add the uploaded package to the local list
         this.packages.push(result);
       }
@@ -162,7 +159,7 @@ export class EditProjectComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== null) {
-        console.log('Neuer Name:', result);
+        console.log('New name:', result);
         // API call zum Umbenennen would be implemented here
       }
     });
@@ -170,18 +167,17 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Deletes a package after user confirmation and refreshes the component
-   * Shows loading indicator during deletion process
+   * Shows global loading overlay during deletion process
    * @param packageId The ID of the package to delete
    * @param packageName The display name of the package for confirmation message
    */
   deletePackageWithConfirm(packageId: string, packageName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: `Willst du das Package "${packageName}" wirklich löschen?` }
+      data: { message: `Do you really want to delete the package "${packageName}"?` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        // Set loading state for this specific package
-        this.isDeletingPackage.add(packageId);
+        this.isLoading = true;
         
         this.packageService.deletePackage(this.projectKey, packageId).subscribe({
           next: () => {
@@ -189,8 +185,7 @@ export class EditProjectComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error deleting package:', error);
-            // Remove loading state even on error
-            this.isDeletingPackage.delete(packageId);
+            this.isLoading = false;
           }
         });
       }
@@ -199,18 +194,17 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Deletes a mapping after user confirmation and refreshes the data
-   * Shows loading indicator during deletion process
+   * Shows global loading overlay during deletion process
    * @param mappingId The ID of the mapping to delete
    * @param mappingName The name of the mapping for confirmation message
    */
   deleteMappingWithConfirm(mappingId: string, mappingName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: `Willst du die Zuordnung "${mappingName}" wirklich löschen?` }
+      data: { message: `Do you really want to delete the mapping "${mappingName}"?` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        // Set loading state for this specific mapping
-        this.isDeletingMapping.add(mappingId);
+        this.isLoading = true;
         
         this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe({
           next: () => {
@@ -218,8 +212,7 @@ export class EditProjectComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error deleting mapping:', error);
-            // Remove loading state even on error
-            this.isDeletingMapping.delete(mappingId);
+            this.isLoading = false;
           }
         });
       }
@@ -228,29 +221,26 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Deletes a comparison after user confirmation
-   * Shows loading indicator during deletion process
+   * Shows global loading overlay during deletion process
    * @param id The ID of the comparison to delete
    */
   deleteComparisonWithConfirm(id: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: 'Willst du diesen Vergleich wirklich löschen?' }
+      data: { message: 'Do you really want to delete this comparison?' }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        // Set loading state for this specific comparison
-        this.isDeletingComparison.add(id);
+        this.isLoading = true;
         
         this.comparisonService.deleteComparison(this.projectKey, id).subscribe({
           next: () => {
             // Remove the deleted comparison from the local array
             this.comparisons = this.comparisons.filter(c => c.id !== id);
-            // Clear loading state
-            this.isDeletingComparison.delete(id);
+            this.isLoading = false;
           },
           error: (error) => {
             console.error('Error deleting comparison:', error);
-            // Remove loading state even on error
-            this.isDeletingComparison.delete(id);
+            this.isLoading = false;
           }
         });
       }
@@ -319,7 +309,7 @@ export class EditProjectComponent implements OnInit {
         this.comparisons.push(comparison);
       },
       error => {
-        console.error('Fehler beim Erstellen des Vergleichs:', error);
+        console.error('Error creating comparison:', error);
       }
     );
   }
@@ -339,12 +329,10 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Refreshes project data without full page reload
-   * Shows loading indicator during refresh process
+   * Uses global loading state for better UX
    * Recommended approach for better performance
    */
   private async refreshProjectData() {
-    this.isRefreshingData = true;
-    
     try {
       const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
       this.projectData = data;
@@ -356,38 +344,9 @@ export class EditProjectComponent implements OnInit {
     } catch (error) {
       console.error('Error refreshing project data:', error);
     } finally {
-      // Clear all loading states after refresh is complete
-      this.isRefreshingData = false;
-      this.isDeletingPackage.clear();
-      this.isDeletingMapping.clear();
-      // Note: isDeletingComparison is managed separately since comparisons don't use refreshProjectData
+      this.isLoading = false;
     }
   }
 
-  /**
-   * Helper method to check if a specific package is being deleted
-   * @param packageId The ID of the package to check
-   * @returns true if the package is currently being deleted
-   */
-  isPackageDeleting(packageId: string): boolean {
-    return this.isDeletingPackage.has(packageId);
-  }
 
-  /**
-   * Helper method to check if a specific mapping is being deleted
-   * @param mappingId The ID of the mapping to check
-   * @returns true if the mapping is currently being deleted
-   */
-  isMappingDeleting(mappingId: string): boolean {
-    return this.isDeletingMapping.has(mappingId);
-  }
-
-  /**
-   * Helper method to check if a specific comparison is being deleted
-   * @param comparisonId The ID of the comparison to check
-   * @returns true if the comparison is currently being deleted
-   */
-  isComparisonDeleting(comparisonId: string): boolean {
-    return this.isDeletingComparison.has(comparisonId);
-  }
 }
