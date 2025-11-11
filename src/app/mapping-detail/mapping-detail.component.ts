@@ -49,8 +49,6 @@ type ActionOption = {
   instruction?: string; // allgemeine Beschreibung/Label
 };
 
-
-
 @Component({
   selector: 'app-mapping-detail',
   standalone: true,
@@ -69,7 +67,6 @@ type ActionOption = {
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
 })
-
 export class MappingDetailComponent implements OnInit {
 
   projectKey: string;
@@ -81,22 +78,24 @@ export class MappingDetailComponent implements OnInit {
   editingIndex: number | null | undefined = null;
   hoverIndex: number | null | undefined = null;
   filtered: any;
+
+  // Dynamische Spalten: alle Source-Profile + Target-Profile
+  profileColumns: Array<{ key: string; name: string; url?: string }> = [];
+
   // Paginator
   totalLength: number = 0;
   pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
-  expandedRow: number | null = null;
-
 
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private comparisonService: ComparisonService
-
-  ) { this.projectKey = ""; this.mappingId = ""; }
-
-
+  ) {
+    this.projectKey = "";
+    this.mappingId = "";
+  }
 
   private readonly DEBUG = false;
 
@@ -125,9 +124,6 @@ export class MappingDetailComponent implements OnInit {
     }
   }
 
-
-
-
   loadMapping(projectKey: string, mappingId: string) {
     this.mappingsService
       .getMapping(projectKey, mappingId)
@@ -149,6 +145,11 @@ export class MappingDetailComponent implements OnInit {
 
         const sortedMapping = { ...mapping, fields: sortedFields };
 
+        // Profilspalten (alle Sources + Target) für die Kopfzeile aufbauen
+        const sources = Array.isArray(sortedMapping.sources) ? sortedMapping.sources : [];
+        const targetArr = sortedMapping.target ? [sortedMapping.target] : [];
+        this.profileColumns = [...sources, ...targetArr];
+
         this.totalLength = sortedFields.length;
         this.original = sortedMapping;
         this.mapping = sortedMapping;
@@ -157,7 +158,6 @@ export class MappingDetailComponent implements OnInit {
           fields: sortedFields.slice(0, this.pageSize),
         };
       });
-
   }
 
   getDescriptionForMapping(useValue: string): string | undefined {
@@ -198,7 +198,6 @@ export class MappingDetailComponent implements OnInit {
       .replace(/^_+|_+$/g, "");         // führende/abschließende _ entfernen
   }
 
-
   getStaticMappings() {
     const filenameBase = this.sanitizeFilename(this.filtered.name);
     const filename = `${filenameBase}.html`;
@@ -217,30 +216,75 @@ export class MappingDetailComponent implements OnInit {
       });
   }
 
-
   loadActions() {
-    this.mappingsService.getActions().pipe(catchError((err) => {
-      console.error('Error loading classifications', err);
-      return of([]);
-    })
-    ).subscribe((data) => {
-      console.log('actions', data);
-      this.classifications = data.actions;
-      console.log('classifications', this.classifications);
-    });
+    this.mappingsService
+      .getActions()
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading classifications', err);
+          return of([]);
+        })
+      )
+      .subscribe((data) => {
+        console.log('actions', data);
+        this.classifications = data.actions;
+        console.log('classifications', this.classifications);
+      });
   }
 
   getClassificationInstruction(action: string): string {
-    const found = this.classifications.find(c => c.value === action);
+    const found = this.classifications.find((c: any) => c.value === action);
     return found ? found.description : '';
   }
 
-  toggleRow(index: number) {
-    this.expandedRow = this.expandedRow === index ? null : index;
-  }
+  private clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+formatCardinality(minVal: any, maxVal: any): string {
+  const min = Number.isFinite(+minVal) ? +minVal : 0;
+  const max = (maxVal === '*' || maxVal === '∞') ? '*' : (Number.isFinite(+maxVal) ? +maxVal : 0);
+  return `${min} .. ${max}`;
+}
+
+/**
+ * Erzeugt eine HSL-Farbskala:
+ * - 0..0  => hue ~ 0 (rot)
+ * - 0..*  => hue ~ 130 (grün)
+ * - Zwischenwerte interpoliert:
+ *   - je kleiner min, desto „offener“ => mehr Grün
+ *   - je größer max (oder '*'), desto „offener“ => mehr Grün
+ */
+getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
+  const min = Number.isFinite(+minVal) ? +minVal : 0;
+
+  // Max als Zahl normalisieren: '*' / '∞' gelten als sehr offen
+  const maxIsStar = (maxVal === '*' || maxVal === '∞');
+  const maxNum = maxIsStar ? 10 : (Number.isFinite(+maxVal) ? +maxVal : 0);
+
+  // Normierung: min ∈ [0,2], max ∈ [0,10]
+  const minN = 1 - (this.clamp(min, 0, 2) / 2);   // 1 = offen (min=0), 0 = geschlossen (min=2)
+  const maxN = (this.clamp(maxNum, 0, 10) / 10);  // 0 = geschlossen (max=0), 1 = offen (max='*'≈10)
+
+  // Openness ∈ [0..1]
+  const openness = this.clamp(0.5 * minN + 0.5 * maxN, 0, 1);
+
+  // Hue von Rot (0) bis Grün (~130)
+  const hue = Math.round(0 + openness * 130);
+
+  // Lesbare Badge-Farben (heller Hintergrund, kontrastierender Text & Border)
+  const bg = `hsl(${hue}, 90%, 92%)`;
+  const border = `hsl(${hue}, 65%, 45%)`;
+  const text = `hsl(${hue}, 60%, 25%)`;
+
+  return {
+    backgroundColor: bg,
+    color: text,
+    borderColor: border
+  };
+}
 
   getRemarkTooltip(field: any): string {
-
     switch (field.action) {
       case 'use':
         return 'No action needed for this mapping';
@@ -254,7 +298,7 @@ export class MappingDetailComponent implements OnInit {
       case 'medication_service':
         return 'Caution reference!';
       case 'copy_from':
-        return `This field copies its value from the following field: ${field.other}`
+        return `This field copies its value from the following field: ${field.other}`;
       case 'copy_to':
         return `This field copies its value into the following field: ${field.other}`;
       case 'fixed':
@@ -264,9 +308,7 @@ export class MappingDetailComponent implements OnInit {
     }
   }
 
-
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
-
     return !!fieldProfiles[profileName];
   }
 
@@ -305,6 +347,22 @@ export class MappingDetailComponent implements OnInit {
           case 'compatibility':
             return compare(((a as any)?.classification ?? ''), ((b as any)?.classification ?? ''), isAsc);
           default:
+            // Dynamische Profilspalten wie "profile-<key>"
+            if (e.active?.startsWith('profile-')) {
+              const key = e.active.substring('profile-'.length);
+              const getTuple = (row: any) => {
+                const p = row?.profiles?.[key];
+                if (!p) return [-1, -1, -1]; // nicht vorhanden -> stabil ganz unten/oben
+                const ms = p.must_support ? 1 : 0;
+                const nMin = Number.isFinite(+p.min) ? +p.min : 0;
+                const nMax =
+                  p.max === '*' || p.max === '∞'
+                    ? Number.POSITIVE_INFINITY
+                    : (Number.isFinite(+p.max) ? +p.max : 0);
+                return [nMin, nMax, ms];
+              };
+              return tupleCompare(getTuple(a), getTuple(b), isAsc);
+            }
             return 0;
         }
       });
@@ -339,7 +397,13 @@ export class MappingDetailComponent implements OnInit {
           // Spezielle Debug-Route für "incompatible"
           matches = classif === 'incompatible';
         } else {
-          matches = !val || name.includes(val) || remark.includes(val) || action.includes(val) || extra.includes(val) || classif.includes(val);
+          matches =
+            !val ||
+            name.includes(val) ||
+            remark.includes(val) ||
+            action.includes(val) ||
+            extra.includes(val) ||
+            classif.includes(val);
         }
 
         // Detailliertes per-Record-Logging (nur bei aktivem Filter & DEBUG)
@@ -420,7 +484,7 @@ export class MappingDetailComponent implements OnInit {
     return CSS_CLASS[action] || '';
   }
 
-  // ToDo: Es ist die Frage, was hier im Body sein muss?! Das ist aktuell das einzige Problem. Die Dokue ist da nicht so aussagekrÃ¤ftig.
+  // ToDo: Es ist die Frage, was hier im Body sein muss?! Das ist aktuell das einzige Problem. Die Dokue ist da nicht so aussagekräftig.
   confirmChanges(field: any) {
     console.log('Confirming changes for field:', field);
     let action: string;
@@ -447,7 +511,6 @@ export class MappingDetailComponent implements OnInit {
       case 'empty':
         action = 'empty';
         break;
-
       case 'manual':
         action = 'manual';
         break;
@@ -476,3 +539,17 @@ const compare = (a: number | string, b: number | string, isAsc: boolean) => {
   const B = (b ?? '') as any;
   return (A < B ? -1 : A > B ? 1 : 0) * (isAsc ? 1 : -1);
 };
+
+
+
+const tupleCompare = (A: Array<number>, B: Array<number>, isAsc: boolean) => {
+  for (let i = 0; i < Math.max(A.length, B.length); i++) {
+    const a = A[i] ?? 0;
+    const b = B[i] ?? 0;
+    if (a < b) return isAsc ? -1 : 1;
+    if (a > b) return isAsc ? 1 : -1;
+  }
+  return 0;
+};
+
+

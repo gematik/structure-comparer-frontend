@@ -1,171 +1,242 @@
 <div class="m-20" *ngIf="filtered">
-
-    <h2>{{ filtered.name }}</h2>
-    <div style="display: flex; justify-content: space-between;">
-        <div style="flex: 1;">
-            <ng-container *ngIf="filtered.sources.length > 1; else singleSource">
-                <p>Source profile:</p>
-                <ul>
-                    <li *ngFor="let profile of filtered.sources">
-                        <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
-                    </li>
-                </ul>
-            </ng-container>
-            <ng-template #singleSource>
-                <p>Source profile:
-                    <a [href]="filtered.sources[0].url" target="_blank">{{
-                        filtered.sources[0].name }}</a>
-                </p>
-            </ng-template>
-
-            <p>Target profile:
-                <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name
-                    }}</a>
-            </p>
-            <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
-            <p>Last updated on: {{ filtered.last_updated }}</p>
-            <button mat-raised-button color="primary" (click)="getStaticMappings()" aria-label="Download mapping">
-                Download mapping
-            </button>
-        </div>
-    </div>
-
-    <div style="flex: 1; display: flex; justify-content: flex-end;">
-        <mat-form-field fxFlex="40%">
-            <input matInput type="text" (input)="handleTable($event).filter()" placeholder="Filter" />
-        </mat-form-field>
-    </div>
-    <div style="overflow: auto;">
-        <table
-  id="resultsTable"
-  class="sticky-table modern-table"
-  style="width: 100%"
-  *ngIf="filtered?.fields?.length"
-  matSort
-  [matSortActive]="'compatibility'"
-  [matSortDirection]="'desc'"
-  (matSortChange)="handleTable($event).sorter()"
->
-  <thead>
-    <tr>
-      <th class="default-th" mat-sort-header="name">Property</th>
-      <th class="default-th" mat-sort-header="remark">Mapping</th>
-      <th class="default-th" mat-sort-header="compatibility">Compatibility</th>
-
-      <!-- Dynamische Profil-Spalten: zuerst alle Sources, dann Target -->
-      <ng-container *ngFor="let prof of combinedProfiles">
-        <th class="default-th" [attr.title]="prof.url">
-          {{ prof.name }}
-        </th>
+  <h2>{{ filtered.name }}</h2>
+  <div style="display: flex; justify-content: space-between">
+    <div style="flex: 1">
+      <ng-container *ngIf="filtered.sources.length > 1; else singleSource">
+        <p>Source profile:</p>
+        <ul>
+          <li *ngFor="let profile of filtered.sources">
+            <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
+          </li>
+        </ul>
       </ng-container>
-    </tr>
-  </thead>
+      <ng-template #singleSource>
+        <p>
+          Source profile:
+          <a [href]="filtered.sources[0].url" target="_blank">{{
+            filtered.sources[0].name
+          }}</a>
+        </p>
+      </ng-template>
 
-  <tbody>
-    <tr *ngFor="let field of filtered.fields; let i = index">
-      <td class="default-td">
-        {{ field.name }}
-        <ng-container *ngIf="field.extension">
-          <br />({{ field.extension }})
-        </ng-container>
-      </td>
+      <p>
+        Target profile:
+        <a [href]="filtered.target.url" target="_blank">{{
+          filtered.target.name
+        }}</a>
+      </p>
+      <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
+      <p>Last updated on: {{ filtered.last_updated }}</p>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="getStaticMappings()"
+        aria-label="Download mapping"
+      >
+        Download mapping
+      </button>
+    </div>
+  </div>
 
-      <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
-        <div *ngIf="editingIndex !== i">
-          <span class="pill"
-                [ngClass]="'pill--' + field.action"
-                [matTooltip]="getRemarkTooltip(field)"
-                matTooltipPosition="above">
-            {{ getDescriptionForMapping(field.action) }}
-          </span>
+  <div style="flex: 1; display: flex; justify-content: flex-end">
+    <mat-form-field fxFlex="40%">
+      <input
+        matInput
+        type="text"
+        (input)="handleTable($event).filter()"
+        placeholder="Filter"
+      />
+    </mat-form-field>
+  </div>
+  <div style="overflow: auto">
+    <table
+      id="resultsTable"
+      class="sticky-table modern-table"
+      style="width: 100%"
+      *ngIf="filtered?.fields?.length"
+      matSort
+      [matSortActive]="'compatibility'"
+      [matSortDirection]="'desc'"
+      (matSortChange)="handleTable($event).sorter()"
+    >
+      <thead>
+        <tr>
+          <th class="default-th" mat-sort-header="name">Property</th>
 
-          <div *ngIf="field.action === 'manual' && field.remark" class="mapping-remark">
-            {{ field.remark }}
-          </div>
-        </div>
 
-        <button mat-button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
-          Ändern
-        </button>
 
-        <div *ngIf="editingIndex === i">
-          <div>Aktueller Stand: {{ getDescriptionForMapping(field.action) }}</div>
+          <!-- Dynamische Profilspalten (alle Sources + Target) -->
+          <ng-container *ngFor="let p of profileColumns">
+            <th class="default-th" [mat-sort-header]="'profile-' + p.key">
+              {{ p.name }}
+            </th>
+          </ng-container>
 
-          <select [(ngModel)]="field.action">
-            <option *ngFor="let opt of field.actions_allowed" [value]="opt">
-              {{ getClassificationInstruction(opt) }}
-            </option>
-          </select>
+          <!-- Classification / Compatibility (unverändert) -->
+          <th class="default-th" mat-sort-header="compatibility">
+            Compatibility
+          </th>
+             <!-- Mapping-Aktion (unverändert) -->
+          <th class="default-th" mat-sort-header="remark">Mapping</th>
+        </tr>
+      </thead>
 
-          <div *ngIf="field.action === 'copy_from'">
-            <span>Wird aus&nbsp;</span>
-            <select [(ngModel)]="field.targetField">
-              <option *ngFor="let availableField of availableFields" [value]="availableField.name">
-                {{ availableField.name }}
-              </option>
-            </select>
-            <span>&nbsp;übernommen</span>
-          </div>
+      <tbody>
+        <tr
+          *ngFor="let field of filtered.fields; let i = index"
+          [ngClass]="getClassificationCssClass(field.action)"
+        >
+          <!-- Property -->
+          <td class="default-td">
+            {{ field.name }}
+            <ng-container *ngIf="field.extension">
+              <br /><span class="muted">({{ field.extension }})</span>
+            </ng-container>
+          </td>
+          <!-- Profilspalten: min..max, MS, Ref-Typen oder — -->
+          <ng-container *ngFor="let p of profileColumns">
+            <td class="default-td">
+              <ng-container
+                *ngIf="field.profiles?.[p.key] as fp; else notAvailable"
+              >
+                <span
+  class="badge-cardinality"
+  [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
+>
+  {{ formatCardinality(fp.min, fp.max) }}
+</span>
 
-          <div *ngIf="field.action === 'copy_to'">
-            <span>Wird in&nbsp;</span>
-            <select [(ngModel)]="field.targetField">
-              <option *ngFor="let availableField of availableFields" [value]="availableField.name">
-                {{ availableField.name }}
-              </option>
-            </select>
-            <span>&nbsp;übernommen</span>
-          </div>
+<span *ngIf="fp.must_support" class="badge-ms">S</span>
 
-          <div *ngIf="field.action === 'fixed'">
-            <span>Wird fix auf&nbsp;</span>
-            <input type="text" [(ngModel)]="field.fixedValue" />
-            <span>&nbsp;gesetzt</span>
-          </div>
+<div *ngIf="fp.ref_types?.length" class="ref-types">
+  Ref: {{ fp.ref_types.join(', ') }}
+</div>
+              </ng-container>
+              <ng-template #notAvailable>—</ng-template>
+            </td>
+          </ng-container>
 
-          <div *ngIf="field.action === 'manual'">
-            <span>Manuelle Anpassung erforderlich</span>
-            <textarea rows="2" [(ngModel)]="field.remark" placeholder="Hinweis für manuelle Umsetzung"></textarea>
-          </div>
-
-          <button mat-button (click)="confirmChanges(field)" class="mat-icon-button-sm confirm">
-            <i class="fas fa-check"></i>
-          </button>
-          <button mat-button class="mat-icon-button-sm cancel" (click)="handleEdit().cancelEdit()">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </td>
-
-      <td class="default-td">
-        <span class="pill"
+          <!-- Classification / Compatibility -->
+          <td class="default-td">
+            <span
+              class="pill"
               [ngClass]="'pill--' + field.classification"
               [matTooltipHideDelay]="1000"
-              [matTooltip]="getTooltipComparison(field)">
-          {{ field.classification }}
-        </span>
-      </td>
+              [matTooltip]="getTooltipComparison(field)"
+              >{{ field.classification }}</span
+            >
+          </td>
+           <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
+          <td
+            class="default-td"
+            (mouseenter)="handleEdit(i).startHover()"
+            (mouseleave)="handleEdit().stopHover()"
+          >
+            <div *ngIf="editingIndex !== i">
+              <span
+                class="pill"
+                [ngClass]="'pill--' + field.action"
+                [matTooltip]="getRemarkTooltip(field)"
+                matTooltipPosition="above"
+              >
+                {{ getDescriptionForMapping(field.action) }}
+              </span>
 
-      <!-- Zellen für jede Profil-Spalte -->
-      <ng-container *ngFor="let prof of combinedProfiles">
-        <td class="default-td">
-          <ng-container *ngIf="field.profiles?.[prof.key] as p; else unavailable">
-            <div>Min: {{ p.min }}</div>
-            <div>Max: {{ p.max }}</div>
-            <div>Must-Support: {{ p.must_support }}</div>
-            <div *ngIf="p.ref_types?.length">Ref-Types: {{ p.ref_types.join(', ') }}</div>
-          </ng-container>
-          <ng-template #unavailable>—</ng-template>
-        </td>
-      </ng-container>
-    </tr>
-  </tbody>
-</table>
-    </div>
+              <div
+                *ngIf="field.action === 'manual' && field.remark"
+                class="mapping-remark"
+              >
+                {{ field.remark }}
+              </div>
+            </div>
 
+            <button
+              mat-button
+              *ngIf="hoverIndex === i && editingIndex !== i"
+              (click)="handleEdit(i).startEdit()"
+            >
+              Ändern
+            </button>
 
-    <mat-paginator (page)="handleTable($event).paginator()" [length]="totalLength" [pageSize]="pageSize"
-        [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex"
-        aria-label="Select page">
-    </mat-paginator>
+            <div *ngIf="editingIndex === i">
+              <div>
+                Aktueller Stand: {{ getDescriptionForMapping(field.action) }}
+              </div>
+
+              <select [(ngModel)]="field.remark">
+                <option
+                  *ngFor="let classification of field.actions_allowed"
+                  [value]="classification"
+                >
+                  {{ getClassificationInstruction(classification) }}
+                </option>
+              </select>
+
+              <div *ngIf="field.action === 'copy_from'">
+                <span>Wird aus&nbsp;</span>
+                <select [(ngModel)]="field.targetField">
+                  <option
+                    *ngFor="let availableField of availableFields"
+                    [value]="availableField.name"
+                  >
+                    {{ availableField.name }}
+                  </option>
+                </select>
+                <span>&nbsp;übernommen</span>
+              </div>
+
+              <div *ngIf="field.action === 'copy_to'">
+                <span>Wird in&nbsp;</span>
+                <select [(ngModel)]="field.targetField">
+                  <option
+                    *ngFor="let availableField of availableFields"
+                    [value]="availableField.name"
+                  >
+                    {{ availableField.name }}
+                  </option>
+                </select>
+                <span>&nbsp;übernommen</span>
+              </div>
+
+              <div *ngIf="field.action === 'fixed'">
+                <span>Wird fix auf&nbsp;</span>
+                <input type="text" [(ngModel)]="field.fixedValue" />
+                <span>&nbsp;gesetzt</span>
+              </div>
+
+              <div *ngIf="field.action === 'manual'">
+                <span>Manuelle Anpassung erforderlich</span>
+              </div>
+
+              <button
+                mat-button
+                (click)="confirmChanges(field)"
+                class="mat-icon-button-sm confirm"
+              >
+                <i class="fas fa-check"></i>
+              </button>
+              <button
+                mat-button
+                class="mat-icon-button-sm cancel"
+                (click)="handleEdit().cancelEdit()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <mat-paginator
+    (page)="handleTable($event).paginator()"
+    [length]="totalLength"
+    [pageSize]="pageSize"
+    [showFirstLastButtons]="false"
+    [pageSizeOptions]="pageSizeOptions"
+    [pageIndex]="pageIndex"
+    aria-label="Select page"
+  >
+  </mat-paginator>
 </div>

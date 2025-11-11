@@ -129,5 +129,116 @@ tr:hover {
     overflow-x: auto; /* Ermöglicht horizontales Scrollen */
 }
 
-.modern-table td .ref-types { white-space: normal; }
-.modern-table th.default-th { position: sticky; top: 0; z-index: 2; }
+
+.modern-table {
+  table-layout: fixed;           /* verhindert, dass eine Spalte alles aufzieht */
+  width: 100%;
+}
+
+.modern-table th,
+.modern-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;       /* hübsches Kürzen mit … */
+  vertical-align: top;
+  white-space: nowrap;           /* Basis: einzeilig */
+}
+
+/* Referenz-Typen und Mapping-Remark dürfen umbrechen */
+.modern-table td .ref-types,
+.mapping-remark {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* --- Spaltenbreiten ---------------------------------------------------- */
+/* 1. Spalte: Property – bewusst breiter, damit Feldnamen lesbar bleiben */
+.modern-table th:nth-child(1),
+.modern-table td:nth-child(1) {
+  width: 50rem;
+  max-width: 50rem;
+}
+
+/* 2. Spalte: Mapping – gezielt kompakt halten */
+.modern-table th:nth-child(2),
+.modern-table td:nth-child(2) {
+  width: 20rem;          /* <- bei Bedarf anpassen (z. B. 10rem–14rem) */
+  max-width: 20rem;
+}
+
+/* 3. Spalte: Mapping – gezielt kompakt halten */
+.modern-table th:nth-child(3),
+.modern-table td:nth-child(3) {
+  width: 20rem;          /* <- bei Bedarf anpassen (z. B. 10rem–14rem) */
+  max-width: 20rem;
+}
+
+/* Letzte Spalte: Compatibility – schmal */
+.modern-table th:last-child,
+.modern-table td:last-child {
+  width: 30rem;
+  max-width: 30rem;
+  text-align: left;
+}
+
+/* Kardinalitäts-Badge */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Mapping-Spalte bleibt kompakt (aus deiner letzten Anpassung) */
+.modern-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.modern-table th,
+.modern-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+/* Kardinalitäts-/Remark-Text darf umbrechen, wenn nötig */
+.modern-table td .ref-types,
+.mapping-remark {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Kardinalität (bereits vorhanden; lassen wir) */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  margin-right: 4px; /* Abstand zu MS-Badge */
+  white-space: nowrap;
+}
+
+/* Must-Support-Badge */
+.badge-ms {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #C62828; /* Rot (Material Red 800) */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 2px;
+  cursor: default;
+}
