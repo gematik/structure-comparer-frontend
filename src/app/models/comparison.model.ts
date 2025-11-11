@@ -32,4 +32,8 @@ export interface Comparison {
   sources: string[];
   // Target profile identifier to compare against
   target: string;
+  // Optional counts of warning results
+  warningCount?: number;
+  // Optional counts of incompatible results
+  incompatibleCount?: number;
 }

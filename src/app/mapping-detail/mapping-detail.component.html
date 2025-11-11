@@ -32,134 +32,135 @@
 
     <div style="flex: 1; display: flex; justify-content: flex-end;">
         <mat-form-field fxFlex="40%">
-            <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
+            <input matInput type="text" (input)="handleTable($event).filter()" placeholder="Filter" />
         </mat-form-field>
     </div>
-    <div style="max-height: 600px; overflow: auto;">
-        <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="filtered?.fields?.length"
-            matSort (matSortChange)="handleTable($event).sorter()">
-            <thead>
-                <tr>
-                    <th class="default-th" mat-sort-header="name">Property</th>
+    <div style="overflow: auto;">
+        <table
+  id="resultsTable"
+  class="sticky-table modern-table"
+  style="width: 100%"
+  *ngIf="filtered?.fields?.length"
+  matSort
+  [matSortActive]="'compatibility'"
+  [matSortDirection]="'desc'"
+  (matSortChange)="handleTable($event).sorter()"
+>
+  <thead>
+    <tr>
+      <th class="default-th" mat-sort-header="name">Property</th>
+      <th class="default-th" mat-sort-header="remark">Mapping</th>
+      <th class="default-th" mat-sort-header="compatibility">Compatibility</th>
 
-                    <ng-container>
-                        <th class="default-th" mat-sort-header="remark">Mapping</th>
-                    </ng-container>
-                    <th class="default-th" mat-sort-header="compatibility">Compatibility</th>
-                </tr>
-            </thead>
-            <tbody>
-                <ng-container *ngFor="let field of filtered.fields; let i = index">
-                    <tr>
-                        <td class="default-td">
-                            {{ field.name }}
-                            <ng-container *ngIf="field.extension">
-                                <br />({{ field.extension }})
-                            </ng-container>
-                        </td>
+      <!-- Dynamische Profil-Spalten: zuerst alle Sources, dann Target -->
+      <ng-container *ngFor="let prof of combinedProfiles">
+        <th class="default-th" [attr.title]="prof.url">
+          {{ prof.name }}
+        </th>
+      </ng-container>
+    </tr>
+  </thead>
 
-                        <td class="default-td" (mouseenter)="handleEdit(i).startHover()"
-                            (mouseleave)="handleEdit().stopHover()">
-                            <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action"
-                                [matTooltip]="getRemarkTooltip(field)" matTooltipPosition="above">{{
-                                getDescriptionForMapping(field.action)
-                                }}</span>
-                            <button mat-button *ngIf="hoverIndex === i && editingIndex !== i"
-                                (click)="handleEdit(i).startEdit()">
-                                Ändern
-                            </button>
-                            <div *ngIf="editingIndex === i">
-                                <div>Aktueller Stand: {{ getDescriptionForMapping(field.action) }}</div>
-                                <select [(ngModel)]="field.remark">
-                                    <option *ngFor="let classification of field.actions_allowed"
-                                        [value]="classification">
-                                        {{ getClassificationInstruction(classification) }}
-                                    </option>
-                                </select>
+  <tbody>
+    <tr *ngFor="let field of filtered.fields; let i = index">
+      <td class="default-td">
+        {{ field.name }}
+        <ng-container *ngIf="field.extension">
+          <br />({{ field.extension }})
+        </ng-container>
+      </td>
 
-                                <div *ngIf="field.remark === 'copy_from'">
-                                    <span>Wird aus&nbsp;</span>
-                                    <select [(ngModel)]="field.targetField">
-                                        <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.name">
-                                            {{ availableField.name }}
-                                        </option>
-                                    </select>
-                                    <span>&nbsp;übernommen</span>
-                                </div>
-                                <div *ngIf="field.remark === 'copy_to'">
-                                    <span>Wird in&nbsp;</span>
-                                    <select [(ngModel)]="field.targetField">
-                                        <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.name">
-                                            {{ availableField.name }}
-                                        </option>
-                                    </select>
-                                    <span>&nbsp;übernommen</span>
-                                </div>
-                                <div *ngIf="field.remark === 'fixed'">
-                                    <span>Wird fix auf&nbsp;</span>
-                                    <input type="text" [(ngModel)]="field.fixedValue" />
-                                    <span>&nbsp;gesetzt</span>
-                                </div>
-                                <button mat-button (click)="confirmChanges(field)" class="mat-icon-button-sm confirm">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button mat-button class="mat-icon-button-sm cancel"
-                                    (click)="handleEdit().cancelEdit()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="default-td">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                <span class="pill" [ngClass]="'pill--' + field.classification"
-                                    [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field)">{{
-                                    field.classification
-                                    }}</span>
+      <td class="default-td" (mouseenter)="handleEdit(i).startHover()" (mouseleave)="handleEdit().stopHover()">
+        <div *ngIf="editingIndex !== i">
+          <span class="pill"
+                [ngClass]="'pill--' + field.action"
+                [matTooltip]="getRemarkTooltip(field)"
+                matTooltipPosition="above">
+            {{ getDescriptionForMapping(field.action) }}
+          </span>
 
-                                <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
-                                    <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr *ngIf="expandedRow === i">
-                        <td [attr.colspan]="2 + filtered.sources.length">
-                            <div class="expanded-detail" style="padding: 0 16px;">
+          <div *ngIf="field.action === 'manual' && field.remark" class="mapping-remark">
+            {{ field.remark }}
+          </div>
+        </div>
 
-                                <table class="inner-detail-table" style="width: 100%; margin-top: 10px;">
-                                    <thead>
-                                        <tr>
-                                            <th *ngFor="let profile of filtered.sources.concat(filtered.target)">{{
-                                                profile.name }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td *ngFor="let profile of filtered.sources.concat(filtered.target)">
-                                                <ng-container *ngIf="field.profiles[profile.key] as p">
-                                                    Min: {{ p.min }}<br>
-                                                    Max: {{ p.max }}<br>
-                                                    Must-Support: {{ p.must_support }}
-                                                    <ng-container *ngIf="p.ref_types">
-                                                        <br>Reference Types: {{ p.ref_types.join(', ') }}
-                                                    </ng-container>
-                                                </ng-container>
-                                                <ng-container *ngIf="!field.profiles[profile.key]">
-                                                    Unavailable
-                                                </ng-container>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-container>
-            </tbody>
-        </table>
+        <button mat-button *ngIf="hoverIndex === i && editingIndex !== i" (click)="handleEdit(i).startEdit()">
+          Ändern
+        </button>
+
+        <div *ngIf="editingIndex === i">
+          <div>Aktueller Stand: {{ getDescriptionForMapping(field.action) }}</div>
+
+          <select [(ngModel)]="field.action">
+            <option *ngFor="let opt of field.actions_allowed" [value]="opt">
+              {{ getClassificationInstruction(opt) }}
+            </option>
+          </select>
+
+          <div *ngIf="field.action === 'copy_from'">
+            <span>Wird aus&nbsp;</span>
+            <select [(ngModel)]="field.targetField">
+              <option *ngFor="let availableField of availableFields" [value]="availableField.name">
+                {{ availableField.name }}
+              </option>
+            </select>
+            <span>&nbsp;übernommen</span>
+          </div>
+
+          <div *ngIf="field.action === 'copy_to'">
+            <span>Wird in&nbsp;</span>
+            <select [(ngModel)]="field.targetField">
+              <option *ngFor="let availableField of availableFields" [value]="availableField.name">
+                {{ availableField.name }}
+              </option>
+            </select>
+            <span>&nbsp;übernommen</span>
+          </div>
+
+          <div *ngIf="field.action === 'fixed'">
+            <span>Wird fix auf&nbsp;</span>
+            <input type="text" [(ngModel)]="field.fixedValue" />
+            <span>&nbsp;gesetzt</span>
+          </div>
+
+          <div *ngIf="field.action === 'manual'">
+            <span>Manuelle Anpassung erforderlich</span>
+            <textarea rows="2" [(ngModel)]="field.remark" placeholder="Hinweis für manuelle Umsetzung"></textarea>
+          </div>
+
+          <button mat-button (click)="confirmChanges(field)" class="mat-icon-button-sm confirm">
+            <i class="fas fa-check"></i>
+          </button>
+          <button mat-button class="mat-icon-button-sm cancel" (click)="handleEdit().cancelEdit()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </td>
+
+      <td class="default-td">
+        <span class="pill"
+              [ngClass]="'pill--' + field.classification"
+              [matTooltipHideDelay]="1000"
+              [matTooltip]="getTooltipComparison(field)">
+          {{ field.classification }}
+        </span>
+      </td>
+
+      <!-- Zellen für jede Profil-Spalte -->
+      <ng-container *ngFor="let prof of combinedProfiles">
+        <td class="default-td">
+          <ng-container *ngIf="field.profiles?.[prof.key] as p; else unavailable">
+            <div>Min: {{ p.min }}</div>
+            <div>Max: {{ p.max }}</div>
+            <div>Must-Support: {{ p.must_support }}</div>
+            <div *ngIf="p.ref_types?.length">Ref-Types: {{ p.ref_types.join(', ') }}</div>
+          </ng-container>
+          <ng-template #unavailable>—</ng-template>
+        </td>
+      </ng-container>
+    </tr>
+  </tbody>
+</table>
     </div>
 
 

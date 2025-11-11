@@ -8,7 +8,7 @@ body {
 
 table {
     width: 100%;
-    margin-top: 20px; 
+    margin-top: 20px;
     border-collapse: collapse;
 }
 
@@ -124,7 +124,10 @@ tr:hover {
 
 .wide-select {
     width: 100%;
-    min-width: 200px; 
+    min-width: 200px;
     max-width: 100%;
     overflow-x: auto; /* Ermöglicht horizontales Scrollen */
 }
+
+.modern-table td .ref-types { white-space: normal; }
+.modern-table th.default-th { position: sticky; top: 0; z-index: 2; }

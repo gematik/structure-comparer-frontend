@@ -47,6 +47,13 @@ import { PackageUploadDialogComponent } from '../package-upload-dialog/package-u
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 import { PackageService } from '../package.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+type SortDir = 'asc' | 'desc';
+interface SortState { col: string; dir: SortDir; }
+
+
 
 @Component({
   selector: 'app-edit-project',
@@ -71,9 +78,21 @@ export class EditProjectComponent implements OnInit {
   isLoading = false;  // Track global loading state
 
   // FontAwesome icons for UI elements
-  faEdit = faEdit;   // Icon fÃ¼r den Edit-Button
-  faPlus = faPlus;   // Icon fÃ¼r den Plus-Button
-  faTrash = faTrash; // Icon fÃ¼r den Delete-Button
+  faEdit = faEdit;   // Icon für den Edit-Button
+  faPlus = faPlus;   // Icon für den Plus-Button
+  faTrash = faTrash; // Icon für den Delete-Button
+
+  // Sorting
+  sort = {
+    comparisons: { column: 'name', direction: 'asc' as 'asc' | 'desc' },
+    mappings: { column: 'name', direction: 'asc' as 'asc' | 'desc' }
+  };
+
+  compSort: SortState = { col: 'name', dir: 'asc' };
+  mapSort: SortState = { col: 'name', dir: 'asc' };
+  pkgSort: SortState = { col: 'displayName', dir: 'asc' };
+
+
 
   constructor(
     private route: ActivatedRoute,
@@ -106,6 +125,10 @@ export class EditProjectComponent implements OnInit {
       this.mappings = this.projectData.mappings;
       this.packages = this.projectData.packages;
       this.comparisons = this.projectData.comparisons;
+
+      this.hydrateCounts();
+      this.sortComparisonsBy('name');
+      this.sortMappingsBy('name');
     } else {
       console.error('Project data could not be loaded!');
     }
@@ -128,6 +151,100 @@ export class EditProjectComponent implements OnInit {
       }
     }
     console.log('Project data:', this.projectData);
+  }
+
+
+  // Hilfsfunktion: robustes Auslesen inkl. Fallbacks
+  private valueFor<T extends object>(row: any, col: string): any {
+    if (!row) return null;
+    // Spezialfall: Packages anzeigen/sortieren nach displayName
+    if (col === 'displayName') return (row.display ?? `${row.name}#${row.version}`) ?? '';
+    return (row as any)[col];
+  }
+
+  // Zahlenerkennung: "49" -> 49, "09" -> 9, null -> NaN
+  private toNumber(v: any): number {
+    if (typeof v === 'number') return v;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
+  }
+
+  // Vergleicher mit Auto-Erkennung: wenn beide Werte numerisch sind -> numerisch
+  private smartCompare(a: any, b: any): number {
+    const na = this.toNumber(a);
+    const nb = this.toNumber(b);
+    const bothNumeric = Number.isFinite(na) && Number.isFinite(nb);
+
+    if (bothNumeric) return na - nb;
+
+    // Stringvergleich (localeCompare) mit Null-Handling
+    const sa = (a ?? '').toString();
+    const sb = (b ?? '').toString();
+    return sa.localeCompare(sb, undefined, { numeric: true, sensitivity: 'base' });
+  }
+
+  // Allgemeine Sortierfunktion (stabil genug für unsere Arrays)
+  private sortInPlace<T extends object>(rows: T[], col: string, dir: SortDir): void {
+    rows.sort((r1: any, r2: any) => {
+      const v1 = this.valueFor(r1, col);
+      const v2 = this.valueFor(r2, col);
+      const cmp = this.smartCompare(v1, v2);
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  // Öffentliche Handler für Klick auf Header
+  sortComparisons(col: 'name' | 'warningCount' | 'incompatibleCount'): void {
+    this.compSort = {
+      col,
+      dir: (this.compSort.col === col && this.compSort.dir === 'asc') ? 'desc' : 'asc'
+    };
+    this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
+  }
+
+  sortMappings(col: 'name' | 'warningCount' | 'incompatibleCount'): void {
+    this.mapSort = {
+      col,
+      dir: (this.mapSort.col === col && this.mapSort.dir === 'asc') ? 'desc' : 'asc'
+    };
+    this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
+  }
+
+  sortPackages(col: 'displayName'): void {
+    this.pkgSort = {
+      col,
+      dir: (this.pkgSort.col === col && this.pkgSort.dir === 'asc') ? 'desc' : 'asc'
+    };
+    this.sortInPlace(this.packages, this.pkgSort.col, this.pkgSort.dir);
+  }
+
+  // Nach jedem Laden/Refresh aktuelle Sortierung erneut anwenden
+  private applyActiveSorts(): void {
+    this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
+    this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
+    this.sortInPlace(this.packages, this.pkgSort.col, this.pkgSort.dir);
+  }
+
+  private sortData<T>(data: T[], column: keyof T, direction: 'asc' | 'desc'): T[] {
+    return [...data].sort((a: any, b: any) => {
+      const A = (a[column] ?? '').toString().toLowerCase();
+      const B = (b[column] ?? '').toString().toLowerCase();
+      return direction === 'asc' ? A.localeCompare(B) : B.localeCompare(A);
+    });
+  }
+
+  sortComparisonsBy(column: keyof Comparison) {
+    const s = this.sort.comparisons;
+    s.direction = (s.column === column && s.direction === 'asc') ? 'desc' : 'asc';
+    s.column = column;
+    this.comparisons = this.sortData(this.comparisons, column, s.direction);
+  }
+
+  sortMappingsBy(column: keyof Mapping) {
+    const s = this.sort.mappings;
+    s.direction = (s.column === column && s.direction === 'asc') ? 'desc' : 'asc';
+    s.column = column;
+    this.mappings = this.sortData(this.mappings, column, s.direction);
   }
 
   /**
@@ -360,11 +477,64 @@ export class EditProjectComponent implements OnInit {
       this.mappings = data.mappings;
       this.packages = data.packages;
       this.comparisons = data.comparisons;
+
+      this.hydrateCounts();
+      this.sortComparisonsBy('name');
+      this.sortMappingsBy('name');
       console.log('Project data refreshed successfully');
     } catch (error) {
       console.error('Error refreshing project data:', error);
     } finally {
       this.isLoading = false;
+    }
+  }
+
+  private countByClassification(fields: any[]) {
+    let warning = 0, incompatible = 0;
+    for (const f of fields ?? []) {
+      const cls = (f?.classification ?? '').toString().toLowerCase();
+      if (cls === 'warning') warning++;
+      else if (cls === 'incompatible') incompatible++;
+    }
+    return { warning, incompatible };
+  }
+
+  private hydrateCounts(): void {
+    // Comparisons
+    if (this.comparisons?.length) {
+      const jobs = this.comparisons.map(c =>
+        this.comparisonService.getComparisonData(this.projectKey, c.id).pipe(
+          map(detail => ({ id: c.id, ...this.countByClassification(detail?.fields ?? []) })),
+          catchError(() => of({ id: c.id, warning: 0, incompatible: 0 }))
+        )
+      );
+      forkJoin(jobs).subscribe(results => {
+        const byId = new Map(results.map(r => [r.id, r]));
+        this.comparisons = this.comparisons.map(c => {
+          const r = byId.get(c.id);
+          return { ...c, warningCount: r?.warning ?? 0, incompatibleCount: r?.incompatible ?? 0 };
+        });
+        // Nach Hydrierung sortieren:
+        this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
+      });
+    }
+
+    // Mappings
+    if (this.mappings?.length) {
+      const jobs = this.mappings.map(m =>
+        this.mappingsService.getMapping(this.projectKey, m.id).pipe(
+          map(detail => ({ id: m.id, ...this.countByClassification(detail?.fields ?? []) })),
+          catchError(() => of({ id: m.id, warning: 0, incompatible: 0 }))
+        )
+      );
+      forkJoin(jobs).subscribe(results => {
+        const byId = new Map(results.map(r => [r.id, r]));
+        this.mappings = this.mappings.map(m => {
+          const r = byId.get(m.id);
+          return { ...m, warningCount: r?.warning ?? 0, incompatibleCount: r?.incompatible ?? 0 };
+        });
+        this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
+      });
     }
   }
 

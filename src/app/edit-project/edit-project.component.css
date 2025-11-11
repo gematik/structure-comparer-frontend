@@ -34,3 +34,5 @@
   margin-top: 20px;
   font-weight: 500;
 }
+
+.clickable { cursor: pointer; user-select: none; }

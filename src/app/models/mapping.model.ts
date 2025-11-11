@@ -61,4 +61,8 @@ export interface Mapping {
   target: TargetProfile;
   // Version of the mapping definition
   version: string;
+  // Optional counts of warning results
+  warningCount?: number;
+  // Optional counts of incompatible results
+  incompatibleCount?: number;
 }

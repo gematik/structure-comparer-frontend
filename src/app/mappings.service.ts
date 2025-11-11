@@ -65,8 +65,9 @@ export class MappingsService {
    * @returns Observable containing the list of available actions
    */
   getActions(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/action`)
+    const actions = this.http.get(`${this.baseUrl}/action`)
       .pipe(catchError(this.handleError));
+    return actions;
   }
 
   /**

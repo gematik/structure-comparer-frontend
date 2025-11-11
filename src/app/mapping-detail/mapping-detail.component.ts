@@ -36,12 +36,20 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ComparisonService } from '../comparison.service';
 
 export interface IProfile {
-  name: string;
-  extra: string;
-  action: string;
-  remark: string;
+  name?: string;
+  extra?: string;
+  action?: string;
+  remark?: string;
   [key: string]: any;
 }
+
+type ActionOption = {
+  value: string;        // z. B. "use", "manual", ...
+  remark?: string;      // nur für "manual" relevant
+  instruction?: string; // allgemeine Beschreibung/Label
+};
+
+
 
 @Component({
   selector: 'app-mapping-detail',
@@ -80,12 +88,32 @@ export class MappingDetailComponent implements OnInit {
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
   expandedRow: number | null = null;
 
+
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private comparisonService: ComparisonService
 
   ) { this.projectKey = ""; this.mappingId = ""; }
+
+
+
+  private readonly DEBUG = false;
+
+  private dbg(...args: any[]) {
+    if (this.DEBUG) console.log('[MappingDetail]', ...args);
+  }
+  private dbgTable(label: string, rows: any[]) {
+    if (this.DEBUG && console.table) {
+      console.log(`[MappingDetail] ${label}`);
+      console.table(rows);
+    }
+  }
+
+  // Für konsistentes, null-sicheres Normalisieren
+  private norm(v: unknown): string {
+    return (v ?? '').toString().trim().toLowerCase();
+  }
 
   ngOnInit(): void {
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
@@ -96,6 +124,9 @@ export class MappingDetailComponent implements OnInit {
       this.loadActions();
     }
   }
+
+
+
 
   loadMapping(projectKey: string, mappingId: string) {
     this.mappingsService
@@ -108,14 +139,23 @@ export class MappingDetailComponent implements OnInit {
       )
       .subscribe((mapping) => {
         console.log('mapping', mapping);
-        this.totalLength = mapping.fields.length;
-        this.original = mapping;
-        this.mapping = this.original;
-        this.filtered = {
-          ...mapping,
-          fields: mapping.fields.slice(0, this.pageSize),
-        };
 
+        // initial: classification DESC
+        const sortedFields = [...(mapping.fields ?? [])].sort((a: any, b: any) => {
+          const A = (a?.classification ?? '').toString();
+          const B = (b?.classification ?? '').toString();
+          return A < B ? 1 : A > B ? -1 : 0; // DESC
+        });
+
+        const sortedMapping = { ...mapping, fields: sortedFields };
+
+        this.totalLength = sortedFields.length;
+        this.original = sortedMapping;
+        this.mapping = sortedMapping;
+        this.filtered = {
+          ...sortedMapping,
+          fields: sortedFields.slice(0, this.pageSize),
+        };
       });
 
   }
@@ -151,8 +191,18 @@ export class MappingDetailComponent implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
+  sanitizeFilename(name: string): string {
+    return name
+      .replace(/[^a-zA-Z0-9._-]+/g, "_") // alle Sonderzeichen -> _
+      .replace(/_+/g, "_")              // mehrere _ auf eins reduzieren
+      .replace(/^_+|_+$/g, "");         // führende/abschließende _ entfernen
+  }
+
 
   getStaticMappings() {
+    const filenameBase = this.sanitizeFilename(this.filtered.name);
+    const filename = `${filenameBase}.html`;
+
     this.mappingsService
       .getStaticMapping(this.projectKey, this.mappingId, true, true)
       .pipe(
@@ -163,8 +213,7 @@ export class MappingDetailComponent implements OnInit {
       )
       .subscribe((data) => {
         console.log('static mappings', data);
-        this.saveFile(data, 'static-mapping.html');
-        //this.availableFields = data.fields;
+        this.saveFile(data, filename);
       });
   }
 
@@ -235,58 +284,95 @@ export class MappingDetailComponent implements OnInit {
     };
 
     const sorter = () => {
-      const data = this.filtered.fields;
+      const data = [...(this.filtered?.fields ?? [])]; // Kopie
       if (!e.active || e.direction === '') {
         this.filtered = { ...this.filtered, fields: data };
         return;
       }
-      const sortedData = data.sort((a: IProfile, b: IProfile) => {
-        const isAsc = e.direction === 'asc';
-        const otherCondition = (t: any) =>
-          t['profiles'].find((profile: any) => profile.name === e.active)
-            .present;
+      const isAsc = e.direction === 'asc';
 
+      const sortedData = data.sort((a: IProfile, b: IProfile) => {
         switch (e.active) {
           case 'name':
           case 'remark':
-            return compare(a[e.active], b[e.active], isAsc);
+            return compare((a[e.active] ?? ''), (b[e.active] ?? ''), isAsc);
           case 'extra':
             return compare(
-              a['classification'] + a['extra'],
-              b['classification'] + b['extra'],
+              ((a as any)?.classification ?? '') + (a['extra'] ?? ''),
+              ((b as any)?.classification ?? '') + (b['extra'] ?? ''),
               isAsc
             );
+          case 'compatibility':
+            return compare(((a as any)?.classification ?? ''), ((b as any)?.classification ?? ''), isAsc);
           default:
-            return compare(otherCondition(a), otherCondition(b), isAsc);
+            return 0;
         }
       });
 
-      this.filtered = {
-        ...this.filtered,
-        fields: sortedData,
-      };
+      this.dbg('Sort result:', { by: e.active, direction: e.direction, count: sortedData.length });
+      this.filtered = { ...this.filtered, fields: sortedData };
     };
 
     const filter = () => {
-      const val = (e.target as HTMLInputElement).value.trim().toLowerCase();
+      // Eingabetext ermitteln
+      const raw = (e?.target as HTMLInputElement)?.value ?? '';
+      const val = this.norm(raw);
+      const totalBefore = this.original?.fields?.length ?? 0;
+
+      this.dbg('Filter input:', { raw, val, totalBefore });
+
+      // Heuristik: Wenn Nutzer „incompatible“ (oder Präfixe) tippt,
+      // prüfe zusätzlich field.classification.
+      const wantIncompatible = ['incompatible', 'incompat', 'incomp'].includes(val);
+
+      // Entscheidungslogik je Zeile
       const filterCond = (record: IProfile) => {
-        return (
-          !val.length ||
-          record.name.toLowerCase().indexOf(val) >= 0 ||
-          record.remark.toLowerCase().indexOf(val) >= 0 ||
-          record.action.toLowerCase().indexOf(val) >= 0 ||
-          record.extra?.toLowerCase().indexOf(val) >= 0
-        );
+        const name = this.norm(record?.name);
+        const remark = this.norm(record?.remark);
+        const action = this.norm(record?.action);
+        const extra = this.norm(record?.extra);
+        const classif = this.norm((record as any)?.classification);
+
+        let matches: boolean;
+
+        if (wantIncompatible) {
+          // Spezielle Debug-Route für "incompatible"
+          matches = classif === 'incompatible';
+        } else {
+          matches = !val || name.includes(val) || remark.includes(val) || action.includes(val) || extra.includes(val) || classif.includes(val);
+        }
+
+        // Detailliertes per-Record-Logging (nur bei aktivem Filter & DEBUG)
+        if (this.DEBUG && val) {
+          console.groupCollapsed(`[filter] ${record?.name ?? '(ohne name)'} -> ${matches ? '✔' : '✘'}`);
+          console.log('name:', name);
+          console.log('remark:', remark);
+          console.log('action:', action);
+          console.log('extra:', extra);
+          console.log('classification:', classif);
+          console.log('wantIncompatible:', wantIncompatible);
+          console.groupEnd();
+        }
+
+        return matches;
       };
-      this.mapping = {
-        ...this.mapping,
-        fields: this.original.fields.filter(filterCond),
-      };
-      this.totalLength = this.mapping.fields.length;
+
+      // Filtern
+      const filteredFields = (this.original?.fields ?? []).filter(filterCond);
+      const totalAfter = filteredFields.length;
+      this.dbg('Filter result:', { totalBefore, totalAfter });
+
+      // Ein paar Beispiele tabellarisch anzeigen
+      this.dbgTable('First 10 filtered rows', filteredFields.slice(0, 10));
+
+      // State aktualisieren + Pagination neu anwenden
+      this.mapping = { ...this.mapping, fields: filteredFields };
+      this.totalLength = filteredFields.length;
       this.pageIndex = 0;
+
       this.filtered = {
         ...this.mapping,
-        fields: this.mapping.fields.slice(
+        fields: filteredFields.slice(
           this.pageSize * this.pageIndex,
           this.pageSize * (this.pageIndex + 1)
         ),
@@ -339,7 +425,7 @@ export class MappingDetailComponent implements OnInit {
     console.log('Confirming changes for field:', field);
     let action: string;
     const updateData: any = {};
-    switch (field.remark) {
+    switch (field.action) {
       case 'copy_from':
         action = 'copy_from';
         updateData.other = field.targetField;
@@ -386,5 +472,7 @@ export class MappingDetailComponent implements OnInit {
 }
 
 const compare = (a: number | string, b: number | string, isAsc: boolean) => {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  const A = (a ?? '') as any;
+  const B = (b ?? '') as any;
+  return (A < B ? -1 : A > B ? 1 : 0) * (isAsc ? 1 : -1);
 };
