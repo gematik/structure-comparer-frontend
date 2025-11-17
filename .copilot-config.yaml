@@ -1,7 +1,7 @@
 project_info:
   name: "Structure Comparer Frontend"
   description: "Angular web application for comparing FHIR profiles and creating mappings between them. Provides a user interface for managing projects, uploading packages, and visualizing profile comparisons."
-  
+
 technologies:
   frameworks:
     - Angular 18
@@ -26,7 +26,7 @@ architecture:
     - Material Design UI components
     - Routing for navigation between views
     - Dialog components for user interactions
-  
+
 key_components:
   services:
     - comparison.service.ts: "Manages FHIR profile comparisons"
@@ -34,7 +34,7 @@ key_components:
     - project.service.ts: "Project management operations"
     - package.service.ts: "Package upload and management"
     - breadcrumb.service.ts: "Navigation breadcrumb functionality"
-  
+
   components:
     - project-list: "Lists and manages comparison projects"
     - profile-comparison: "Displays profile comparison results"
@@ -50,7 +50,7 @@ development:
     build: "ng build (builds for production)"
     test: "ng test (runs unit tests)"
     lint: "ng lint (code quality checks)"
-  
+
   conventions:
     - Use Angular standalone components where possible
     - Follow Angular Material design patterns
