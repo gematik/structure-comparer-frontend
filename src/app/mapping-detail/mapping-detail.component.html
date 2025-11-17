@@ -142,6 +142,15 @@
                 {{ getDescriptionForMapping(field.action) }}
               </span>
 
+              <!-- Mapping Result Display -->
+              <div class="mapping-result" 
+                   *ngIf="getMappingResult(field)"
+                   [attr.data-action]="field.action">
+                <div class="mapping-result-content">
+                  {{ getMappingResult(field) }}
+                </div>
+              </div>
+
               <div
                 *ngIf="field.action === 'manual' && field.remark"
                 class="mapping-remark"
@@ -153,9 +162,10 @@
             <button
               mat-button
               *ngIf="hoverIndex === i && editingIndex !== i"
-              (click)="handleEdit(i).startEdit()"
+              (click)="openEditPropertyActionDialog(field, i)"
+              color="primary"
             >
-              Ändern
+              Bearbeiten
             </button>
 
             <div *ngIf="editingIndex === i">

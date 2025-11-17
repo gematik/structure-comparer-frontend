@@ -1,0 +1,133 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>
+    <mat-icon>edit</mat-icon>
+    Mapping-Action bearbeiten
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+    
+    <!-- Field Information -->
+    <div class="field-info">
+      <h3>{{ data.field.name }}</h3>
+      <p *ngIf="data.field.extension" class="field-extension">
+        Extension: {{ data.field.extension }}
+      </p>
+      <p class="field-classification">
+        Kompatibilität: 
+        <span [class]="'pill pill--' + data.field.classification">
+          {{ data.field.classification }}
+        </span>
+      </p>
+    </div>
+
+    <!-- Current Action Display -->
+    <div class="current-action">
+      <strong>Aktuelle Aktion:</strong> 
+      <span [class]="'pill pill--' + data.field.action">
+        {{ getActionDescription(data.field.action) }}
+      </span>
+      <span *ngIf="data.field.other" class="current-details">
+        → {{ data.field.other }}
+      </span>
+      <span *ngIf="data.field.fixed" class="current-details">
+        = "{{ data.field.fixed }}"
+      </span>
+      <div *ngIf="data.field.remark" class="current-remark">
+        {{ data.field.remark }}
+      </div>
+    </div>
+
+    <!-- Action Selection -->
+    <div class="action-selection">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Neue Mapping-Action</mat-label>
+        <mat-select [(value)]="selectedAction" (selectionChange)="onActionChange()">
+          <mat-option *ngFor="let action of getFilteredActions()" [value]="action.value">
+            {{ action.description }}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="getActionInstruction()">{{ getActionInstruction() }}</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <!-- Conditional Fields -->
+    
+    <!-- Target Field Selection (for copy_from / copy_to) -->
+    <div *ngIf="requiresTargetField()" class="conditional-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>
+          <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
+          <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
+        </mat-label>
+        <mat-select [(value)]="targetField" required>
+          <mat-option value="">-- Feld auswählen --</mat-option>
+          <mat-option *ngFor="let field of data.availableFields" [value]="field.name">
+            {{ field.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="!targetField.trim()">
+          Bitte wählen Sie ein Feld aus
+        </mat-error>
+      </mat-form-field>
+      
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span *ngIf="selectedAction === 'copy_from'">
+          Der Wert wird aus dem ausgewählten Quellfeld übernommen
+        </span>
+        <span *ngIf="selectedAction === 'copy_to'">
+          Der Wert wird in das ausgewählte Zielfeld kopiert
+        </span>
+      </div>
+    </div>
+
+    <!-- Fixed Value Input -->
+    <div *ngIf="requiresFixedValue()" class="conditional-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fester Wert</mat-label>
+        <input matInput [(ngModel)]="fixedValue" placeholder="Wert eingeben..." required>
+        <mat-error *ngIf="!fixedValue.trim()">
+          Bitte geben Sie einen festen Wert ein
+        </mat-error>
+      </mat-form-field>
+      
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span>Das Feld wird immer mit diesem festen Wert gesetzt</span>
+      </div>
+    </div>
+
+    <!-- Remark Text (for manual / extension) -->
+    <div *ngIf="allowsRemark()" class="conditional-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Bemerkung</mat-label>
+        <textarea matInput [(ngModel)]="remarkText" 
+                  placeholder="Zusätzliche Informationen..." 
+                  rows="3"></textarea>
+      </mat-form-field>
+      
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span>Zusätzliche Informationen für die manuelle Bearbeitung</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Dialog Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="onCancel()" type="button">
+      <mat-icon>close</mat-icon>
+      Abbrechen
+    </button>
+    <button mat-raised-button 
+            color="primary" 
+            (click)="onSave()" 
+            [disabled]="!isValid()"
+            type="button">
+      <mat-icon>save</mat-icon>
+      Speichern
+    </button>
+  </div>
+  
+</div>

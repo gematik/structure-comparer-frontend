@@ -43,6 +43,87 @@ export interface TargetProfile {
 }
 
 /**
+ * Available actions for mapping fields
+ */
+export type MappingAction = 
+  | 'use' 
+  | 'not_use' 
+  | 'empty' 
+  | 'copy_from' 
+  | 'copy_to' 
+  | 'fixed' 
+  | 'manual' 
+  | 'extension' 
+  | 'other' 
+  | 'medication_service';
+
+/**
+ * Interface representing an action option with metadata
+ */
+export interface ActionOption {
+  // The action value (e.g., "use", "copy_from")
+  value: MappingAction;
+  // Human-readable description of the action
+  description: string;
+  // Optional additional instruction text
+  instruction?: string;
+}
+
+/**
+ * Interface representing profile information for a field
+ */
+export interface FieldProfile {
+  // Minimum cardinality
+  min: number | string;
+  // Maximum cardinality (* for unbounded)
+  max: number | string;
+  // Whether the field is must support
+  must_support?: boolean;
+  // Referenced types for the field
+  ref_types?: string[];
+}
+
+/**
+ * Interface representing a mapping field/property
+ */
+export interface MappingField {
+  // Field name/path
+  name: string;
+  // Current action set for this field
+  action: MappingAction;
+  // Available actions for this field
+  actions_allowed: MappingAction[];
+  // Classification of field compatibility
+  classification: string;
+  // Profile-specific information
+  profiles?: { [profileKey: string]: FieldProfile };
+  // Extension information if applicable
+  extension?: string;
+  // Additional extra information
+  extra?: string;
+  // Remark text for manual actions
+  remark?: string;
+  // Target field for copy actions
+  other?: string;
+  // Fixed value for fixed actions
+  fixed?: string;
+}
+
+/**
+ * Request payload for updating a mapping field
+ */
+export interface MappingFieldUpdateRequest {
+  // The action to set
+  action: MappingAction;
+  // Target field for copy actions
+  other?: string;
+  // Fixed value for fixed actions
+  fixed?: string;
+  // Remark for manual actions
+  remark?: string;
+}
+
+/**
  * Interface representing a mapping between source and target profiles
  * Used for defining transformations and field mappings
  */
@@ -65,4 +146,6 @@ export interface Mapping {
   warningCount?: number;
   // Optional counts of incompatible results
   incompatibleCount?: number;
+  // Fields in the mapping
+  fields?: MappingField[];
 }

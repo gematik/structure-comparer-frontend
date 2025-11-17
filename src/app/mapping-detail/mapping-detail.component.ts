@@ -34,6 +34,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ComparisonService } from '../comparison.service';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
+import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 
 export interface IProfile {
   name?: string;
@@ -42,12 +46,6 @@ export interface IProfile {
   remark?: string;
   [key: string]: any;
 }
-
-type ActionOption = {
-  value: string;        // z. B. "use", "manual", ...
-  remark?: string;      // nur für "manual" relevant
-  instruction?: string; // allgemeine Beschreibung/Label
-};
 
 @Component({
   selector: 'app-mapping-detail',
@@ -61,7 +59,6 @@ type ActionOption = {
     MatInputModule,
     MatTableModule,
     MatButtonModule,
-    MatIcon,
     MatTooltip
   ],
   templateUrl: './mapping-detail.component.html',
@@ -74,7 +71,7 @@ export class MappingDetailComponent implements OnInit {
   original: any;
   mapping: any;
   availableFields: any[] = [];
-  classifications: any[] = [];
+  classifications: ActionOptionModel[] = [];
   editingIndex: number | null | undefined = null;
   hoverIndex: number | null | undefined = null;
   filtered: any;
@@ -91,7 +88,9 @@ export class MappingDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
-    private comparisonService: ComparisonService
+    private comparisonService: ComparisonService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
     this.projectKey = "";
     this.mappingId = "";
@@ -305,6 +304,37 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
         return `This field has a fixed value: ${field.fixed}`;
       default:
         return 'No additional information';
+    }
+  }
+
+  /**
+   * Gets the mapping result text to display in the table
+   * Shows the concrete result/target of the mapping action
+   */
+  getMappingResult(field: any): string {
+    switch (field.action) {
+      case 'copy_from':
+        return field.other ? `🔄 Kopiert von: ${field.other}` : '';
+      case 'copy_to':
+        return field.other ? `🔄 Kopiert zu: ${field.other}` : '';
+      case 'fixed':
+        return field.fixed ? `📌 Fester Wert: "${field.fixed}"` : '';
+      case 'manual':
+        return field.remark ? `✋ Manuell: ${field.remark}` : '✋ Manuelle Bearbeitung erforderlich';
+      case 'extension':
+        return field.remark ? `🔧 Extension: ${field.remark}` : '🔧 Extension-Behandlung';
+      case 'not_use':
+        return '❌ Wird nicht verwendet';
+      case 'empty':
+        return '🗑️ Wird geleert';
+      case 'use':
+        return '✅ Wird übernommen';
+      case 'other':
+        return '⚠️ Sonderbehandlung';
+      case 'medication_service':
+        return '💊 Medikations-Service';
+      default:
+        return '';
     }
   }
 
@@ -531,6 +561,60 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
       });
 
     this.handleEdit().cancelEdit();
+  }
+
+  /**
+   * Opens the property action edit dialog
+   */
+  openEditPropertyActionDialog(field: MappingField, fieldIndex: number): void {
+    const dialogData: EditPropertyActionDialogData = {
+      field: field,
+      availableActions: this.classifications,
+      availableFields: this.availableFields,
+      projectKey: this.projectKey,
+      mappingId: this.mappingId
+    };
+
+    const dialogRef = this.dialog.open(EditPropertyActionDialogComponent, {
+      width: '600px',
+      maxWidth: '90vw',
+      data: dialogData,
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: MappingFieldUpdateRequest) => {
+      if (result) {
+        this.updateFieldAction(field.name, result);
+      }
+    });
+  }
+
+  /**
+   * Updates a field's action via the API
+   */
+  private updateFieldAction(fieldName: string, updateRequest: MappingFieldUpdateRequest): void {
+    this.mappingsService.updateMappingFieldAction(this.projectKey, this.mappingId, fieldName, updateRequest)
+      .pipe(
+        catchError((error) => {
+          console.error('Error updating field action:', error);
+          this.snackBar.open('Fehler beim Speichern der Mapping-Action', 'Schließen', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+          return of(null);
+        })
+      )
+      .subscribe((response) => {
+        if (response) {
+          this.snackBar.open('Mapping-Action erfolgreich gespeichert', 'Schließen', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          
+          // Reload mapping data to reflect changes
+          this.loadMapping(this.projectKey, this.mappingId);
+        }
+      });
   }
 }
 

@@ -1,0 +1,200 @@
+/* Dialog Styling */
+.dialog-container {
+  min-width: 500px;
+  max-width: 700px;
+}
+
+.dialog-content {
+  min-height: 300px;
+  padding: 16px 0;
+}
+
+/* Field Information Section */
+.field-info {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.field-info h3 {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  color: #333;
+}
+
+.field-extension {
+  color: #666;
+  font-size: 0.9em;
+  margin: 4px 0;
+}
+
+.field-classification {
+  margin: 8px 0 0 0;
+}
+
+/* Current Action Display */
+.current-action {
+  background-color: #e8f4fd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  border-left: 4px solid #2196f3;
+}
+
+.current-details {
+  color: #666;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.current-remark {
+  margin-top: 8px;
+  font-style: italic;
+  color: #555;
+  background-color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* Form Fields */
+.full-width {
+  width: 100%;
+}
+
+.action-selection {
+  margin-bottom: 24px;
+}
+
+.conditional-field {
+  margin-bottom: 20px;
+}
+
+/* Action Explanation */
+.action-explanation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f0f7ff;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #1565c0;
+}
+
+.action-explanation mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Dialog Actions */
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 0 0 0;
+  margin-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.dialog-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Pill Styles (matching existing classification styles) */
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pill--use {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.pill--not_use {
+  background-color: #fce4ec;
+  color: #c2185b;
+  border: 1px solid #e91e63;
+}
+
+.pill--empty {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #9c27b0;
+}
+
+.pill--copy_from,
+.pill--copy_to {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #2196f3;
+}
+
+.pill--fixed {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border: 1px solid #ff9800;
+}
+
+.pill--manual {
+  background-color: #fff8e1;
+  color: #f57f17;
+  border: 1px solid #ffeb3b;
+}
+
+.pill--extension {
+  background-color: #f1f8e9;
+  color: #33691e;
+  border: 1px solid #8bc34a;
+}
+
+.pill--other,
+.pill--medication_service {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #f44336;
+}
+
+.pill--compatible {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #4caf50;
+}
+
+.pill--incompatible {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #f44336;
+}
+
+.pill--warning {
+  background-color: #fff8e1;
+  color: #f57f17;
+  border: 1px solid #ffeb3b;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .dialog-container {
+    min-width: 350px;
+  }
+  
+  .dialog-actions {
+    flex-direction: column;
+  }
+  
+  .dialog-actions button {
+    width: 100%;
+  }
+}

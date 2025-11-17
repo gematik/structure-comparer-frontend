@@ -103,6 +103,24 @@ export class MappingsService {
   }
 
   /**
+   * Updates a mapping field with the new action configuration
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param fieldName The name of the field to update
+   * @param updateRequest The update request with action and additional data
+   * @returns Observable containing the updated field data
+   */
+  updateMappingFieldAction(projectKey: string, mappingId: string, fieldName: string, updateRequest: any): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}`;
+    
+    return this.http.post(requestUrl, updateRequest)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Retrieves a list of all projects
    * @returns Observable containing the list of projects
    */
