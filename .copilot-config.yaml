@@ -1,0 +1,73 @@
+project_info:
+  name: "Structure Comparer Frontend"
+  description: "Angular web application for comparing FHIR profiles and creating mappings between them. Provides a user interface for managing projects, uploading packages, and visualizing profile comparisons."
+  
+technologies:
+  frameworks:
+    - Angular 18
+    - Angular Material
+    - Angular CDK
+  languages:
+    - TypeScript
+    - HTML
+    - CSS
+  tools:
+    - Angular CLI
+    - Karma (Testing)
+    - Jasmine (Testing)
+    - FontAwesome Icons
+  runtime: Node.js
+
+architecture:
+  type: Single Page Application (SPA)
+  structure: |
+    - Component-based Angular architecture
+    - Service layer for API communication and data management
+    - Material Design UI components
+    - Routing for navigation between views
+    - Dialog components for user interactions
+  
+key_components:
+  services:
+    - comparison.service.ts: "Manages FHIR profile comparisons"
+    - mappings.service.ts: "Handles mapping data between profiles"
+    - project.service.ts: "Project management operations"
+    - package.service.ts: "Package upload and management"
+    - breadcrumb.service.ts: "Navigation breadcrumb functionality"
+  
+  components:
+    - project-list: "Lists and manages comparison projects"
+    - profile-comparison: "Displays profile comparison results"
+    - mapping-detail: "Shows detailed mapping information"
+    - add-comparison-dialog: "Dialog for creating new comparisons"
+    - add-mapping-dialog: "Dialog for adding new mappings"
+    - package-upload-dialog: "Dialog for uploading FHIR packages"
+    - edit-project: "Project editing interface"
+
+development:
+  commands:
+    start: "ng serve (runs dev server on http://localhost:4200)"
+    build: "ng build (builds for production)"
+    test: "ng test (runs unit tests)"
+    lint: "ng lint (code quality checks)"
+  
+  conventions:
+    - Use Angular standalone components where possible
+    - Follow Angular Material design patterns
+    - Implement proper TypeScript typing
+    - Use services for data management and API calls
+    - Follow gematik coding standards and licensing
+
+backend_integration:
+  api_base: "Expected to connect to FastAPI backend service"
+  data_flow: |
+    - Frontend uploads FHIR packages via dialogs
+    - Backend processes and compares profiles
+    - Frontend displays comparison results and mappings
+    - Users can create and manage mapping projects
+
+domain_knowledge:
+  - FHIR (Fast Healthcare Interoperability Resources) profiles
+  - Healthcare data standards and interoperability
+  - Profile comparison and mapping workflows
+  - German healthcare (gematik) standards
