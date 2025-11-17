@@ -45,16 +45,16 @@ export interface TargetProfile {
 /**
  * Available actions for mapping fields
  */
-export type MappingAction = 
-  | 'use' 
-  | 'not_use' 
-  | 'empty' 
-  | 'copy_from' 
-  | 'copy_to' 
-  | 'fixed' 
-  | 'manual' 
-  | 'extension' 
-  | 'other' 
+export type MappingAction =
+  | 'use'
+  | 'not_use'
+  | 'empty'
+  | 'copy_from'
+  | 'copy_to'
+  | 'fixed'
+  | 'manual'
+  | 'extension'
+  | 'other'
   | 'medication_service';
 
 /**

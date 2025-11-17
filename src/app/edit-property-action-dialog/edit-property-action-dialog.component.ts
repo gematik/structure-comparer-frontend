@@ -54,12 +54,12 @@ export interface EditPropertyActionDialogData {
   styleUrl: './edit-property-action-dialog.component.css'
 })
 export class EditPropertyActionDialogComponent implements OnInit {
-  
+
   selectedAction: MappingAction;
   targetField: string = '';
   fixedValue: string = '';
   remarkText: string = '';
-  
+
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: EditPropertyActionDialogData
@@ -87,7 +87,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Gets available actions filtered by what's allowed for this field
    */
   getFilteredActions(): ActionOption[] {
-    return this.data.availableActions.filter(action => 
+    return this.data.availableActions.filter(action =>
       this.data.field.actions_allowed.includes(action.value)
     );
   }

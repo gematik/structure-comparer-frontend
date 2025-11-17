@@ -189,11 +189,11 @@
   .dialog-container {
     min-width: 350px;
   }
-  
+
   .dialog-actions {
     flex-direction: column;
   }
-  
+
   .dialog-actions button {
     width: 100%;
   }

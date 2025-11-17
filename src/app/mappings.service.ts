@@ -115,7 +115,7 @@ export class MappingsService {
     const encodedMappingId = encodeURIComponent(mappingId);
     const encodedFieldName = encodeURIComponent(fieldName);
     const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}`;
-    
+
     return this.http.post(requestUrl, updateRequest)
       .pipe(catchError(this.handleError));
   }

@@ -610,7 +610,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
             duration: 3000,
             panelClass: ['success-snackbar']
           });
-          
+
           // Reload mapping data to reflect changes
           this.loadMapping(this.projectKey, this.mappingId);
         }
