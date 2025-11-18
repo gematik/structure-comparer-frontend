@@ -146,6 +146,16 @@ export interface Mapping {
   warningCount?: number;
   // Optional counts of incompatible results
   incompatibleCount?: number;
+  // Optional counts of compatible results
+  compatibleCount?: number;
+  // Optional counts of resolved results
+  resolvedCount?: number;
+  // Optional counts of mitigated results
+  mitigatedCount?: number;
+  // Optional counts of fields needing action
+  needsActionCount?: number;
+  // Optional total count of fields
+  totalCount?: number;
   // Fields in the mapping
   fields?: MappingField[];
 }

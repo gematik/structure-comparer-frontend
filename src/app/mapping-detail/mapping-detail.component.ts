@@ -38,6 +38,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
+import { MappingEvaluation, FieldEvaluation, EnhancedMappingField } from '../models/mapping-evaluation.model';
 
 export interface IProfile {
   name?: string;
@@ -75,6 +76,15 @@ export class MappingDetailComponent implements OnInit {
   editingIndex: number | null | undefined = null;
   hoverIndex: number | null | undefined = null;
   filtered: any;
+
+  // Enhanced evaluation data
+  mappingEvaluation: MappingEvaluation | null = null;
+  enhancedFields: EnhancedMappingField[] = [];
+  showEnhancedView = true; // Always enabled
+  enhancedViewAvailable = false;
+  evaluationLoadingError: string | null = null;
+  showDetailedRecommendations = true; // Always enabled
+  currentQuickFilter: string | null = null;
 
   // Dynamische Spalten: alle Source-Profile + Target-Profile
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
@@ -120,6 +130,7 @@ export class MappingDetailComponent implements OnInit {
       this.loadMapping(this.projectKey, this.mappingId);
       this.loadFields(this.projectKey, this.mappingId);
       this.loadActions();
+      // loadMappingEvaluation is called after loadMapping completes
     }
   }
 
@@ -156,6 +167,11 @@ export class MappingDetailComponent implements OnInit {
           ...sortedMapping,
           fields: sortedFields.slice(0, this.pageSize),
         };
+
+        // Load evaluation after mapping data is loaded
+        if (this.projectKey && this.mappingId) {
+          this.loadMappingEvaluation(this.projectKey, this.mappingId);
+        }
       });
   }
 
@@ -229,6 +245,403 @@ export class MappingDetailComponent implements OnInit {
         this.classifications = data.actions;
         console.log('classifications', this.classifications);
       });
+  }
+
+  loadMappingEvaluation(projectKey: string, mappingId: string) {
+    console.log('Loading mapping evaluation for:', projectKey, mappingId);
+
+    this.comparisonService
+      .getMappingEvaluation(projectKey, mappingId)
+      .pipe(
+        catchError((err) => {
+          console.error('Error loading mapping evaluation', err);
+          this.evaluationLoadingError = err.message || 'Failed to load enhanced evaluation';
+          this.enhancedViewAvailable = false;
+          // For development: Enable enhanced view even without API
+          this.createFallbackEvaluation();
+          return of(null);
+        })
+      )
+      .subscribe((evaluation) => {
+        if (evaluation) {
+          this.mappingEvaluation = evaluation;
+          this.enhancedViewAvailable = true;
+          this.evaluationLoadingError = null;
+          this.enhanceFieldsWithEvaluation();
+          console.log('Enhanced mapping evaluation loaded', evaluation);
+        } else {
+          console.log('No evaluation data received');
+        }
+      });
+  }
+
+  enhanceFieldsWithEvaluation() {
+    if (!this.mappingEvaluation || !this.filtered?.fields) {
+      return;
+    }
+
+    this.enhancedFields = this.filtered.fields.map((field: any) => {
+      const evaluation = this.mappingEvaluation!.field_evaluations[field.name];
+      const enhancedField: EnhancedMappingField = {
+        ...field,
+        evaluation: evaluation
+      };
+
+      if (evaluation) {
+        enhancedField.enhancedTooltip = this.comparisonService.getEnhancedClassificationDescription(evaluation);
+        enhancedField.cssClass = this.comparisonService.getEnhancedClassificationCssClass(evaluation.enhanced_classification);
+      }
+
+      return enhancedField;
+    });
+  }
+
+  getEnhancedTooltip(field: any): string {
+    const evaluation = this.mappingEvaluation?.field_evaluations[field.name];
+    if (evaluation) {
+      return this.comparisonService.getEnhancedClassificationDescription(evaluation);
+    }
+    return this.getTooltipComparison(field);
+  }
+
+  getEnhancedCssClass(field: any): string {
+    const evaluation = this.mappingEvaluation?.field_evaluations[field.name];
+    if (evaluation) {
+      return this.comparisonService.getEnhancedClassificationCssClass(evaluation.enhanced_classification);
+    }
+    return this.loadComparisonCSSProperty(field.classification);
+  }
+
+
+
+  createFallbackEvaluation() {
+    // Create a fallback evaluation for testing when API is not available
+    console.log('Creating fallback evaluation for testing');
+
+    if (!this.filtered?.fields) {
+      return;
+    }
+
+    const fieldEvaluations: any = {};
+
+    this.filtered.fields.forEach((field: any) => {
+      // Create mock evaluation based on field classification
+      let enhancedClassification = 'compatible';
+      let issues: any[] = [];
+      let warnings: string[] = [];
+      let recommendations: string[] = [];
+
+      switch (field.classification) {
+        case 'incompatible':
+          enhancedClassification = field.action === 'extension' ? 'action_resolved' : 'incompatible';
+          if (field.action === 'extension') {
+            issues.push({
+              issue_type: 'min',
+              severity: 'action_resolved',
+              message: 'Incompatibility resolved by extension action',
+              resolved_by_action: 'extension',
+              requires_attention: true
+            });
+          }
+          break;
+        case 'warning':
+          enhancedClassification = field.action === 'use' ? 'warning' : 'action_mitigated';
+          warnings.push('Potential compatibility issues detected');
+          break;
+      }
+
+      if (field.action === 'manual') {
+        enhancedClassification = 'action_mitigated';
+        recommendations.push('Ensure manual implementation is properly documented');
+      }
+
+      fieldEvaluations[field.name] = {
+        field_name: field.name,
+        original_classification: field.classification,
+        enhanced_classification: enhancedClassification,
+        action: field.action,
+        issues: issues,
+        warnings: warnings,
+        recommendations: recommendations
+      };
+    });
+
+    this.mappingEvaluation = {
+      mapping_id: this.mappingId,
+      mapping_name: this.filtered.name,
+      field_evaluations: fieldEvaluations,
+      summary: {
+        total_fields: this.filtered.fields.length,
+        compatible: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'compatible').length,
+        warnings: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'warning').length,
+        incompatible: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'incompatible').length,
+        action_resolved: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'action_resolved').length,
+        action_mitigated: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'action_mitigated').length,
+        needs_attention: Object.values(fieldEvaluations).filter((e: any) => e.issues?.some((i: any) => i.requires_attention)).length
+      }
+    };
+
+    this.enhancedViewAvailable = true;
+    this.enhanceFieldsWithEvaluation();
+    console.log('Fallback evaluation created:', this.mappingEvaluation);
+  }
+
+  getEvaluationSummary(): any {
+    return this.mappingEvaluation?.summary || null;
+  }
+
+  getStatusSummary(): any {
+    if (!this.filtered?.fields) {
+      return null;
+    }
+
+    const summary = {
+      total: this.filtered.fields.length,
+      completed: 0,
+      resolved: 0,
+      mitigated: 0,
+      in_progress: 0,
+      needs_action: 0,
+      unknown: 0
+    };
+
+    this.filtered.fields.forEach((field: any) => {
+      const status = this.getProcessingStatus(field);
+      if (summary.hasOwnProperty(status)) {
+        (summary as any)[status]++;
+      }
+    });
+
+    return summary;
+  }
+
+  getProgressPercentage(status: string): number {
+    const summary = this.getStatusSummary();
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
+
+    const value = (summary as any)[status] || 0;
+    return (value / summary.total) * 100;
+  }
+
+  getCompletionPercentage(): number {
+    const summary = this.getStatusSummary();
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
+
+    const completed = summary.completed + summary.resolved;
+    return Math.round((completed / summary.total) * 100);
+  }
+
+  getTotalStatusSummary(): any {
+    if (!this.original?.fields) {
+      return null;
+    }
+
+    const summary = {
+      total: this.original.fields.length,
+      completed: 0,
+      resolved: 0,
+      mitigated: 0,
+      in_progress: 0,
+      needs_action: 0,
+      unknown: 0
+    };
+
+    this.original.fields.forEach((field: any) => {
+      const status = this.getProcessingStatus(field);
+      if (summary.hasOwnProperty(status)) {
+        (summary as any)[status]++;
+      }
+    });
+
+    return summary;
+  }
+
+  getTotalProgressPercentage(status: string): number {
+    const summary = this.getTotalStatusSummary();
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
+
+    const value = (summary as any)[status] || 0;
+    return (value / summary.total) * 100;
+  }
+
+  getTotalCompletionPercentage(): number {
+    const summary = this.getTotalStatusSummary();
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
+
+    const completed = summary.completed + summary.resolved;
+    return Math.round((completed / summary.total) * 100);
+  }
+
+  applyQuickFilter(filterType: string): void {
+    this.currentQuickFilter = filterType;
+
+    // Filter fields by status
+    const filteredFields = (this.original?.fields ?? []).filter((field: any) => {
+      const fieldStatus = this.getProcessingStatus(field);
+      return fieldStatus === filterType;
+    });
+
+    this.dbg('Quick filter applied:', { filterType, totalBefore: this.original?.fields?.length ?? 0, totalAfter: filteredFields.length });
+
+    // Update the mapping and filtered data
+    this.mapping = { ...this.mapping, fields: filteredFields };
+    this.totalLength = filteredFields.length;
+    this.pageIndex = 0;
+
+    this.filtered = {
+      ...this.mapping,
+      fields: filteredFields.slice(
+        this.pageSize * this.pageIndex,
+        this.pageSize * (this.pageIndex + 1)
+      ),
+    };
+
+    // Clear the text filter input
+    const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
+    if (filterInput) {
+      filterInput.value = '';
+    }
+  }
+
+  clearQuickFilter(): void {
+    this.currentQuickFilter = null;
+
+    // Reset to show all fields
+    this.mapping = { ...this.original };
+    this.totalLength = this.original?.fields?.length ?? 0;
+    this.pageIndex = 0;
+
+    this.filtered = {
+      ...this.mapping,
+      fields: (this.mapping.fields ?? []).slice(
+        this.pageSize * this.pageIndex,
+        this.pageSize * (this.pageIndex + 1)
+      ),
+    };
+
+    // Clear the text filter input
+    const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
+    if (filterInput) {
+      filterInput.value = '';
+    }
+  }
+
+  loadComparisonCSSProperty(compatibility: string): string {
+    const CSS_CLASS: { [key: string]: string } = {
+      compatible: 'compatible',
+      warning: 'warning',
+      incompatible: 'incompatible',
+    };
+    return CSS_CLASS[compatibility] || '';
+  }
+
+  /**
+   * Determines the processing status of a field based on its classification and action
+   */
+  getProcessingStatus(field: any): string {
+    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
+
+    // If we have enhanced evaluation, use that
+    if (evaluation) {
+      switch (evaluation.enhanced_classification) {
+        case 'compatible':
+          return 'completed';
+        case 'action_resolved':
+          return 'resolved';
+        case 'action_mitigated':
+          return 'mitigated';
+        case 'warning':
+          return field.action === 'use' ? 'needs_action' : 'in_progress';
+        case 'incompatible':
+          return 'needs_action';
+        default:
+          return 'unknown';
+      }
+    }
+
+    // Fallback to original classification logic
+    switch (field.classification) {
+      case 'compatible':
+        return 'completed';
+      case 'warning':
+        // Check if action addresses the warning
+        if (['extension', 'copy_from', 'copy_to', 'fixed', 'manual'].includes(field.action)) {
+          return 'resolved';
+        } else if (field.action === 'use') {
+          return 'needs_action';
+        } else {
+          return 'in_progress';
+        }
+      case 'incompatible':
+        // Check if action addresses the incompatibility
+        if (['extension', 'copy_from', 'copy_to', 'fixed', 'not_use', 'empty'].includes(field.action)) {
+          return 'resolved';
+        } else {
+          return 'needs_action';
+        }
+      default:
+        return 'unknown';
+    }
+  }
+
+  /**
+   * Gets a human-readable status label
+   */
+  getStatusLabel(status: string): string {
+    const labels: { [key: string]: string } = {
+      'completed': 'Abgeschlossen',
+      'resolved': 'Gelöst',
+      'mitigated': 'Behandelt',
+      'in_progress': 'In Bearbeitung',
+      'needs_action': 'Aktion erforderlich',
+      'unknown': 'Unbekannt'
+    };
+    return labels[status] || status;
+  }
+
+  /**
+   * Gets CSS class for status
+   */
+  getStatusCssClass(status: string): string {
+    const cssClasses: { [key: string]: string } = {
+      'completed': 'status-completed',
+      'resolved': 'status-resolved',
+      'mitigated': 'status-mitigated',
+      'in_progress': 'status-in-progress',
+      'needs_action': 'status-needs-action',
+      'unknown': 'status-unknown'
+    };
+    return cssClasses[status] || 'status-unknown';
+  }
+
+  /**
+   * Gets tooltip for status
+   */
+  getStatusTooltip(field: any, status: string): string {
+    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
+
+    switch (status) {
+      case 'completed':
+        return 'Dieses Feld ist kompatibel und benötigt keine weiteren Aktionen.';
+      case 'resolved':
+        return `Problem wurde durch ${field.action} Aktion gelöst. ${evaluation?.issues?.length ? 'Details: ' + evaluation.issues.map((i: any) => i.message).join('; ') : ''}`;
+      case 'mitigated':
+        return `Problem wurde behandelt, erfordert aber Aufmerksamkeit. ${evaluation?.recommendations?.length ? 'Empfehlungen: ' + evaluation.recommendations.join('; ') : ''}`;
+      case 'in_progress':
+        return 'Aktion ist definiert, aber das Problem ist möglicherweise nicht vollständig gelöst.';
+      case 'needs_action':
+        return `${field.classification === 'incompatible' ? 'Inkompatibilität' : 'Warnung'} erfordert eine Aktion zur Lösung.`;
+      default:
+        return 'Status unbekannt';
+    }
   }
 
   getClassificationInstruction(action: string): string {
@@ -344,7 +757,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
    */
   getConsolidatedMappingText(field: any): string {
     const parts: string[] = [];
-    
+
     switch (field.action) {
       case 'copy_from':
         if (field.other) {
@@ -391,7 +804,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
         parts.push('Medikations-Service Integration');
         break;
     }
-    
+
     return parts.join(' • ');
   }
 
@@ -433,6 +846,20 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
             );
           case 'compatibility':
             return compare(((a as any)?.classification ?? ''), ((b as any)?.classification ?? ''), isAsc);
+          case 'status':
+            const statusA = this.getProcessingStatus(a);
+            const statusB = this.getProcessingStatus(b);
+            const statusPriorityMap: { [key: string]: number } = {
+              'needs_action': 0,
+              'in_progress': 1,
+              'mitigated': 2,
+              'resolved': 3,
+              'completed': 4,
+              'unknown': 5
+            };
+            const priorityA = statusPriorityMap[statusA] ?? 5;
+            const priorityB = statusPriorityMap[statusB] ?? 5;
+            return compare(priorityA, priorityB, isAsc);
           default:
             // Dynamische Profilspalten wie "profile-<key>"
             if (e.active?.startsWith('profile-')) {
@@ -459,6 +886,11 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
     };
 
     const filter = () => {
+      // If a quick filter is active, don't override it with text search
+      if (this.currentQuickFilter) {
+        return;
+      }
+
       // Eingabetext ermitteln
       const raw = (e?.target as HTMLInputElement)?.value ?? '';
       const val = this.norm(raw);
@@ -466,9 +898,30 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
 
       this.dbg('Filter input:', { raw, val, totalBefore });
 
-      // Heuristik: Wenn Nutzer „incompatible“ (oder Präfixe) tippt,
+      // Heuristik: Wenn Nutzer „incompatible" (oder Präfixe) tippt,
       // prüfe zusätzlich field.classification.
       const wantIncompatible = ['incompatible', 'incompat', 'incomp'].includes(val);
+
+      // Status filtering heuristics
+      const statusKeywords: { [key: string]: string } = {
+        'aktion': 'needs_action',
+        'erforderlich': 'needs_action',
+        'needs': 'needs_action',
+        'gelöst': 'resolved',
+        'resolved': 'resolved',
+        'behandelt': 'mitigated',
+        'mitigated': 'mitigated',
+        'kompatibel': 'completed',
+        'completed': 'completed'
+      };
+
+      let filterByStatus: string | null = null;
+      for (const [keyword, status] of Object.entries(statusKeywords)) {
+        if (val.includes(keyword)) {
+          filterByStatus = status;
+          break;
+        }
+      }
 
       // Entscheidungslogik je Zeile
       const filterCond = (record: IProfile) => {
@@ -480,7 +933,11 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
 
         let matches: boolean;
 
-        if (wantIncompatible) {
+        if (filterByStatus) {
+          // Filter by processing status
+          const fieldStatus = this.getProcessingStatus(record);
+          matches = fieldStatus === filterByStatus;
+        } else if (wantIncompatible) {
           // Spezielle Debug-Route für "incompatible"
           matches = classif === 'incompatible';
         } else {

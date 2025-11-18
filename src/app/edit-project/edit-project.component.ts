@@ -202,7 +202,7 @@ export class EditProjectComponent implements OnInit {
     this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
   }
 
-  sortMappings(col: 'name' | 'warningCount' | 'incompatibleCount'): void {
+  sortMappings(col: 'name' | 'warningCount' | 'incompatibleCount' | 'compatibleCount' | 'resolvedCount' | 'mitigatedCount' | 'needsActionCount' | 'totalCount'): void {
     this.mapSort = {
       col,
       dir: (this.mapSort.col === col && this.mapSort.dir === 'asc') ? 'desc' : 'asc'
@@ -490,13 +490,43 @@ export class EditProjectComponent implements OnInit {
   }
 
   private countByClassification(fields: any[]) {
-    let warning = 0, incompatible = 0;
+    let warning = 0, incompatible = 0, compatible = 0, resolved = 0, mitigated = 0, needs_action = 0;
+
     for (const f of fields ?? []) {
       const cls = (f?.classification ?? '').toString().toLowerCase();
-      if (cls === 'warning') warning++;
-      else if (cls === 'incompatible') incompatible++;
+      const action = (f?.action ?? '').toString().toLowerCase();
+
+      // Enhanced status calculation based on classification and action
+      if (cls === 'compatible') {
+        compatible++;
+      } else if (cls === 'warning') {
+        warning++;
+        if (['extension', 'copy_from', 'copy_to', 'fixed', 'manual'].includes(action)) {
+          resolved++;
+        } else if (action === 'use') {
+          needs_action++;
+        } else if (action === 'manual') {
+          mitigated++;
+        }
+      } else if (cls === 'incompatible') {
+        incompatible++;
+        if (['extension', 'copy_from', 'copy_to', 'fixed', 'not_use', 'empty'].includes(action)) {
+          resolved++;
+        } else {
+          needs_action++;
+        }
+      }
     }
-    return { warning, incompatible };
+
+    return {
+      warning,
+      incompatible,
+      compatible,
+      resolved,
+      mitigated,
+      needs_action,
+      total: fields?.length ?? 0
+    };
   }
 
   private hydrateCounts(): void {
@@ -524,14 +554,32 @@ export class EditProjectComponent implements OnInit {
       const jobs = this.mappings.map(m =>
         this.mappingsService.getMapping(this.projectKey, m.id).pipe(
           map(detail => ({ id: m.id, ...this.countByClassification(detail?.fields ?? []) })),
-          catchError(() => of({ id: m.id, warning: 0, incompatible: 0 }))
+          catchError(() => of({
+            id: m.id,
+            warning: 0,
+            incompatible: 0,
+            compatible: 0,
+            resolved: 0,
+            mitigated: 0,
+            needs_action: 0,
+            total: 0
+          }))
         )
       );
       forkJoin(jobs).subscribe(results => {
         const byId = new Map(results.map(r => [r.id, r]));
         this.mappings = this.mappings.map(m => {
           const r = byId.get(m.id);
-          return { ...m, warningCount: r?.warning ?? 0, incompatibleCount: r?.incompatible ?? 0 };
+          return {
+            ...m,
+            warningCount: r?.warning ?? 0,
+            incompatibleCount: r?.incompatible ?? 0,
+            compatibleCount: r?.compatible ?? 0,
+            resolvedCount: r?.resolved ?? 0,
+            mitigatedCount: r?.mitigated ?? 0,
+            needsActionCount: r?.needs_action ?? 0,
+            totalCount: r?.total ?? 0
+          };
         });
         this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
       });

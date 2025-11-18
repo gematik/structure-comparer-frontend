@@ -148,18 +148,33 @@
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
-      <th class="col-narrow clickable" (click)="sortMappings('warningCount')">
-        Warnings
-        <span *ngIf="mapSort.col === 'warningCount'">
+      <th class="col-narrow clickable" (click)="sortMappings('totalCount')">
+        Total
+        <span *ngIf="mapSort.col === 'totalCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
-      <th
-        class="col-narrow clickable"
-        (click)="sortMappings('incompatibleCount')"
-      >
-        Incompatible
-        <span *ngIf="mapSort.col === 'incompatibleCount'">
+      <th class="col-narrow clickable" (click)="sortMappings('compatibleCount')">
+        Compatible
+        <span *ngIf="mapSort.col === 'compatibleCount'">
+          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
+        </span>
+      </th>
+      <th class="col-narrow clickable" (click)="sortMappings('resolvedCount')">
+        Resolved
+        <span *ngIf="mapSort.col === 'resolvedCount'">
+          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
+        </span>
+      </th>
+      <th class="col-narrow clickable" (click)="sortMappings('needsActionCount')">
+        Needs Action
+        <span *ngIf="mapSort.col === 'needsActionCount'">
+          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
+        </span>
+      </th>
+      <th class="col-narrow clickable" (click)="sortMappings('mitigatedCount')">
+        Mitigated
+        <span *ngIf="mapSort.col === 'mitigatedCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
@@ -181,12 +196,19 @@
         {{ mapping.name }}
       </td>
       <td>
-        <span class="pill pill--warning">{{ mapping.warningCount ?? 0 }}</span>
+        <span class="pill pill--total">{{ mapping.totalCount ?? 0 }}</span>
       </td>
       <td>
-        <span class="pill pill--incompatible">{{
-          mapping.incompatibleCount ?? 0
-        }}</span>
+        <span class="pill pill--compatible">{{ mapping.compatibleCount ?? 0 }}</span>
+      </td>
+      <td>
+        <span class="pill pill--resolved">{{ mapping.resolvedCount ?? 0 }}</span>
+      </td>
+      <td>
+        <span class="pill pill--needs-action">{{ mapping.needsActionCount ?? 0 }}</span>
+      </td>
+      <td>
+        <span class="pill pill--mitigated">{{ mapping.mitigatedCount ?? 0 }}</span>
       </td>
       <td>
         <button
