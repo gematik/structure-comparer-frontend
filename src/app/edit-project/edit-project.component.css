@@ -39,15 +39,54 @@
 
 /* Manual Entries Import Styles */
 .manual-entries-import-card {
-  margin: 20px 0;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 24px 0;
+  padding: 24px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  transition: box-shadow 0.3s ease;
 }
 
-.manual-entries-import-card .description {
+.manual-entries-import-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.import-card-header {
   margin-bottom: 20px;
+}
+
+.import-card-header h2 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 500;
+  color: #333;
+}
+
+.import-description {
+  margin: 0;
   color: #666;
   line-height: 1.5;
+  font-size: 14px;
+}
+
+.import-card-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.import-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-weight: 500;
+}
+
+.import-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .file-input-section {

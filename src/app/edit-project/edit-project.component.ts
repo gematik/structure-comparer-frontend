@@ -28,6 +28,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -43,6 +44,7 @@ import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-compa
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
+import { ManualEntriesImportDialogComponent } from '../manual-entries-import-dialog/manual-entries-import-dialog.component';
 
 // Import new sub-components
 import { PackageListComponent } from '../shared/package-list/package-list.component';
@@ -60,6 +62,7 @@ import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overl
   imports: [
     CommonModule,
     MatButtonModule,
+    MatIconModule,
     PackageListComponent,
     ComparisonListComponent,
     MappingListComponent,
@@ -534,5 +537,22 @@ export class EditProjectComponent implements OnInit {
       needs_action: 0,
       total: fields?.length ?? 0
     };
+  }
+
+  /**
+   * Opens the manual entries import dialog
+   * @param projectKey The key of the current project
+   */
+  openManualEntriesImportDialog(projectKey: string): void {
+    this.dialog.open(ManualEntriesImportDialogComponent, {
+      width: '600px',
+      data: { projectKey }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Manual entries import completed:', result);
+        // Optionally refresh project data after successful import
+        this.refreshProjectData();
+      }
+    });
   }
 }

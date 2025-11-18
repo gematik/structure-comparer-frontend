@@ -1,0 +1,216 @@
+/* Dialog specific styles */
+.description {
+  margin-bottom: 24px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.description code {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+/* File Input Styles */
+.file-input-section {
+  margin: 20px 0;
+}
+
+.file-input-wrapper {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: border-color 0.3s ease;
+}
+
+.file-input-wrapper:hover {
+  border-color: #1976d2;
+}
+
+.file-input-label {
+  display: block;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.file-input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.file-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.file-input-hint {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  font-size: 14px;
+  color: #1976d2;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
+/* Progress Section */
+.progress-section {
+  margin: 20px 0;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Alert Cards */
+.alert-card {
+  margin: 20px 0;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.error-card {
+  background-color: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+
+.success-card {
+  background-color: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.alert-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.error-icon {
+  color: #ef4444;
+  font-size: 24px;
+  margin-top: 4px;
+}
+
+.success-icon {
+  color: #22c55e;
+  font-size: 24px;
+  margin-top: 4px;
+}
+
+.alert-text h4,
+.success-content h4 {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.alert-text p,
+.success-content p {
+  margin: 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Import Statistics */
+.import-stats {
+  margin: 16px 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Mapping Statistics */
+.mapping-stats {
+  margin-top: 20px;
+}
+
+.mapping-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Chip Styles */
+.success-chip {
+  background-color: #dcfce7 !important;
+  color: #166534 !important;
+}
+
+.warning-chip {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.info-chip {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+}
+
+/* Dialog Actions */
+mat-dialog-actions {
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .alert-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .error-icon,
+  .success-icon {
+    align-self: center;
+  }
+}
+
+/* Dialog Content Scrolling */
+mat-dialog-content {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Ensure proper spacing in dialog */
+:host {
+  display: block;
+  min-width: 500px;
+  max-width: 700px;
+}
+
+@media (max-width: 600px) {
+  :host {
+    min-width: 300px;
+    max-width: 90vw;
+  }
+}

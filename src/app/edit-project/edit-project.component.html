@@ -37,5 +37,27 @@
   >
   </app-mapping-list>
 
+  <!-- Manual Entries Import Section -->
+  <div class="manual-entries-import-card mat-elevation-z2">
+    <div class="import-card-header">
+      <h2>Legacy Data Import</h2>
+      <p class="import-description">
+        Importieren Sie bestehende manual_entries.yaml Dateien und migrieren Sie diese automatisch
+        in das aktuelle Format mit Mapping-Zuordnung.
+      </p>
+    </div>
+    <div class="import-card-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openManualEntriesImportDialog(projectKey)"
+        class="import-button"
+      >
+        <mat-icon>upload_file</mat-icon>
+        Legacy manual_entries.yaml importieren
+      </button>
+    </div>
+  </div>
+
   <div style="height: 40px"></div>
 </div>
