@@ -1,4 +1,4 @@
-/*
+﻿/*
  *
  * Copyright 2025 gematik GmbH
  *
@@ -43,12 +43,20 @@ import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.compone
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 import { PackageService } from '../package.service';
 import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, finalize } from 'rxjs/operators';
+import { ImportManualEntriesResponse } from '../models/manual-entries-import.model';
 
 type SortDir = 'asc' | 'desc';
 interface SortState { col: string; dir: SortDir; }
@@ -58,7 +66,20 @@ interface SortState { col: string; dir: SortDir; }
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon, MatProgressSpinnerModule],
+  imports: [
+    CommonModule,
+    FontAwesomeModule,
+    MatButtonModule,
+    MatIcon,
+    MatProgressSpinnerModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressBarModule,
+    MatListModule,
+    MatDividerModule,
+    MatChipsModule
+  ],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })
@@ -76,6 +97,12 @@ export class EditProjectComponent implements OnInit {
 
   // Loading state for global operations
   isLoading = false;  // Track global loading state
+
+  // Manual entries import properties
+  selectedImportFile: File | null = null;
+  isImportingManualEntries = false;
+  importResult: ImportManualEntriesResponse | null = null;
+  importError: string | null = null;
 
   // FontAwesome icons for UI elements
   faEdit = faEdit;   // Icon für den Edit-Button
@@ -194,12 +221,40 @@ export class EditProjectComponent implements OnInit {
   }
 
   // Öffentliche Handler für Klick auf Header
+  sortComparisonsBy(column: string): void {
+    this.sort.comparisons.column = column;
+    this.sort.comparisons.direction = this.sort.comparisons.direction === 'asc' ? 'desc' : 'asc';
+    this.sortInPlace(this.comparisons, column, this.sort.comparisons.direction);
+  }
+
+  sortMappingsBy(column: string): void {
+    this.sort.mappings.column = column;
+    this.sort.mappings.direction = this.sort.mappings.direction === 'asc' ? 'desc' : 'asc';
+    this.sortInPlace(this.mappings, column, this.sort.mappings.direction);
+  }
+
   sortComparisons(col: 'name' | 'warningCount' | 'incompatibleCount'): void {
     this.compSort = {
       col,
       dir: (this.compSort.col === col && this.compSort.dir === 'asc') ? 'desc' : 'asc'
     };
     this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
+  }
+
+  sortMappings(col: 'name' | 'totalCount' | 'compatibleCount' | 'resolvedCount' | 'needsActionCount'): void {
+    this.mapSort = {
+      col,
+      dir: (this.mapSort.col === col && this.mapSort.dir === 'asc') ? 'desc' : 'asc'
+    };
+    this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
+  }
+
+  sortPackages(col: 'displayName'): void {
+    this.pkgSort = {
+      col,
+      dir: (this.pkgSort.col === col && this.pkgSort.dir === 'asc') ? 'desc' : 'asc'
+    };
+    this.sortInPlace(this.packages, this.pkgSort.col, this.pkgSort.dir);
   }
 
   sortMappings(col: 'name' | 'compatibleCount' | 'resolvedCount' | 'needsActionCount' | 'totalCount'): void {
@@ -606,5 +661,157 @@ export class EditProjectComponent implements OnInit {
       needs_action: 0,
       total: fields?.length ?? 0
     };
+  }
+
+  /**
+   * Handles file selection for manual entries import
+   * Validates file type and clears previous errors/results
+   * @param event The file input change event
+   */
+  onManualEntriesFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      this.selectedImportFile = null;
+      return;
+    }
+
+    const file = input.files[0];
+
+    // Validate file type
+    const lowerName = file.name.toLowerCase();
+    if (!lowerName.endsWith('.yaml') && !lowerName.endsWith('.yml')) {
+      this.importError = 'Bitte wählen Sie eine YAML-Datei (.yaml oder .yml) aus.';
+      this.selectedImportFile = null;
+      return;
+    }
+
+    // Clear previous state
+    this.importError = null;
+    this.importResult = null;
+    this.selectedImportFile = file;
+  }
+
+  /**
+   * Initiates the manual entries import process
+   * Calls the ProjectService to import and migrate legacy manual_entries.yaml files
+   */
+  onImportManualEntries(): void {
+    if (!this.selectedImportFile) {
+      return;
+    }
+
+    if (!this.projectKey) {
+      this.importError = 'Projekt-Schlüssel ist nicht verfügbar.';
+      return;
+    }
+
+    this.isImportingManualEntries = true;
+    this.importError = null;
+    this.importResult = null;
+
+    this.projectService.importManualEntries(this.projectKey, this.selectedImportFile)
+      .pipe(finalize(() => {
+        this.isImportingManualEntries = false;
+      }))
+      .subscribe({
+        next: (response: ImportManualEntriesResponse) => {
+          this.importResult = response;
+          if (!this.projectService.isImportSuccessful(response)) {
+            this.importError = response.message || 'Import fehlgeschlagen.';
+          } else {
+            // Clear file selection after successful import
+            this.selectedImportFile = null;
+            // Reset file input
+            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+            if (fileInput) {
+              fileInput.value = '';
+            }
+          }
+        },
+        error: (error) => {
+          this.importError = this.extractImportErrorMessage(error);
+        }
+      });
+  }
+
+  /**
+   * Checks if the manual entries import was successful
+   * @param result The import result to check
+   * @returns True if the import was successful, false otherwise
+   */
+  isImportSuccessful(result: ImportManualEntriesResponse | null): boolean {
+    return result?.status === 'ok';
+  }
+
+  /**
+   * Extracts a user-friendly error message from HTTP error responses
+   * @param error The error object from HTTP request
+   * @returns A formatted error message string
+   */
+  private extractImportErrorMessage(error: any): string {
+    if (error?.error?.error) {
+      return error.error.error;
+    }
+    if (error?.message) {
+      return error.message;
+    }
+    return 'Beim Import ist ein unbekannter Fehler aufgetreten.';
+  }
+
+  // Package management methods
+  editPackage(displayName: string, projectKey: string, packageId: string): void {
+    // TODO: Implement package editing
+    console.log('Edit package:', displayName, projectKey, packageId);
+  }
+
+  deletePackageWithConfirm(packageId: string, displayName: string): void {
+    // TODO: Implement package deletion with confirmation
+    console.log('Delete package:', packageId, displayName);
+  }
+
+  openPackageUploadDialog(projectKey: string): void {
+    // TODO: Implement package upload dialog
+    console.log('Open package upload dialog for project:', projectKey);
+  }
+
+  // Comparison management methods
+  addComparison(): void {
+    // TODO: Implement add comparison
+    console.log('Add comparison');
+  }
+
+  editComparison(comparisonId: string): void {
+    // TODO: Implement edit comparison
+    console.log('Edit comparison:', comparisonId);
+  }
+
+  deleteComparison(comparisonId: string): void {
+    // TODO: Implement delete comparison
+    console.log('Delete comparison:', comparisonId);
+  }
+
+  // Mapping management methods
+  addMapping(): void {
+    // TODO: Implement add mapping
+    console.log('Add mapping');
+  }
+
+  editMapping(mappingId: string): void {
+    // TODO: Implement edit mapping
+    console.log('Edit mapping:', mappingId);
+  }
+
+  deleteMapping(mappingId: string): void {
+    // TODO: Implement delete mapping
+    console.log('Delete mapping:', mappingId);
+  }
+
+  // Navigation methods
+  navigateToComparison(comparisonId: string): void {
+    this.router.navigate(['/comparison', this.projectKey, comparisonId]);
+  }
+
+  navigateToMapping(mappingId: string): void {
+    this.router.navigate(['/mapping', this.projectKey, mappingId]);
   }
 }

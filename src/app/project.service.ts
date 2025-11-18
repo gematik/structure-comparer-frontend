@@ -28,6 +28,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ImportManualEntriesResponse } from './models/manual-entries-import.model';
 
 @Injectable({
   providedIn: 'root'
@@ -83,6 +84,33 @@ export class ProjectService {
     const encodedProjectKey = encodeURIComponent(projectKey); 
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}`)
       .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Imports and migrates legacy manual_entries.yaml files to the current format
+   * Performs both structure migration and automatic mapping ID updates based on FHIR context
+   * @param projectKey The unique identifier of the project to import entries to
+   * @param file The legacy manual_entries.yaml file to import
+   * @returns Observable containing import status, statistics, and ID mapping information
+   */
+  importManualEntries(projectKey: string, file: File): Observable<ImportManualEntriesResponse> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    const url = `${this.baseUrl}/project/${encodedProjectKey}/manual-entries/import`;
+    
+    return this.http.post<ImportManualEntriesResponse>(url, formData)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Helper method to check if a manual entries import was successful
+   * @param response The response from the importManualEntries method
+   * @returns True if the import was successful, false otherwise
+   */
+  isImportSuccessful(response: ImportManualEntriesResponse): boolean {
+    return response.status === 'ok';
   }
 
   /**

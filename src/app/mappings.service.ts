@@ -219,6 +219,19 @@ export class MappingsService {
   }
 
   /**
+   * Retrieves mapping evaluation summary with counts for different categories
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the evaluation summary with counts
+   */
+  getMappingEvaluationSummary(projectKey: string, mappingId: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/evaluation/summary`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Handles HTTP errors and provides user-friendly error messages
    * @param error The HTTP error response
    * @returns Observable error with formatted message
