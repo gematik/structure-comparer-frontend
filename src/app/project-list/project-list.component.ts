@@ -35,6 +35,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button'; 
 import { MatIcon } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-project-list',
@@ -56,7 +58,12 @@ export class ProjectListComponent implements OnInit {
   faPlus = faPlus
   faTimes = faTimes;
 
-  constructor(private mappingsService: MappingsService, private projectService: ProjectService, private router: Router) { }
+  constructor(
+    private mappingsService: MappingsService, 
+    private projectService: ProjectService, 
+    private router: Router,
+    private dialog: MatDialog
+  ) { }
 
   /**
    * Initializes the component by loading all available projects
@@ -103,5 +110,41 @@ export class ProjectListComponent implements OnInit {
       },
       error => console.error(error)
     );
+  }
+
+  /**
+   * Deletes a project after user confirmation
+   * @param project The project object to delete
+   */
+  deleteProject(project: any): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        message: `Möchten Sie das Projekt "${project.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        // Extract project key from URL
+        const projectKey = project.url.replace('/project/', '');
+        
+        this.mappingsService.deleteProject(projectKey).subscribe(
+          () => {
+            // Remove project from local list
+            const index = this.projects.projects.indexOf(project);
+            if (index > -1) {
+              this.projects.projects.splice(index, 1);
+            }
+            console.log(`Project ${project.name} deleted successfully`);
+          },
+          error => {
+            console.error('Error deleting project:', error);
+            // Zeige eine Fehlermeldung an (für jetzt als Alert, könnte später durch Snackbar ersetzt werden)
+            alert('Fehler beim Löschen des Projekts. Eventuell ist diese Funktion noch nicht implementiert.');
+          }
+        );
+      }
+    });
   }
 }

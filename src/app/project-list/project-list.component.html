@@ -32,7 +32,9 @@
         <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm" >
           <mat-icon>remove_red_eye</mat-icon>
         </button>
-        <button mat-icon-button class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>
+        <button mat-icon-button (click)="deleteProject(project)" class="mat-icon-button-sm" color="warn">
+          <mat-icon>delete</mat-icon>
+        </button>
         
       </td>
     </tr>

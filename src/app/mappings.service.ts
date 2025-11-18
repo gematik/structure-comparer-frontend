@@ -151,6 +151,17 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Deletes a project
+   * @param projectKey The unique identifier of the project to delete
+   * @returns Observable containing the deletion response
+   */
+  deleteProject(projectKey: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}`)
+      .pipe(catchError(this.handleError));
+  }
+
 
 
 
