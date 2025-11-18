@@ -33,7 +33,7 @@ import { faEye, faEdit, faTrash, faPlus, faTimes } from '@fortawesome/free-solid
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatButtonModule } from '@angular/material/button'; 
+import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -50,7 +50,7 @@ export class ProjectListComponent implements OnInit {
   projects: any = {};
   // Name for creating a new project
   newProjectName: string = '';
-  
+
   // FontAwesome icons used in the template
   faEye = faEye;
   faEdit = faEdit;
@@ -59,8 +59,8 @@ export class ProjectListComponent implements OnInit {
   faTimes = faTimes;
 
   constructor(
-    private mappingsService: MappingsService, 
-    private projectService: ProjectService, 
+    private mappingsService: MappingsService,
+    private projectService: ProjectService,
     private router: Router,
     private dialog: MatDialog
   ) { }
@@ -102,7 +102,7 @@ export class ProjectListComponent implements OnInit {
       return;
     }
     // Convert project name to URL-safe key (replace spaces with underscores, lowercase)
-    let projectKey : string = this.newProjectName.replace(/\s+/g, '_').toLowerCase(); 
+    let projectKey : string = this.newProjectName.replace(/\s+/g, '_').toLowerCase();
     this.mappingsService.createProject(projectKey, this.newProjectName).subscribe(
       () => {
         this.projects.push(this.newProjectName);
@@ -128,7 +128,7 @@ export class ProjectListComponent implements OnInit {
       if (result === true) {
         // Extract project key from URL
         const projectKey = project.url.replace('/project/', '');
-        
+
         this.mappingsService.deleteProject(projectKey).subscribe(
           () => {
             // Remove project from local list
