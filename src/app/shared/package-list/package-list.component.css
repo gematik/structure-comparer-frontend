@@ -1,0 +1,57 @@
+/* Package List Styles */
+.section-heading {
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modern-table th {
+  background-color: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.modern-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.col-wide {
+  width: 70%;
+}
+
+.col-narrow {
+  width: 15%;
+  text-align: center;
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable:hover {
+  background-color: #e9ecef;
+}
+
+.mat-icon-button-sm {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin: 0 2px;
+}
+
+.mat-icon-button-sm mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}

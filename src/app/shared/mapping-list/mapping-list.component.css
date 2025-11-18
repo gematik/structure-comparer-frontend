@@ -1,0 +1,173 @@
+/* Mapping List Styles */
+.section-heading {
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.modern-table th {
+  background-color: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.modern-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.hover-highlight:hover {
+  background-color: #f8f9fa;
+}
+
+.clickable-cell {
+  cursor: pointer;
+}
+
+.clickable-cell:hover {
+  text-decoration: underline;
+}
+
+.col-wide {
+  width: 40%;
+}
+
+.col-narrow {
+  width: 12%;
+  text-align: center;
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable:hover {
+  background-color: #e9ecef;
+}
+
+.mat-icon-button-sm {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  margin: 0 2px;
+}
+
+.mat-icon-button-sm mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.pill {
+  padding: 2px 10px;
+  font-size: 13px;
+  border-radius: 9999px;
+  font-weight: 500;
+  display: inline-block;
+  text-transform: capitalize;
+  white-space: nowrap;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Specific pill styles matching mapping-detail.component.css */
+.pill--total {
+  background-color: #6c757d;
+  color: white;
+}
+
+.pill--compatible {
+  background-color: #E3FCEF;
+  color: #1e4620;
+}
+
+.pill--resolved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--needs-action {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Additional pill variants from mapping-detail */
+.pill--use {
+  background-color: #E3FCEF;
+  color: #1e4620;
+}
+
+.pill--not_use {
+  background-color: #FFEBE6;
+  color: #721c24;
+}
+
+.pill--extension {
+  background-color: #FFFAE6;
+  color: #856404;
+}
+
+.pill--manual {
+  background-color: #B3F5FF;
+  color: #0c5460;
+}
+
+.pill--other {
+  background-color: #FFBDAD;
+  color: #721c24;
+}
+
+.pill--empty {
+  background-color: #F0F0F0;
+  color: #495057;
+}
+
+.pill--copy_from {
+  background-color: #D6EAF8;
+  color: #004466;
+}
+
+.pill--copy_to {
+  background-color: #D1F2EB;
+  color: #1e4620;
+}
+
+.pill--fixed {
+  background-color: #FCF3CF;
+  color: #856404;
+}
+
+.pill--medication_service {
+  background-color: #FADBD8;
+  color: #721c24;
+}
+
+.pill--action_resolved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--action_mitigated {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.pill--action-resolved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--action-mitigated {
+  background-color: #fff3cd;
+  color: #856404;
+}

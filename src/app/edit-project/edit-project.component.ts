@@ -26,39 +26,45 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
-import { firstValueFrom } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { MappingsService } from '../mappings.service';
 import { Comparison } from '../models/comparison.model';
 import { Mapping } from '../models/mapping.model';
 import { Package } from '../models/package.model';
 import { ProjectService } from '../project.service';
-import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { ComparisonService } from '../comparison.service';
+import { PackageService } from '../package.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
+import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
-import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
-import { PackageService } from '../package.service';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
 
-type SortDir = 'asc' | 'desc';
-interface SortState { col: string; dir: SortDir; }
+// Import new sub-components
+import { PackageListComponent } from '../shared/package-list/package-list.component';
+import { ComparisonListComponent } from '../shared/comparison-list/comparison-list.component';
+import { MappingListComponent } from '../shared/mapping-list/mapping-list.component';
+import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overlay.component';
+
+
 
 
 
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon, MatProgressSpinnerModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    PackageListComponent,
+    ComparisonListComponent,
+    MappingListComponent,
+    LoadingOverlayComponent
+  ],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })
@@ -77,22 +83,45 @@ export class EditProjectComponent implements OnInit {
   // Loading state for global operations
   isLoading = false;  // Track global loading state
 
-  // FontAwesome icons for UI elements
-  faEdit = faEdit;   // Icon für den Edit-Button
-  faPlus = faPlus;   // Icon für den Plus-Button
-  faTrash = faTrash; // Icon für den Delete-Button
+  // Event handlers for sub-components
+  onPackageDeleted(event: { id: string; name: string }): void {
+    this.packages = this.packages.filter(p => p.name !== event.name);
+    console.log(`Package ${event.name} deleted`);
+  }
 
-  // Sorting
-  sort = {
-    comparisons: { column: 'name', direction: 'asc' as 'asc' | 'desc' },
-    mappings: { column: 'name', direction: 'asc' as 'asc' | 'desc' }
-  };
+  onPackageUpdated(updatedPackage: Package): void {
+    const index = this.packages.findIndex(p => p.name === updatedPackage.name);
+    if (index !== -1) {
+      this.packages[index] = updatedPackage;
+    }
+    console.log(`Package ${updatedPackage.name} updated`);
+  }
 
-  compSort: SortState = { col: 'name', dir: 'asc' };
-  mapSort: SortState = { col: 'name', dir: 'asc' };
-  pkgSort: SortState = { col: 'displayName', dir: 'asc' };
+  onComparisonViewed(comparisonId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'comparison', comparisonId]);
+  }
 
+  onComparisonDeleted(comparisonId: string): void {
+    this.comparisons = this.comparisons.filter(c => c.id !== comparisonId);
+    console.log(`Comparison ${comparisonId} deleted`);
+  }
 
+  onComparisonCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
+  onMappingViewed(mappingId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'mapping', mappingId]);
+  }
+
+  onMappingDeleted(event: { id: string; name: string }): void {
+    this.mappings = this.mappings.filter(m => m.id !== event.id);
+    console.log(`Mapping ${event.name} deleted`);
+  }
+
+  onMappingCreated(event: any): void {
+    this.refreshProjectData();
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -127,8 +156,6 @@ export class EditProjectComponent implements OnInit {
       this.comparisons = this.projectData.comparisons;
 
       this.hydrateCounts();
-      this.sortComparisonsBy('name');
-      this.sortMappingsBy('name');
     } else {
       console.error('Project data could not be loaded!');
     }
@@ -183,104 +210,9 @@ export class EditProjectComponent implements OnInit {
     return sa.localeCompare(sb, undefined, { numeric: true, sensitivity: 'base' });
   }
 
-  // Allgemeine Sortierfunktion (stabil genug für unsere Arrays)
-  private sortInPlace<T extends object>(rows: T[], col: string, dir: SortDir): void {
-    rows.sort((r1: any, r2: any) => {
-      const v1 = this.valueFor(r1, col);
-      const v2 = this.valueFor(r2, col);
-      const cmp = this.smartCompare(v1, v2);
-      return dir === 'asc' ? cmp : -cmp;
-    });
-  }
 
-  // Öffentliche Handler für Klick auf Header
-  sortComparisons(col: 'name' | 'warningCount' | 'incompatibleCount'): void {
-    this.compSort = {
-      col,
-      dir: (this.compSort.col === col && this.compSort.dir === 'asc') ? 'desc' : 'asc'
-    };
-    this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
-  }
 
-  sortMappings(col: 'name' | 'compatibleCount' | 'resolvedCount' | 'needsActionCount' | 'totalCount'): void {
-    this.mapSort = {
-      col,
-      dir: (this.mapSort.col === col && this.mapSort.dir === 'asc') ? 'desc' : 'asc'
-    };
-    this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
-  }
 
-  sortPackages(col: 'displayName'): void {
-    this.pkgSort = {
-      col,
-      dir: (this.pkgSort.col === col && this.pkgSort.dir === 'asc') ? 'desc' : 'asc'
-    };
-    this.sortInPlace(this.packages, this.pkgSort.col, this.pkgSort.dir);
-  }
-
-  // Nach jedem Laden/Refresh aktuelle Sortierung erneut anwenden
-  private applyActiveSorts(): void {
-    this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
-    this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
-    this.sortInPlace(this.packages, this.pkgSort.col, this.pkgSort.dir);
-  }
-
-  private sortData<T>(data: T[], column: keyof T, direction: 'asc' | 'desc'): T[] {
-    return [...data].sort((a: any, b: any) => {
-      const A = (a[column] ?? '').toString().toLowerCase();
-      const B = (b[column] ?? '').toString().toLowerCase();
-      return direction === 'asc' ? A.localeCompare(B) : B.localeCompare(A);
-    });
-  }
-
-  sortComparisonsBy(column: keyof Comparison) {
-    const s = this.sort.comparisons;
-    s.direction = (s.column === column && s.direction === 'asc') ? 'desc' : 'asc';
-    s.column = column;
-    this.comparisons = this.sortData(this.comparisons, column, s.direction);
-  }
-
-  sortMappingsBy(column: keyof Mapping) {
-    const s = this.sort.mappings;
-    s.direction = (s.column === column && s.direction === 'asc') ? 'desc' : 'asc';
-    s.column = column;
-    this.mappings = this.sortData(this.mappings, column, s.direction);
-  }
-
-  /**
-   * Navigates to the mapping detail page for a specific mapping
-   * @param mappingId The ID of the mapping to view
-   */
-  goToMapping(mappingId: string): void {
-    this.router.navigate([`/project`, this.projectKey, `mapping`, mappingId]);
-  }
-
-  /**
-   * Navigates to the comparison page for a specific comparison
-   * @param comparisonId The ID of the comparison to view
-   */
-  goToComparison(comparisonId: string): void {
-    this.router.navigate([`/project`, this.projectKey, `comparison`, comparisonId]);
-  }
-
-  /**
-   * Opens the package upload dialog for adding new packages to the project
-   * @param projectKey The key of the current project
-   */
-  openPackageUploadDialog(projectKey: string) {
-    const dialogRef = this.dialog.open(PackageUploadDialogComponent, {
-      width: '400px',
-      data: { projectKey }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('File received:', result);
-        // Add the uploaded package to the local list
-        this.packages.push(result);
-      }
-    });
-  }
 
   /**
    * Opens the package name edit dialog for updating package display names
@@ -479,8 +411,6 @@ export class EditProjectComponent implements OnInit {
       this.comparisons = data.comparisons;
 
       this.hydrateCounts();
-      this.sortComparisonsBy('name');
-      this.sortMappingsBy('name');
       console.log('Project data refreshed successfully');
     } catch (error) {
       console.error('Error refreshing project data:', error);
@@ -523,8 +453,7 @@ export class EditProjectComponent implements OnInit {
           const r = byId.get(c.id);
           return { ...c, warningCount: r?.warning ?? 0, incompatibleCount: r?.incompatible ?? 0 };
         });
-        // Nach Hydrierung sortieren:
-        this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
+
       });
     }
 
@@ -570,7 +499,6 @@ export class EditProjectComponent implements OnInit {
             mitigatedCount: r?.mitigated ?? 0
           };
         });
-        this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
       });
     }
   }

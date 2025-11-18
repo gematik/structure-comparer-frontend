@@ -1,217 +1,41 @@
-<!-- Material Loading Overlay -->
-<div *ngIf="isLoading" class="loading-overlay">
-  <mat-spinner diameter="60" color="primary"></mat-spinner>
-  <div class="loading-text">Deleting...</div>
-</div>
+<!-- Loading Overlay Component -->
+<app-loading-overlay
+  [isVisible]="isLoading"
+  message="Loading project data..."
+>
+</app-loading-overlay>
 
 <div class="m-20">
   <h1>Overview for project "{{ projectName }}"</h1>
 
-  <h2 class="section-heading">List of Packages</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide clickable" (click)="sortPackages('displayName')">
-        Package Name
-        <span *ngIf="pkgSort.col === 'displayName'">
-          {{ pkgSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow">
-        Action
-        <button
-          mat-icon-button
-          (click)="openPackageUploadDialog(this.projectKey)"
-          title="Add new package"
-          class="mat-icon-button-sm"
-        >
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
-    <tr *ngFor="let package of packages">
-      <td>
-        <div *ngIf="package.display; else elseBlock">
-          {{ package.display }} ({{ package.name }}#{{ package.version }})
-        </div>
-        <ng-template #elseBlock
-          >{{ package.name }}#{{ package.version }}</ng-template
-        >
-      </td>
-      <td>
-        <button
-          mat-icon-button
-          (click)="
-            editPackage(this.package.display, this.projectKey, this.package.id)
-          "
-          class="mat-icon-button-sm"
-        >
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          (click)="
-            deletePackageWithConfirm(
-              package.id,
-              package.display || package.name
-            )
-          "
-          class="mat-icon-button-sm"
-          title="Delete package"
-        >
-          <mat-icon>delete</mat-icon>
-        </button>
-      </td>
-    </tr>
-  </table>
+  <!-- Package List Component -->
+  <app-package-list
+    [packages]="packages"
+    [projectKey]="projectKey"
+    (packageDeleted)="onPackageDeleted($event)"
+    (packageUpdated)="onPackageUpdated($event)"
+  >
+  </app-package-list>
 
-  <h2 class="section-heading">List of Comparisons</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide clickable" (click)="sortComparisons('name')">
-        Comparison
-        <span *ngIf="compSort.col === 'name'">
-          {{ compSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th
-        class="col-narrow clickable"
-        (click)="sortComparisons('warningCount')"
-      >
-        Warnings
-        <span *ngIf="compSort.col === 'warningCount'">
-          {{ compSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th
-        class="col-narrow clickable"
-        (click)="sortComparisons('incompatibleCount')"
-      >
-        Incompatible
-        <span *ngIf="compSort.col === 'incompatibleCount'">
-          {{ compSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow">
-        Action
-        <button
-          mat-icon-button
-          (click)="openAddComparisonDialogAndSave(this.projectKey)"
-          title="Add new comparison"
-          class="mat-icon-button-sm"
-        >
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
+  <!-- Comparison List Component -->
+  <app-comparison-list
+    [comparisons]="comparisons"
+    [projectKey]="projectKey"
+    (comparisonViewed)="onComparisonViewed($event)"
+    (comparisonDeleted)="onComparisonDeleted($event)"
+    (comparisonCreated)="onComparisonCreated($event)"
+  >
+  </app-comparison-list>
 
-    <tr *ngFor="let comparison of comparisons" class="hover-highlight">
-      <td class="clickable-cell" (click)="goToComparison(comparison.id)">
-        {{ comparison.name }}
-      </td>
-      <td>
-        <span class="pill pill--warning">{{
-          comparison.warningCount ?? 0
-        }}</span>
-      </td>
-      <td>
-        <span class="pill pill--incompatible">{{
-          comparison.incompatibleCount ?? 0
-        }}</span>
-      </td>
-      <td>
-        <button
-          mat-icon-button
-          (click)="goToComparison(comparison.id)"
-          class="mat-icon-button-sm"
-          title="View comparison"
-        >
-          <mat-icon>remove_red_eye</mat-icon>
-        </button>
-        <button
-          mat-icon-button
-          (click)="deleteComparisonWithConfirm(comparison.id)"
-          class="mat-icon-button-sm"
-          title="Delete comparison"
-        >
-          <mat-icon>delete</mat-icon>
-        </button>
-      </td>
-    </tr>
-  </table>
+  <!-- Mapping List Component -->
+  <app-mapping-list
+    [mappings]="mappings"
+    [projectKey]="projectKey"
+    (mappingViewed)="onMappingViewed($event)"
+    (mappingDeleted)="onMappingDeleted($event)"
+    (mappingCreated)="onMappingCreated($event)"
+  >
+  </app-mapping-list>
 
-  <h2 class="section-heading">List of Mappings</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide clickable" (click)="sortMappings('name')">
-        Mapping Name
-        <span *ngIf="mapSort.col === 'name'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow clickable" (click)="sortMappings('totalCount')">
-        Gesamt
-        <span *ngIf="mapSort.col === 'totalCount'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow clickable" (click)="sortMappings('compatibleCount')">
-        Kompatibel
-        <span *ngIf="mapSort.col === 'compatibleCount'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow clickable" (click)="sortMappings('resolvedCount')">
-        Gelöst
-        <span *ngIf="mapSort.col === 'resolvedCount'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow clickable" (click)="sortMappings('needsActionCount')">
-        Aktion erforderlich
-        <span *ngIf="mapSort.col === 'needsActionCount'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow">
-        Action
-        <button
-          mat-icon-button
-          (click)="openAddMappingDialog(this.projectKey)"
-          title="Add new mapping"
-          class="mat-icon-button-sm"
-        >
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
-
-    <tr *ngFor="let mapping of mappings" class="hover-highlight">
-      <td class="clickable-cell" (click)="goToMapping(mapping.id)">
-        {{ mapping.name }}
-      </td>
-      <td>
-        <span class="pill pill--total">{{ mapping.totalCount ?? 0 }}</span>
-      </td>
-      <td>
-        <span class="pill pill--compatible">{{ mapping.compatibleCount ?? 0 }}</span>
-      </td>
-      <td>
-        <span class="pill pill--resolved">{{ mapping.resolvedCount ?? 0 }}</span>
-      </td>
-      <td>
-        <span class="pill pill--needs-action">{{ mapping.needsActionCount ?? 0 }}</span>
-      </td>
-      <td>
-        <button
-          mat-icon-button
-          (click)="goToMapping(mapping.id)"
-          class="mat-icon-button-sm"
-          title="Edit mapping"
-        >
-          <mat-icon>remove_red_eye</mat-icon>
-        </button>
-      </td>
-    </tr>
-  </table>
   <div style="height: 40px"></div>
 </div>
