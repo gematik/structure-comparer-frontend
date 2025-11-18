@@ -1316,24 +1316,24 @@ tr:hover {
   .card-value {
     font-size: 1.5rem;
   }
-  
+
   .view-mode-toggle {
     margin-bottom: 10px;
   }
-  
+
   .view-mode-toggle button {
     flex: 1;
     justify-content: center;
   }
-  
+
   .tree-controls {
     flex-wrap: wrap;
   }
-  
+
   .tree-leaf-row {
     padding: 8px 4px;
   }
-  
+
   .tree-property-cell,
   .tree-profiles-cell,
   .tree-compatibility-cell,

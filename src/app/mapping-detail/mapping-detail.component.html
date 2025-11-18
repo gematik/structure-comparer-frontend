@@ -166,7 +166,7 @@
       <div *ngIf="evaluationLoadingError" class="evaluation-error">
         <small class="text-muted">{{ evaluationLoadingError }}</small>
       </div>
-      
+
       <!-- View Mode Toggle -->
       <div class="view-mode-toggle">
         <button
@@ -597,14 +597,14 @@
             <div class="tree-cell">
               <!-- Depth indicator bars -->
               <div class="tree-depth">
-                <span 
-                  *ngFor="let _ of getDepthArray(row.depth)" 
+                <span
+                  *ngFor="let _ of getDepthArray(row.depth)"
                   class="tree-depth-bar"
                 ></span>
               </div>
 
               <!-- Expand/collapse toggle button (only for nodes with children) -->
-              <button 
+              <button
                 *ngIf="row.hasChildren"
                 class="tree-toggle-btn"
                 (click)="toggleNode(row.node)"
@@ -622,7 +622,7 @@
                 {{ row.isLeaf ? '📄' : '📁' }}
               </span>
               <span class="tree-node-label">{{ row.node.label }}</span>
-              
+
               <!-- Extension info for leaf nodes -->
               <ng-container *ngIf="row.isLeaf && row.field?.extension">
                 <br /><span class="tree-extension">({{ row.field.extension }})</span>
@@ -761,7 +761,7 @@
           </td>
 
           <!-- Mapping-Aktion (only for leaf nodes) -->
-          <td 
+          <td
             class="default-td"
             (mouseenter)="handleEdit(i).startHover()"
             (mouseleave)="handleEdit().stopHover()"

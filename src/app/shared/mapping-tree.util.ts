@@ -2,7 +2,7 @@ import { PropertyTreeNode } from '../models/property-tree-node.model';
 
 /**
  * Converts a flat list of FHIR properties into a hierarchical tree structure.
- * 
+ *
  * @param fields Array of field objects from the mapping data
  * @returns Array of PropertyTreeNode representing the root nodes of the tree
  */
@@ -27,10 +27,10 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
     pathSegments.forEach((segment, index) => {
       const isLastSegment = index === pathSegments.length - 1;
       currentPath = currentPath ? `${currentPath}.${segment}` : segment;
-      
+
       // Check if node already exists at this level
       let existingNode = currentNodes.find(node => node.label === segment);
-      
+
       if (!existingNode) {
         // Create new node
         const newNode: PropertyTreeNode = {
@@ -80,10 +80,10 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
 
 /**
  * Parses a FHIR property path into segments, handling dots, colons, and array selectors.
- * 
+ *
  * Examples:
  * - "Medication.code.coding:pzn.system" -> ["Medication", "code", "coding:pzn", "system"]
- * - "Medication.ingredient.item[x]:itemCodeableConcept.coding:ask.code" -> 
+ * - "Medication.ingredient.item[x]:itemCodeableConcept.coding:ask.code" ->
  *   ["Medication", "ingredient", "item[x]:itemCodeableConcept", "coding:ask", "code"]
  */
 function parsePropertyPath(path: string): string[] {
@@ -92,10 +92,10 @@ function parsePropertyPath(path: string): string[] {
   const segments: string[] = [];
   let currentSegment = '';
   let inBrackets = false;
-  
+
   for (let i = 0; i < path.length; i++) {
     const char = path[i];
-    
+
     if (char === '[') {
       inBrackets = true;
       currentSegment += char;
@@ -111,11 +111,11 @@ function parsePropertyPath(path: string): string[] {
       currentSegment += char;
     }
   }
-  
+
   if (currentSegment) {
     segments.push(currentSegment);
   }
-  
+
   return segments;
 }
 
@@ -126,7 +126,7 @@ function getMappingDescription(field: any): string | undefined {
   // This would depend on your existing logic for generating mapping descriptions
   // You might want to integrate this with your existing methods
   if (!field.action) return undefined;
-  
+
   switch (field.action) {
     case 'use':
       return 'Wird direkt übernommen';
@@ -148,9 +148,9 @@ function getMappingDescription(field: any): string | undefined {
  */
 function extractProfileCardinalities(field: any): Record<string, string> | undefined {
   if (!field.profiles) return undefined;
-  
+
   const cardinalities: Record<string, string> = {};
-  
+
   Object.keys(field.profiles).forEach(profileKey => {
     const profile = field.profiles[profileKey];
     if (profile) {
@@ -160,7 +160,7 @@ function extractProfileCardinalities(field: any): Record<string, string> | undef
       cardinalities[profileKey] = `${min} .. ${max}${mustSupport}`;
     }
   });
-  
+
   return Object.keys(cardinalities).length > 0 ? cardinalities : undefined;
 }
 
@@ -178,14 +178,14 @@ function extractRecommendationText(field: any): string | undefined {
  */
 export function flattenTree(nodes: PropertyTreeNode[]): PropertyTreeNode[] {
   const result: PropertyTreeNode[] = [];
-  
+
   function traverse(node: PropertyTreeNode) {
     result.push(node);
     if (node.children) {
       node.children.forEach(child => traverse(child));
     }
   }
-  
+
   nodes.forEach(node => traverse(node));
   return result;
 }
@@ -195,45 +195,45 @@ export function flattenTree(nodes: PropertyTreeNode[]): PropertyTreeNode[] {
  */
 export function filterTreeNodes(nodes: PropertyTreeNode[], searchTerm: string): PropertyTreeNode[] {
   if (!searchTerm) return nodes;
-  
+
   const filteredNodes: PropertyTreeNode[] = [];
-  
+
   function matchesSearch(node: PropertyTreeNode): boolean {
     return node.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
            node.fullPath.toLowerCase().includes(searchTerm.toLowerCase());
   }
-  
+
   function hasMatchingDescendant(node: PropertyTreeNode): boolean {
     if (matchesSearch(node)) return true;
     if (!node.children) return false;
     return node.children.some(child => hasMatchingDescendant(child));
   }
-  
+
   function filterNode(node: PropertyTreeNode): PropertyTreeNode | null {
     const matches = matchesSearch(node);
     const hasMatchingChildren = node.children && node.children.some(child => hasMatchingDescendant(child));
-    
+
     if (!matches && !hasMatchingChildren) {
       return null;
     }
-    
-    const filteredChildren = node.children 
+
+    const filteredChildren = node.children
       ? node.children.map(child => filterNode(child)).filter(child => child !== null) as PropertyTreeNode[]
       : undefined;
-    
+
     return {
       ...node,
       children: filteredChildren,
       isExpanded: hasMatchingChildren || matches // Auto-expand if has matching children
     };
   }
-  
+
   nodes.forEach(node => {
     const filtered = filterNode(node);
     if (filtered) {
       filteredNodes.push(filtered);
     }
   });
-  
+
   return filteredNodes;
 }

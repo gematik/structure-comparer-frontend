@@ -1155,7 +1155,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
   }
 
   // Tree view methods
-  
+
   /**
    * Builds the property tree from the current mapping fields
    */
@@ -1168,10 +1168,10 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
 
     this.propertyTree = buildPropertyTree(this.original.fields);
     this.filteredTree = [...this.propertyTree];
-    
+
     // Initialize expansion states - root nodes expanded by default
     this.initializeExpansionStates(this.propertyTree, true);
-    
+
     // Set default expansion for small trees
     if (this.propertyTree.length <= 3) {
       this.expandAllNodes();
@@ -1183,7 +1183,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
    */
   toggleViewMode(): void {
     this.viewMode = this.viewMode === 'flat' ? 'tree' : 'flat';
-    
+
     // Clear any active filters when switching modes
     this.clearQuickFilter();
   }
@@ -1238,13 +1238,13 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
    */
   getVisibleLeafNodes(): PropertyTreeNode[] {
     const leafNodes: PropertyTreeNode[] = [];
-    
+
     const traverse = (node: PropertyTreeNode, parentExpanded = true) => {
       if (parentExpanded) {
         if (node.isLeaf) {
           leafNodes.push(node);
         } else if (node.children) {
-          node.children.forEach(child => 
+          node.children.forEach(child =>
             traverse(child, node.isExpanded !== false)
           );
         }
@@ -1260,7 +1260,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
    */
   getVisibleTreeRows(): DisplayRow[] {
     const visibleRows: DisplayRow[] = [];
-    
+
     const traverse = (node: PropertyTreeNode, depth = 0, parentExpanded = true) => {
       if (parentExpanded) {
         const displayRow: DisplayRow = {
@@ -1270,13 +1270,13 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
           isLeaf: node.isLeaf || false,
           hasChildren: (node.children && node.children.length > 0) || false
         };
-        
+
         visibleRows.push(displayRow);
-        
+
         // Check if this node is expanded
         const nodeExpanded = this.isExpanded(node);
         if (node.children && nodeExpanded) {
-          node.children.forEach(child => 
+          node.children.forEach(child =>
             traverse(child, depth + 1, true)
           );
         }
@@ -1292,13 +1292,13 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
    */
   getVisibleTreeNodes(): Array<PropertyTreeNode & { displayLevel: number }> {
     const visibleNodes: Array<PropertyTreeNode & { displayLevel: number }> = [];
-    
+
     const traverse = (node: PropertyTreeNode, level = 0, parentExpanded = true) => {
       if (parentExpanded) {
         visibleNodes.push({ ...node, displayLevel: level });
-        
+
         if (node.children && node.isExpanded !== false) {
-          node.children.forEach(child => 
+          node.children.forEach(child =>
             traverse(child, level + 1, true)
           );
         }
