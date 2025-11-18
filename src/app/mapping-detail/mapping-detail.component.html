@@ -104,18 +104,6 @@
         <div class="card-value">{{ getStatusSummary()?.needs_action || 0 }}</div>
         <div class="card-subtitle">Müssen bearbeitet werden</div>
       </div>
-
-      <!-- Mitigated Card -->
-      <div class="overview-card mitigated-card clickable-card"
-           (click)="applyQuickFilter('mitigated')"
-           [class.active]="currentQuickFilter === 'mitigated'"
-           matTooltip="Nur behandelte Felder anzeigen">
-        <div class="card-header">
-          <span class="card-title">Behandelt</span>
-        </div>
-        <div class="card-value">{{ getStatusSummary()?.mitigated || 0 }}</div>
-        <div class="card-subtitle">Aktion definiert, Aufmerksamkeit erforderlich</div>
-      </div>
     </div>
 
     <!-- Progress Bar -->
@@ -124,23 +112,15 @@
       <div class="progress-bar">
         <div class="progress-segment completed"
              [style.width.%]="getTotalProgressPercentage('completed')"
-             [matTooltip]="getTotalStatusSummary()?.completed + ' abgeschlossen'">
+             [matTooltip]="getStatusSummary()?.completed + ' kompatibel'">
         </div>
         <div class="progress-segment resolved"
              [style.width.%]="getTotalProgressPercentage('resolved')"
-             [matTooltip]="getTotalStatusSummary()?.resolved + ' gelöst'">
-        </div>
-        <div class="progress-segment mitigated"
-             [style.width.%]="getTotalProgressPercentage('mitigated')"
-             [matTooltip]="getTotalStatusSummary()?.mitigated + ' behandelt'">
-        </div>
-        <div class="progress-segment in-progress"
-             [style.width.%]="getTotalProgressPercentage('in_progress')"
-             [matTooltip]="getTotalStatusSummary()?.in_progress + ' in Bearbeitung'">
+             [matTooltip]="getStatusSummary()?.resolved + ' gelöst'">
         </div>
         <div class="progress-segment needs-action"
              [style.width.%]="getTotalProgressPercentage('needs_action')"
-             [matTooltip]="getTotalStatusSummary()?.needs_action + ' benötigt Aktion'">
+             [matTooltip]="getStatusSummary()?.needs_action + ' benötigt Aktion'">
         </div>
       </div>
       <div class="progress-text">
@@ -255,65 +235,29 @@
               </ng-template>
             </span>
 
-            <!-- Enhanced evaluation indicators -->
+            <!-- Enhanced evaluation indicators - Direct Issues Display -->
             <div *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name]" class="evaluation-indicators">
               <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as fieldEval">
-                <div class="evaluation-badges">
-                  <span *ngIf="fieldEval.issues && fieldEval.issues.length > 0"
-                        class="issue-count"
-                        [matTooltip]="fieldEval.issues.length + ' issue(s) found'"
-                        matTooltipPosition="above">
-                    ⚠{{ fieldEval.issues.length }}
-                  </span>
-                  <span *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0"
-                        class="warning-count"
-                        [matTooltip]="fieldEval.warnings.length + ' warning(s)'"
-                        matTooltipPosition="above">
-                    ⚡{{ fieldEval.warnings.length }}
-                  </span>
-                  <span *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0"
-                        class="recommendation-count"
-                        [matTooltip]="fieldEval.recommendations.length + ' recommendation(s)'"
-                        matTooltipPosition="above">
-                    💡{{ fieldEval.recommendations.length }}
-                  </span>
+                <!-- Direct Issues Display -->
+                <div *ngIf="fieldEval.issues && fieldEval.issues.length > 0" class="direct-issues">
+                  <div *ngFor="let issue of fieldEval.issues"
+                       class="issue-message"
+                       [ngClass]="'severity-' + issue.severity"
+                       style="font-size: 0.85em; margin: 2px 0; line-height: 1.3; word-wrap: break-word;">
+                    {{ issue.message }}
+                    <span *ngIf="issue.resolved_by_action" class="resolved-indicator"
+                          style="color: #28a745; font-weight: 500;">
+                      <br>(✓ Gelöst durch: {{ issue.resolved_by_action }})
+                    </span>
+                  </div>
                 </div>
 
-                <!-- Detailed Information -->
-                <div>
-                  <!-- Detailed Issues -->
-                  <div *ngIf="fieldEval.issues && fieldEval.issues.length > 0" class="evaluation-details issues-section">
-                    <div class="detail-header">Issues:</div>
-                    <ul class="issue-list">
-                      <li *ngFor="let issue of fieldEval.issues"
-                          class="issue-item"
-                          [ngClass]="'severity-' + issue.severity">
-                        <span class="issue-message">{{ issue.message }}</span>
-                        <span *ngIf="issue.resolved_by_action" class="resolved-by">
-                          (Gelöst durch: {{ issue.resolved_by_action }})
-                        </span>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Detailed Warnings -->
-                  <div *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0" class="evaluation-details warnings-section">
-                    <div class="detail-header">Warnings:</div>
-                    <ul class="warning-list">
-                      <li *ngFor="let warning of fieldEval.warnings" class="warning-item">
-                        {{ warning }}
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Detailed Recommendations -->
-                  <div *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0" class="evaluation-details recommendations-section">
-                    <div class="detail-header">💡 Empfehlungen:</div>
-                    <ul class="recommendation-list">
-                      <li *ngFor="let recommendation of fieldEval.recommendations" class="recommendation-item">
-                        {{ recommendation }}
-                      </li>
-                    </ul>
+                <!-- Direct Warnings Display -->
+                <div *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0" class="direct-warnings">
+                  <div *ngFor="let warning of fieldEval.warnings"
+                       class="warning-message"
+                       style="font-size: 0.85em; margin: 2px 0; line-height: 1.3; word-wrap: break-word; color: #ffc107;">
+                    {{ warning }}
                   </div>
                 </div>
               </ng-container>
@@ -348,6 +292,25 @@
                      matTooltipPosition="above">
                   {{ getConsolidatedMappingText(field) }}
                 </div>
+              </div>
+
+              <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
+              <div *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name] && (!field.action || field.action === 'use')"
+                   class="mapping-recommendations">
+                <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as fieldEval">
+                  <div *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0"
+                       class="recommendations-section"
+                       style="margin-top: 8px; padding: 6px; background-color: #f8f9fa; border-left: 3px solid #17a2b8; border-radius: 4px;">
+                    <div class="recommendations-header" style="font-weight: 600; color: #17a2b8; font-size: 0.85em; margin-bottom: 4px;">
+                      💡 Empfehlungen:
+                    </div>
+                    <div *ngFor="let recommendation of fieldEval.recommendations"
+                         class="recommendation-item"
+                         style="font-size: 0.8em; line-height: 1.4; margin: 2px 0; word-wrap: break-word; color: #495057;">
+                      • {{ recommendation }}
+                    </div>
+                  </div>
+                </ng-container>
               </div>
             </div>
 

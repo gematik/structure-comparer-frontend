@@ -387,21 +387,57 @@ export class MappingDetailComponent implements OnInit {
   }
 
   getEvaluationSummary(): any {
-    return this.mappingEvaluation?.summary || null;
+    const summary = this.mappingEvaluation?.summary;
+    if (!summary) {
+      return null;
+    }
+
+    // Use the new simplified logic that matches the backend
+    // Categories are now non-overlapping and sum to total
+    let simplified_compatible = 0;     // Originally compatible fields
+    let simplified_resolved = 0;       // Originally incompatible but with mapping action
+    let simplified_needs_action = 0;   // Originally incompatible and still needs action (USE action)
+
+    if (this.mappingEvaluation?.field_evaluations) {
+      const fieldEvaluations = this.mappingEvaluation.field_evaluations;
+      for (const fieldName in fieldEvaluations) {
+        const fieldEval = fieldEvaluations[fieldName];
+        const originalClassification = fieldEval.original_classification;
+        const action = fieldEval.action;
+
+        // Kompatibel: Felder die vom Comparison-Algorithmus als kompatibel oder warning eingestuft wurden
+        if (originalClassification === 'compatible' || originalClassification === 'warning') {
+          simplified_compatible++;
+        }
+        // Gelöst: Ursprünglich inkompatible Felder, die inzwischen ein manuelles Mapping erhalten haben
+        else if (originalClassification === 'incompatible' && action !== 'use') {
+          simplified_resolved++;
+        }
+        // Aktion erforderlich: Inkompatible Felder minus der bereits gelösten Felder
+        else if (originalClassification === 'incompatible' && action === 'use') {
+          simplified_needs_action++;
+        }
+      }
+    }
+
+    return {
+      ...summary,
+      simplified_compatible,
+      simplified_resolved,
+      simplified_needs_action
+    };
   }
 
   getStatusSummary(): any {
     // Use backend evaluation summary if available (preferred for accuracy)
     const evalSummary = this.getEvaluationSummary();
     if (evalSummary) {
+      // Use simplified categories calculated by backend
       return {
         total: evalSummary.total_fields,
-        completed: evalSummary.compatible || 0,
-        resolved: evalSummary.action_resolved || 0,
-        mitigated: evalSummary.action_mitigated || 0,
-        in_progress: 0, // Not provided by backend evaluation
-        needs_action: evalSummary.needs_attention || 0,
-        unknown: evalSummary.incompatible || 0
+        completed: evalSummary.simplified_compatible || 0,    // Kompatibel
+        resolved: evalSummary.simplified_resolved || 0,       // Gelöst (Backend berechnet)
+        needs_action: evalSummary.simplified_needs_action || 0 // Aktion erforderlich (Backend berechnet)
       };
     }
 
@@ -414,10 +450,7 @@ export class MappingDetailComponent implements OnInit {
       total: this.filtered.fields.length,
       completed: 0,
       resolved: 0,
-      mitigated: 0,
-      in_progress: 0,
-      needs_action: 0,
-      unknown: 0
+      needs_action: 0
     };
 
     this.filtered.fields.forEach((field: any) => {
@@ -430,25 +463,7 @@ export class MappingDetailComponent implements OnInit {
     return summary;
   }
 
-  getProgressPercentage(status: string): number {
-    const summary = this.getStatusSummary();
-    if (!summary || summary.total === 0) {
-      return 0;
-    }
 
-    const value = (summary as any)[status] || 0;
-    return (value / summary.total) * 100;
-  }
-
-  getCompletionPercentage(): number {
-    const summary = this.getStatusSummary();
-    if (!summary || summary.total === 0) {
-      return 0;
-    }
-
-    const completed = summary.completed + summary.resolved;
-    return Math.round((completed / summary.total) * 100);
-  }
 
   getTotalStatusSummary(): any {
     if (!this.original?.fields) {
@@ -498,7 +513,7 @@ export class MappingDetailComponent implements OnInit {
   applyQuickFilter(filterType: string): void {
     this.currentQuickFilter = filterType;
 
-    // Filter fields by status
+    // Filter fields by status using the new simplified logic
     const filteredFields = (this.original?.fields ?? []).filter((field: any) => {
       const fieldStatus = this.getProcessingStatus(field);
       return fieldStatus === filterType;
@@ -560,25 +575,27 @@ export class MappingDetailComponent implements OnInit {
 
   /**
    * Determines the processing status of a field based on its classification and action
+   * Simplified logic: Compatible, Resolved (any action), or Needs Action
    */
   getProcessingStatus(field: any): string {
     const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
 
-    // If we have enhanced evaluation, use that
+    // Use the new simplified logic that matches the backend
     if (evaluation) {
-      switch (evaluation.enhanced_classification) {
-        case 'compatible':
-          return 'completed';
-        case 'action_resolved':
-          return 'resolved';
-        case 'action_mitigated':
-          return 'mitigated';
-        case 'warning':
-          return field.action === 'use' ? 'needs_action' : 'in_progress';
-        case 'incompatible':
-          return 'needs_action';
-        default:
-          return 'unknown';
+      const originalClassification = evaluation.original_classification;
+      const action = evaluation.action;
+
+      // Kompatibel: Felder die vom Comparison-Algorithmus als kompatibel oder warning eingestuft wurden
+      if (originalClassification === 'compatible' || originalClassification === 'warning') {
+        return 'completed';
+      }
+      // Gelöst: Ursprünglich inkompatible Felder, die inzwischen ein manuelles Mapping erhalten haben
+      else if (originalClassification === 'incompatible' && action !== 'use') {
+        return 'resolved';
+      }
+      // Aktion erforderlich: Inkompatible Felder minus der bereits gelösten Felder
+      else if (originalClassification === 'incompatible' && action === 'use') {
+        return 'needs_action';
       }
     }
 
@@ -612,12 +629,9 @@ export class MappingDetailComponent implements OnInit {
    */
   getStatusLabel(status: string): string {
     const labels: { [key: string]: string } = {
-      'completed': 'Abgeschlossen',
+      'completed': 'Kompatibel',
       'resolved': 'Gelöst',
-      'mitigated': 'Behandelt',
-      'in_progress': 'In Bearbeitung',
-      'needs_action': 'Aktion erforderlich',
-      'unknown': 'Unbekannt'
+      'needs_action': 'Aktion erforderlich'
     };
     return labels[status] || status;
   }
@@ -629,12 +643,9 @@ export class MappingDetailComponent implements OnInit {
     const cssClasses: { [key: string]: string } = {
       'completed': 'status-completed',
       'resolved': 'status-resolved',
-      'mitigated': 'status-mitigated',
-      'in_progress': 'status-in-progress',
-      'needs_action': 'status-needs-action',
-      'unknown': 'status-unknown'
+      'needs_action': 'status-needs-action'
     };
-    return cssClasses[status] || 'status-unknown';
+    return cssClasses[status] || 'status-needs-action';
   }
 
   /**
@@ -807,7 +818,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
         parts.push('Wird nicht verwendet');
         break;
       case 'empty':
-        parts.push('Wird geleert');
+        parts.push('Wird nicht befüllt');
         break;
       case 'use':
         parts.push('Wird direkt übernommen');

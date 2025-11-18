@@ -149,32 +149,26 @@
         </span>
       </th>
       <th class="col-narrow clickable" (click)="sortMappings('totalCount')">
-        Total
+        Gesamt
         <span *ngIf="mapSort.col === 'totalCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
       <th class="col-narrow clickable" (click)="sortMappings('compatibleCount')">
-        Compatible
+        Kompatibel
         <span *ngIf="mapSort.col === 'compatibleCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
       <th class="col-narrow clickable" (click)="sortMappings('resolvedCount')">
-        Resolved
+        Gelöst
         <span *ngIf="mapSort.col === 'resolvedCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
       <th class="col-narrow clickable" (click)="sortMappings('needsActionCount')">
-        Needs Action
+        Aktion erforderlich
         <span *ngIf="mapSort.col === 'needsActionCount'">
-          {{ mapSort.dir === "asc" ? "▲" : "▼" }}
-        </span>
-      </th>
-      <th class="col-narrow clickable" (click)="sortMappings('mitigatedCount')">
-        Mitigated
-        <span *ngIf="mapSort.col === 'mitigatedCount'">
           {{ mapSort.dir === "asc" ? "▲" : "▼" }}
         </span>
       </th>
@@ -206,9 +200,6 @@
       </td>
       <td>
         <span class="pill pill--needs-action">{{ mapping.needsActionCount ?? 0 }}</span>
-      </td>
-      <td>
-        <span class="pill pill--mitigated">{{ mapping.mitigatedCount ?? 0 }}</span>
       </td>
       <td>
         <button

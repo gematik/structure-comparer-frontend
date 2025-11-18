@@ -202,7 +202,7 @@ export class EditProjectComponent implements OnInit {
     this.sortInPlace(this.comparisons, this.compSort.col, this.compSort.dir);
   }
 
-  sortMappings(col: 'name' | 'warningCount' | 'incompatibleCount' | 'compatibleCount' | 'resolvedCount' | 'mitigatedCount' | 'needsActionCount' | 'totalCount'): void {
+  sortMappings(col: 'name' | 'compatibleCount' | 'resolvedCount' | 'needsActionCount' | 'totalCount'): void {
     this.mapSort = {
       col,
       dir: (this.mapSort.col === col && this.mapSort.dir === 'asc') ? 'desc' : 'asc'
@@ -491,17 +491,20 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Maps backend evaluation summary to frontend mapping counts
-   * Converts the backend API response format to the format expected by the UI
+   * Uses simplified categories calculated by backend
    */
   private mapEvaluationSummaryToCounts(summary: any) {
     return {
+      // Simplified categories from backend
+      compatible: summary.simplified_compatible || 0,
+      resolved: summary.simplified_resolved || 0,
+      needs_action: summary.simplified_needs_action || 0,
+      total: summary.total_fields || 0,
+
+      // Legacy fields for compatibility (can be removed later)
       warning: summary.warnings || 0,
       incompatible: summary.incompatible || 0,
-      compatible: summary.compatible || 0,
-      resolved: summary.action_resolved || 0,
-      mitigated: summary.action_mitigated || 0,
-      needs_action: summary.needs_attention || 0,
-      total: summary.total_fields || 0
+      mitigated: summary.action_mitigated || 0
     };
   }
 
@@ -555,13 +558,16 @@ export class EditProjectComponent implements OnInit {
           const r = byId.get(m.id);
           return {
             ...m,
-            warningCount: r?.warning ?? 0,
-            incompatibleCount: r?.incompatible ?? 0,
+            // Simplified categories from backend
             compatibleCount: r?.compatible ?? 0,
             resolvedCount: r?.resolved ?? 0,
-            mitigatedCount: r?.mitigated ?? 0,
             needsActionCount: r?.needs_action ?? 0,
-            totalCount: r?.total ?? 0
+            totalCount: r?.total ?? 0,
+
+            // Legacy fields for compatibility (can be removed later)
+            warningCount: r?.warning ?? 0,
+            incompatibleCount: r?.incompatible ?? 0,
+            mitigatedCount: r?.mitigated ?? 0
           };
         });
         this.sortInPlace(this.mappings, this.mapSort.col, this.mapSort.dir);
