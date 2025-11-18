@@ -39,8 +39,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { MappingEvaluation, FieldEvaluation, EnhancedMappingField } from '../models/mapping-evaluation.model';
-import { PropertyTreeNode } from '../models/property-tree-node.model';
-import { buildPropertyTree, flattenTree, filterTreeNodes } from '../shared/mapping-tree.util';
+
+import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 
 export interface IProfile {
   name?: string;
@@ -48,14 +48,6 @@ export interface IProfile {
   action?: string;
   remark?: string;
   [key: string]: any;
-}
-
-export interface DisplayRow {
-  node: PropertyTreeNode;
-  field?: any; // original field data for leaf nodes
-  depth: number;
-  isLeaf: boolean;
-  hasChildren: boolean;
 }
 
 @Component({
@@ -71,7 +63,8 @@ export interface DisplayRow {
     MatTableModule,
     MatButtonModule,
     MatTooltip,
-    MatIcon
+    MatIcon,
+    TreeTableComponent
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -102,9 +95,7 @@ export class MappingDetailComponent implements OnInit {
 
   // Tree view properties
   viewMode: 'flat' | 'tree' = 'flat';
-  propertyTree: PropertyTreeNode[] = [];
-  filteredTree: PropertyTreeNode[] = [];
-  isExpandedById: Record<string, boolean> = {};
+  treeTableConfig: TreeTableConfig = { profileColumns: [] };
 
   // Paginator
   totalLength: number = 0;
@@ -185,8 +176,8 @@ export class MappingDetailComponent implements OnInit {
           fields: sortedFields.slice(0, this.pageSize),
         };
 
-        // Build tree structure
-        this.buildTree();
+        // Update tree table config
+        this.updateTreeTableConfig();
 
         // Load evaluation after mapping data is loaded
         if (this.projectKey && this.mappingId) {
@@ -554,6 +545,9 @@ export class MappingDetailComponent implements OnInit {
       ),
     };
 
+    // Update tree table config for tree view filtering
+    this.updateTreeTableConfig();
+
     // Clear the text filter input
     const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
     if (filterInput) {
@@ -576,6 +570,9 @@ export class MappingDetailComponent implements OnInit {
         this.pageSize * (this.pageIndex + 1)
       ),
     };
+
+    // Update tree table config
+    this.updateTreeTableConfig();
 
     // Clear the text filter input
     const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
@@ -944,10 +941,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
 
       this.dbg('Filter input:', { raw, val, totalBefore });
 
-      // Update tree filter
-      if (this.viewMode === 'tree') {
-        this.filterTree(raw);
-      }
+      // Tree filtering is now handled by the TreeTableComponent
 
       // Heuristik: Wenn Nutzer „incompatible" (oder Präfixe) tippt,
       // prüfe zusätzlich field.classification.
@@ -1157,28 +1151,13 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
   // Tree view methods
 
   /**
-   * Builds the property tree from the current mapping fields
+   * Updates the tree table configuration
    */
-  buildTree(): void {
-    if (!this.original?.fields) {
-      this.propertyTree = [];
-      this.filteredTree = [];
-      return;
-    }
-
-    this.propertyTree = buildPropertyTree(this.original.fields);
-    this.filteredTree = [...this.propertyTree];
-
-    // Initialize expansion states - root nodes expanded by default
-    this.initializeExpansionStates(this.propertyTree, true);
-
-    // Set default expansion for small trees
-    if (this.propertyTree.length <= 3) {
-      this.expandAllNodes();
-    }
-  }
-
-  /**
+  updateTreeTableConfig(): void {
+    this.treeTableConfig = {
+      profileColumns: this.profileColumns
+    };
+  }  /**
    * Toggles between flat and tree view modes
    */
   toggleViewMode(): void {
@@ -1188,175 +1167,7 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
     this.clearQuickFilter();
   }
 
-  /**
-   * Toggles expansion state of a tree node
-   */
-  toggleNodeExpansion(node: PropertyTreeNode): void {
-    node.isExpanded = !node.isExpanded;
-  }
 
-  /**
-   * Expands all tree nodes
-   */
-  expandAllNodes(): void {
-    this.expandNodesRecursive(this.filteredTree);
-  }
-
-  /**
-   * Collapses all tree nodes
-   */
-  collapseAllNodes(): void {
-    this.collapseNodesRecursive(this.filteredTree);
-  }
-
-  /**
-   * Recursively expands nodes
-   */
-  private expandNodesRecursive(nodes: PropertyTreeNode[]): void {
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        this.isExpandedById[node.id] = true;
-        this.expandNodesRecursive(node.children);
-      }
-    });
-  }
-
-  /**
-   * Recursively collapses nodes
-   */
-  private collapseNodesRecursive(nodes: PropertyTreeNode[]): void {
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        this.isExpandedById[node.id] = false;
-        this.collapseNodesRecursive(node.children);
-      }
-    });
-  }
-
-  /**
-   * Gets all visible (expanded) leaf nodes for tree view
-   */
-  getVisibleLeafNodes(): PropertyTreeNode[] {
-    const leafNodes: PropertyTreeNode[] = [];
-
-    const traverse = (node: PropertyTreeNode, parentExpanded = true) => {
-      if (parentExpanded) {
-        if (node.isLeaf) {
-          leafNodes.push(node);
-        } else if (node.children) {
-          node.children.forEach(child =>
-            traverse(child, node.isExpanded !== false)
-          );
-        }
-      }
-    };
-
-    this.filteredTree.forEach(node => traverse(node));
-    return leafNodes;
-  }
-
-  /**
-   * Gets visible tree rows for table display
-   */
-  getVisibleTreeRows(): DisplayRow[] {
-    const visibleRows: DisplayRow[] = [];
-
-    const traverse = (node: PropertyTreeNode, depth = 0, parentExpanded = true) => {
-      if (parentExpanded) {
-        const displayRow: DisplayRow = {
-          node: node,
-          field: node.originalField,
-          depth: depth,
-          isLeaf: node.isLeaf || false,
-          hasChildren: (node.children && node.children.length > 0) || false
-        };
-
-        visibleRows.push(displayRow);
-
-        // Check if this node is expanded
-        const nodeExpanded = this.isExpanded(node);
-        if (node.children && nodeExpanded) {
-          node.children.forEach(child =>
-            traverse(child, depth + 1, true)
-          );
-        }
-      }
-    };
-
-    this.filteredTree.forEach(node => traverse(node));
-    return visibleRows;
-  }
-
-  /**
-   * Gets visible tree nodes with proper nesting structure for display
-   */
-  getVisibleTreeNodes(): Array<PropertyTreeNode & { displayLevel: number }> {
-    const visibleNodes: Array<PropertyTreeNode & { displayLevel: number }> = [];
-
-    const traverse = (node: PropertyTreeNode, level = 0, parentExpanded = true) => {
-      if (parentExpanded) {
-        visibleNodes.push({ ...node, displayLevel: level });
-
-        if (node.children && node.isExpanded !== false) {
-          node.children.forEach(child =>
-            traverse(child, level + 1, true)
-          );
-        }
-      }
-    };
-
-    this.filteredTree.forEach(node => traverse(node));
-    return visibleNodes;
-  }
-
-  /**
-   * Filters the tree based on search criteria
-   */
-  filterTree(searchTerm: string): void {
-    if (!searchTerm) {
-      this.filteredTree = [...this.propertyTree];
-    } else {
-      this.filteredTree = filterTreeNodes(this.propertyTree, searchTerm);
-    }
-  }
-
-  /**
-   * Initializes expansion states for tree nodes
-   */
-  private initializeExpansionStates(nodes: PropertyTreeNode[], expanded = false): void {
-    nodes.forEach(node => {
-      if (node.children && node.children.length > 0) {
-        this.isExpandedById[node.id] = expanded;
-        this.initializeExpansionStates(node.children, false); // Children start collapsed
-      }
-      if (node.children) {
-        this.initializeExpansionStates(node.children, false);
-      }
-    });
-  }
-
-  /**
-   * Toggles expansion state of a tree node
-   */
-  toggleNode(node: PropertyTreeNode): void {
-    if (node.children && node.children.length > 0) {
-      this.isExpandedById[node.id] = !this.isExpandedById[node.id];
-    }
-  }
-
-  /**
-   * Checks if a node is expanded
-   */
-  isExpanded(node: PropertyTreeNode): boolean {
-    return this.isExpandedById[node.id] || false;
-  }
-
-  /**
-   * Gets an array for depth visualization
-   */
-  getDepthArray(depth: number): any[] {
-    return new Array(depth).fill(0);
-  }
 
   /**
    * Updates a field's action via the API
