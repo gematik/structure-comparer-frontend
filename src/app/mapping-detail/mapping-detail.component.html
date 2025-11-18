@@ -1,5 +1,5 @@
 <div class="m-20" *ngIf="filtered">
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 20px">
     <button
       mat-raised-button
       color="primary"
@@ -20,7 +20,9 @@
       <div class="mapping-info-grid">
         <div class="info-item">
           <span class="info-label">Source Profile:</span>
-          <ng-container *ngIf="filtered.sources.length > 1; else singleSourceInfo">
+          <ng-container
+            *ngIf="filtered.sources.length > 1; else singleSourceInfo"
+          >
             <div class="multiple-sources">
               <span *ngFor="let profile of filtered.sources; let last = last">
                 <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
@@ -29,13 +31,17 @@
             </div>
           </ng-container>
           <ng-template #singleSourceInfo>
-            <a [href]="filtered.sources[0].url" target="_blank">{{ filtered.sources[0].name }}</a>
+            <a [href]="filtered.sources[0].url" target="_blank">{{
+              filtered.sources[0].name
+            }}</a>
           </ng-template>
         </div>
 
         <div class="info-item">
           <span class="info-label">Target Profile:</span>
-          <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name }}</a>
+          <a [href]="filtered.target.url" target="_blank">{{
+            filtered.target.name
+          }}</a>
         </div>
 
         <div class="info-item">
@@ -45,12 +51,18 @@
 
         <div class="info-item">
           <span class="info-label">Status:</span>
-          <span class="info-value status-badge" [ngClass]="'status-' + filtered.status">{{ filtered.status }}</span>
+          <span
+            class="info-value status-badge"
+            [ngClass]="'status-' + filtered.status"
+            >{{ filtered.status }}</span
+          >
         </div>
 
         <div class="info-item">
           <span class="info-label">Letztes Update:</span>
-          <span class="info-value">{{ filtered.last_updated | date:'dd.MM.yyyy HH:mm' }}</span>
+          <span class="info-value">{{
+            filtered.last_updated | date : "dd.MM.yyyy HH:mm"
+          }}</span>
         </div>
       </div>
     </div>
@@ -58,10 +70,12 @@
     <!-- Summary Cards -->
     <div class="overview-cards">
       <!-- Total Fields Card -->
-      <div class="overview-card total-card clickable-card"
-           (click)="clearQuickFilter()"
-           [class.active]="!currentQuickFilter"
-           matTooltip="Alle Felder anzeigen">
+      <div
+        class="overview-card total-card clickable-card"
+        (click)="clearQuickFilter()"
+        [class.active]="!currentQuickFilter"
+        matTooltip="Alle Felder anzeigen"
+      >
         <div class="card-header">
           <span class="card-title">Gesamt</span>
         </div>
@@ -70,10 +84,12 @@
       </div>
 
       <!-- Completed Card -->
-      <div class="overview-card success-card clickable-card"
-           (click)="applyQuickFilter('completed')"
-           [class.active]="currentQuickFilter === 'completed'"
-           matTooltip="Nur kompatible Felder anzeigen">
+      <div
+        class="overview-card success-card clickable-card"
+        (click)="applyQuickFilter('completed')"
+        [class.active]="currentQuickFilter === 'completed'"
+        matTooltip="Nur kompatible Felder anzeigen"
+      >
         <div class="card-header">
           <span class="card-title">Kompatibel</span>
         </div>
@@ -82,10 +98,12 @@
       </div>
 
       <!-- Resolved Card -->
-      <div class="overview-card resolved-card clickable-card"
-           (click)="applyQuickFilter('resolved')"
-           [class.active]="currentQuickFilter === 'resolved'"
-           matTooltip="Nur gelöste Felder anzeigen">
+      <div
+        class="overview-card resolved-card clickable-card"
+        (click)="applyQuickFilter('resolved')"
+        [class.active]="currentQuickFilter === 'resolved'"
+        matTooltip="Nur gelöste Felder anzeigen"
+      >
         <div class="card-header">
           <span class="card-title">Gelöst</span>
         </div>
@@ -94,14 +112,18 @@
       </div>
 
       <!-- Needs Action Card -->
-      <div class="overview-card attention-card clickable-card"
-           (click)="applyQuickFilter('needs_action')"
-           [class.active]="currentQuickFilter === 'needs_action'"
-           matTooltip="Nur Felder anzeigen, die Aktion benötigen">
+      <div
+        class="overview-card attention-card clickable-card"
+        (click)="applyQuickFilter('needs_action')"
+        [class.active]="currentQuickFilter === 'needs_action'"
+        matTooltip="Nur Felder anzeigen, die Aktion benötigen"
+      >
         <div class="card-header">
           <span class="card-title">Aktion erforderlich</span>
         </div>
-        <div class="card-value">{{ getStatusSummary()?.needs_action || 0 }}</div>
+        <div class="card-value">
+          {{ getStatusSummary()?.needs_action || 0 }}
+        </div>
         <div class="card-subtitle">Müssen bearbeitet werden</div>
       </div>
     </div>
@@ -110,18 +132,21 @@
     <div class="progress-section">
       <div class="progress-label">Fortschritt (Gesamt)</div>
       <div class="progress-bar">
-        <div class="progress-segment completed"
-             [style.width.%]="getTotalProgressPercentage('completed')"
-             [matTooltip]="getStatusSummary()?.completed + ' kompatibel'">
-        </div>
-        <div class="progress-segment resolved"
-             [style.width.%]="getTotalProgressPercentage('resolved')"
-             [matTooltip]="getStatusSummary()?.resolved + ' gelöst'">
-        </div>
-        <div class="progress-segment needs-action"
-             [style.width.%]="getTotalProgressPercentage('needs_action')"
-             [matTooltip]="getStatusSummary()?.needs_action + ' benötigt Aktion'">
-        </div>
+        <div
+          class="progress-segment completed"
+          [style.width.%]="getTotalProgressPercentage('completed')"
+          [matTooltip]="getStatusSummary()?.completed + ' kompatibel'"
+        ></div>
+        <div
+          class="progress-segment resolved"
+          [style.width.%]="getTotalProgressPercentage('resolved')"
+          [matTooltip]="getStatusSummary()?.resolved + ' gelöst'"
+        ></div>
+        <div
+          class="progress-segment needs-action"
+          [style.width.%]="getTotalProgressPercentage('needs_action')"
+          [matTooltip]="getStatusSummary()?.needs_action + ' benötigt Aktion'"
+        ></div>
       </div>
       <div class="progress-text">
         {{ getTotalCompletionPercentage() }}% bearbeitet
@@ -129,8 +154,15 @@
     </div>
   </div>
 
-  <div style="flex: 1; display: flex; justify-content: space-between; align-items: center">
-    <div style="display: flex; gap: 10px;">
+  <div
+    style="
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    "
+  >
+    <div style="display: flex; gap: 10px">
       <div *ngIf="evaluationLoadingError" class="evaluation-error">
         <small class="text-muted">{{ evaluationLoadingError }}</small>
       </div>
@@ -160,8 +192,6 @@
         <tr>
           <th class="default-th" mat-sort-header="name">Property</th>
 
-
-
           <!-- Dynamische Profilspalten (alle Sources + Target) -->
           <ng-container *ngFor="let p of profileColumns">
             <th class="default-th" [mat-sort-header]="'profile-' + p.key">
@@ -175,11 +205,9 @@
           </th>
 
           <!-- Status Column -->
-          <th class="default-th" mat-sort-header="status">
-            Status
-          </th>
+          <th class="default-th" mat-sort-header="status">Status</th>
 
-             <!-- Mapping-Aktion (unverändert) -->
+          <!-- Mapping-Aktion (unverändert) -->
           <th class="default-th" mat-sort-header="remark">Mapping</th>
         </tr>
       </thead>
@@ -203,17 +231,17 @@
                 *ngIf="field.profiles?.[p.key] as fp; else notAvailable"
               >
                 <span
-  class="badge-cardinality"
-  [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
->
-  {{ formatCardinality(fp.min, fp.max) }}
-</span>
+                  class="badge-cardinality"
+                  [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
+                >
+                  {{ formatCardinality(fp.min, fp.max) }}
+                </span>
 
-<span *ngIf="fp.must_support" class="badge-ms">S</span>
+                <span *ngIf="fp.must_support" class="badge-ms">S</span>
 
-<div *ngIf="fp.ref_types?.length" class="ref-types">
-  Ref: {{ fp.ref_types.join(', ') }}
-</div>
+                <div *ngIf="fp.ref_types?.length" class="ref-types">
+                  Ref: {{ fp.ref_types.join(", ") }}
+                </div>
               </ng-container>
               <ng-template #notAvailable>—</ng-template>
             </td>
@@ -227,8 +255,18 @@
               [matTooltipHideDelay]="1000"
               [matTooltip]="getEnhancedTooltip(field)"
             >
-              <ng-container *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name]; else standardClassification">
-                {{ mappingEvaluation.field_evaluations[field.name].enhanced_classification | titlecase }}
+              <ng-container
+                *ngIf="
+                  mappingEvaluation &&
+                    mappingEvaluation.field_evaluations &&
+                    mappingEvaluation.field_evaluations[field.name];
+                  else standardClassification
+                "
+              >
+                {{
+                  mappingEvaluation.field_evaluations[field.name]
+                    .enhanced_classification | titlecase
+                }}
               </ng-container>
               <ng-template #standardClassification>
                 {{ field.classification }}
@@ -236,27 +274,62 @@
             </span>
 
             <!-- Enhanced evaluation indicators - Direct Issues Display -->
-            <div *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name]" class="evaluation-indicators">
-              <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as fieldEval">
+            <div
+              *ngIf="
+                mappingEvaluation &&
+                mappingEvaluation.field_evaluations &&
+                mappingEvaluation.field_evaluations[field.name]
+              "
+              class="evaluation-indicators"
+            >
+              <ng-container
+                *ngIf="
+                  mappingEvaluation.field_evaluations[field.name] as fieldEval
+                "
+              >
                 <!-- Direct Issues Display -->
-                <div *ngIf="fieldEval.issues && fieldEval.issues.length > 0" class="direct-issues">
-                  <div *ngFor="let issue of fieldEval.issues"
-                       class="issue-message"
-                       [ngClass]="'severity-' + issue.severity"
-                       style="font-size: 0.85em; margin: 2px 0; line-height: 1.3; word-wrap: break-word;">
+                <div
+                  *ngIf="fieldEval.issues && fieldEval.issues.length > 0"
+                  class="direct-issues"
+                >
+                  <div
+                    *ngFor="let issue of fieldEval.issues"
+                    class="issue-message"
+                    [ngClass]="'severity-' + issue.severity"
+                    style="
+                      font-size: 0.85em;
+                      margin: 2px 0;
+                      line-height: 1.3;
+                      word-wrap: break-word;
+                    "
+                  >
                     {{ issue.message }}
-                    <span *ngIf="issue.resolved_by_action" class="resolved-indicator"
-                          style="color: #28a745; font-weight: 500;">
-                      <br>(✓ Gelöst durch: {{ issue.resolved_by_action }})
+                    <span
+                      *ngIf="issue.resolved_by_action"
+                      class="resolved-indicator"
+                      style="color: #28a745; font-weight: 500"
+                    >
+                      <br />(✓ Gelöst durch: {{ issue.resolved_by_action }})
                     </span>
                   </div>
                 </div>
 
                 <!-- Direct Warnings Display -->
-                <div *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0" class="direct-warnings">
-                  <div *ngFor="let warning of fieldEval.warnings"
-                       class="warning-message"
-                       style="font-size: 0.85em; margin: 2px 0; line-height: 1.3; word-wrap: break-word; color: #ffc107;">
+                <div
+                  *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0"
+                  class="direct-warnings"
+                >
+                  <div
+                    *ngFor="let warning of fieldEval.warnings"
+                    class="warning-message"
+                    style="
+                      font-size: 0.85em;
+                      margin: 2px 0;
+                      line-height: 1.3;
+                      word-wrap: break-word;
+                      color: #ffc107;
+                    "
+                  >
                     {{ warning }}
                   </div>
                 </div>
@@ -270,12 +343,13 @@
               class="status-pill"
               [ngClass]="getStatusCssClass(getProcessingStatus(field))"
               [matTooltip]="getStatusTooltip(field, getProcessingStatus(field))"
-              matTooltipPosition="above">
+              matTooltipPosition="above"
+            >
               {{ getStatusLabel(getProcessingStatus(field)) }}
             </span>
           </td>
 
-           <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
+          <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
           <td
             class="default-td"
             (mouseenter)="handleEdit(i).startHover()"
@@ -283,30 +357,72 @@
           >
             <div *ngIf="editingIndex !== i">
               <!-- Consolidated Mapping Display -->
-              <div class="mapping-consolidated" [attr.data-action]="field.action">
-                <div class="mapping-header">
-                </div>
-                <div *ngIf="getConsolidatedMappingText(field)"
-                     class="mapping-details"
-                     [matTooltip]="getRemarkTooltip(field)"
-                     matTooltipPosition="above">
+              <div
+                class="mapping-consolidated"
+                [attr.data-action]="field.action"
+              >
+                <div class="mapping-header"></div>
+                <div
+                  *ngIf="getConsolidatedMappingText(field)"
+                  class="mapping-details"
+                  [matTooltip]="getRemarkTooltip(field)"
+                  matTooltipPosition="above"
+                >
                   {{ getConsolidatedMappingText(field) }}
                 </div>
               </div>
 
               <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
-              <div *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name] && (!field.action || field.action === 'use')"
-                   class="mapping-recommendations">
-                <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as fieldEval">
-                  <div *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0"
-                       class="recommendations-section"
-                       style="margin-top: 8px; padding: 6px; background-color: #f8f9fa; border-left: 3px solid #17a2b8; border-radius: 4px;">
-                    <div class="recommendations-header" style="font-weight: 600; color: #17a2b8; font-size: 0.85em; margin-bottom: 4px;">
+              <div
+                *ngIf="
+                  mappingEvaluation &&
+                  mappingEvaluation.field_evaluations &&
+                  mappingEvaluation.field_evaluations[field.name] &&
+                  (!field.action || field.action === 'use')
+                "
+                class="mapping-recommendations"
+              >
+                <ng-container
+                  *ngIf="
+                    mappingEvaluation.field_evaluations[field.name] as fieldEval
+                  "
+                >
+                  <div
+                    *ngIf="
+                      fieldEval.recommendations &&
+                      fieldEval.recommendations.length > 0
+                    "
+                    class="recommendations-section"
+                    style="
+                      margin-top: 8px;
+                      padding: 6px;
+                      background-color: #f8f9fa;
+                      border-left: 3px solid #17a2b8;
+                      border-radius: 4px;
+                    "
+                  >
+                    <div
+                      class="recommendations-header"
+                      style="
+                        font-weight: 600;
+                        color: #17a2b8;
+                        font-size: 0.85em;
+                        margin-bottom: 4px;
+                      "
+                    >
                       💡 Empfehlungen:
                     </div>
-                    <div *ngFor="let recommendation of fieldEval.recommendations"
-                         class="recommendation-item"
-                         style="font-size: 0.8em; line-height: 1.4; margin: 2px 0; word-wrap: break-word; color: #495057;">
+                    <div
+                      *ngFor="let recommendation of fieldEval.recommendations"
+                      class="recommendation-item"
+                      style="
+                        font-size: 0.8em;
+                        line-height: 1.4;
+                        margin: 2px 0;
+                        word-wrap: break-word;
+                        color: #495057;
+                      "
+                    >
                       • {{ recommendation }}
                     </div>
                   </div>
