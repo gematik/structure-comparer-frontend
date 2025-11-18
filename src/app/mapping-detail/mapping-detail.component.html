@@ -133,29 +133,16 @@
             (mouseleave)="handleEdit().stopHover()"
           >
             <div *ngIf="editingIndex !== i">
-              <span
-                class="pill"
-                [ngClass]="'pill--' + field.action"
-                [matTooltip]="getRemarkTooltip(field)"
-                matTooltipPosition="above"
-              >
-                {{ getDescriptionForMapping(field.action) }}
-              </span>
-
-              <!-- Mapping Result Display -->
-              <div class="mapping-result"
-                   *ngIf="getMappingResult(field)"
-                   [attr.data-action]="field.action">
-                <div class="mapping-result-content">
-                  {{ getMappingResult(field) }}
+              <!-- Consolidated Mapping Display -->
+              <div class="mapping-consolidated" [attr.data-action]="field.action">
+                <div class="mapping-header">
                 </div>
-              </div>
-
-              <div
-                *ngIf="field.action === 'manual' && field.remark"
-                class="mapping-remark"
-              >
-                {{ field.remark }}
+                <div *ngIf="getConsolidatedMappingText(field)"
+                     class="mapping-details"
+                     [matTooltip]="getRemarkTooltip(field)"
+                     matTooltipPosition="above">
+                  {{ getConsolidatedMappingText(field) }}
+                </div>
               </div>
             </div>
 

@@ -358,3 +358,68 @@ tr:hover {
   color: #856404;
   line-height: 1.3;
 }
+
+/* Consolidated Mapping Display */
+.mapping-consolidated {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapping-header {
+  display: flex;
+  align-items: center;
+}
+
+.mapping-details {
+  font-size: 0.85em;
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #6c757d;
+  margin-top: 4px;
+}
+
+/* Action-specific styling for consolidated display */
+.mapping-consolidated[data-action="copy_from"] .mapping-details,
+.mapping-consolidated[data-action="copy_to"] .mapping-details {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #1565c0;
+}
+
+.mapping-consolidated[data-action="fixed"] .mapping-details {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+  color: #e65100;
+}
+
+.mapping-consolidated[data-action="use"] .mapping-details {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.mapping-consolidated[data-action="not_use"] .mapping-details,
+.mapping-consolidated[data-action="empty"] .mapping-details {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+.mapping-consolidated[data-action="manual"] .mapping-details,
+.mapping-consolidated[data-action="extension"] .mapping-details {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+  color: #f57c00;
+}
+
+.mapping-consolidated[data-action="other"] .mapping-details,
+.mapping-consolidated[data-action="medication_service"] .mapping-details {
+  background-color: #fce4ec;
+  border-left-color: #e91e63;
+  color: #ad1457;
+}

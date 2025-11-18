@@ -338,6 +338,63 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
     }
   }
 
+  /**
+   * Gets consolidated mapping text that combines all relevant information
+   * Replaces the separate displays of result and remark
+   */
+  getConsolidatedMappingText(field: any): string {
+    const parts: string[] = [];
+    
+    switch (field.action) {
+      case 'copy_from':
+        if (field.other) {
+          parts.push(`← Kopiert von: ${field.other}`);
+        }
+        break;
+      case 'copy_to':
+        if (field.other) {
+          parts.push(`→ Kopiert zu: ${field.other}`);
+        }
+        break;
+      case 'fixed':
+        if (field.fixed) {
+          parts.push(`Fester Wert: "${field.fixed}"`);
+        }
+        break;
+      case 'manual':
+        if (field.remark) {
+          parts.push(`Manuell: ${field.remark}`);
+        } else {
+          parts.push('Manuelle Bearbeitung erforderlich');
+        }
+        break;
+      case 'extension':
+        if (field.remark) {
+          parts.push(`Extension: ${field.remark}`);
+        } else {
+          parts.push('Extension-Behandlung');
+        }
+        break;
+      case 'not_use':
+        parts.push('Wird nicht verwendet');
+        break;
+      case 'empty':
+        parts.push('Wird geleert');
+        break;
+      case 'use':
+        parts.push('Wird direkt übernommen');
+        break;
+      case 'other':
+        parts.push('Sonderbehandlung erforderlich');
+        break;
+      case 'medication_service':
+        parts.push('Medikations-Service Integration');
+        break;
+    }
+    
+    return parts.join(' • ');
+  }
+
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
     return !!fieldProfiles[profileName];
   }

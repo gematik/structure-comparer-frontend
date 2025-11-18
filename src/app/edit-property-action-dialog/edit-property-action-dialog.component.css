@@ -2,11 +2,14 @@
 .dialog-container {
   min-width: 500px;
   max-width: 700px;
+  margin: 32px; /* Mehr Margin um den gesamten Dialog */
+  padding: 24px; /* Zusätzliches Padding im Container */
 }
 
 .dialog-content {
   min-height: 300px;
-  padding: 16px 0;
+  padding: 24px 32px; /* Mehr Padding im Content-Bereich */
+  margin: 0 -8px; /* Kompensiert Material Dialog Standard-Padding */
 }
 
 /* Field Information Section */
@@ -94,8 +97,10 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 16px 0 0 0;
+  padding: 24px 32px 16px 32px; /* Mehr Padding für die Button-Leiste */
   margin-top: 24px;
+  margin-left: -32px; /* Kompensiert Container-Padding */
+  margin-right: -32px; /* Kompensiert Container-Padding */
   border-top: 1px solid #e0e0e0;
 }
 
@@ -188,10 +193,19 @@
 @media (max-width: 600px) {
   .dialog-container {
     min-width: 350px;
+    margin: 16px; /* Weniger Margin auf mobilen Geräten */
+    padding: 16px; /* Weniger Padding auf mobilen Geräten */
+  }
+
+  .dialog-content {
+    padding: 16px 20px; /* Angepasstes Padding für mobile */
   }
 
   .dialog-actions {
     flex-direction: column;
+    padding: 20px 20px 16px 20px; /* Angepasstes Padding für mobile */
+    margin-left: -20px;
+    margin-right: -20px;
   }
 
   .dialog-actions button {
