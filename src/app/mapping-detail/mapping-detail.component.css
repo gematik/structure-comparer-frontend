@@ -150,6 +150,31 @@ tr:hover {
   line-height: 1.25;
 }
 
+/* Enhanced ref-types styling from Tree-View */
+.ref-types {
+  white-space: normal;
+  line-height: 1.25;
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+/* Profile content layout */
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Reference warning indicator */
+.ref-warning {
+  color: #ff9800;
+  font-size: 1.1em;
+  cursor: help;
+  margin-left: 2px;
+}
+
 /* --- Spaltenbreiten ---------------------------------------------------- */
 /* 1. Spalte: Property – bewusst breiter, damit Feldnamen lesbar bleiben */
 .modern-table th:nth-child(1),
@@ -158,18 +183,29 @@ tr:hover {
   max-width: 50rem;
 }
 
-/* 2. Spalte: Mapping – gezielt kompakt halten */
+/* 2. Spalte: Profile – kompakter ohne ref-types */
 .modern-table th:nth-child(2),
 .modern-table td:nth-child(2) {
-  width: 20rem;          /* <- bei Bedarf anpassen (z. B. 10rem–14rem) */
-  max-width: 20rem;
+  width: 8rem;          /* Reduziert da keine ref-types mehr angezeigt */
+  max-width: 8rem;
 }
 
-/* 3. Spalte: Mapping – gezielt kompakt halten */
+/* 3. Spalte: Profile – kompakter ohne ref-types */
 .modern-table th:nth-child(3),
 .modern-table td:nth-child(3) {
-  width: 20rem;          /* <- bei Bedarf anpassen (z. B. 10rem–14rem) */
-  max-width: 20rem;
+  width: 8rem;          /* Reduziert da keine ref-types mehr angezeigt */
+  max-width: 8rem;
+}
+
+/* 4.-6. Spalte: Weitere Profile-Spalten – auch kompakter */
+.modern-table th:nth-child(4),
+.modern-table td:nth-child(4),
+.modern-table th:nth-child(5),
+.modern-table td:nth-child(5),
+.modern-table th:nth-child(6),
+.modern-table td:nth-child(6) {
+  width: 8rem;
+  max-width: 8rem;
 }
 
 /* Letzte Spalte: Compatibility – schmal */
@@ -642,18 +678,7 @@ tr:hover {
 }
 
 /* Status column width */
-.modern-table th:nth-child(4),
-.modern-table td:nth-child(4) {
-  width: 15rem;
-  max-width: 15rem;
-}
-
-/* Adjust other column widths to accommodate status column */
-.modern-table th:nth-child(5),
-.modern-table td:nth-child(5) {
-  width: 20rem;
-  max-width: 20rem;
-}
+/* Diese Definitionen wurden nach oben zu den Profile-Spalten verschoben */
 
 /* Status Summary */
 .status-summary {

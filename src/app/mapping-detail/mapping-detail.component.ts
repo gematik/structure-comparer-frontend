@@ -1167,6 +1167,31 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
     this.clearQuickFilter();
   }
 
+  /**
+   * Gets tooltip text for profile references
+   */
+  getRefTooltip(field: any, profileKey: string): string {
+    const fp = field.profiles?.[profileKey];
+    if (!fp?.ref_types?.length) {
+      return 'Keine Referenz-Typen definiert';
+    }
+    return `Referenz-Typen: ${fp.ref_types.join(', ')}`;
+  }
+
+  /**
+   * Checks if there are reference differences across profiles
+   */
+  hasRefDifferences(field: any): boolean {
+    const allRefs = this.profileColumns
+      .map(p => field.profiles?.[p.key]?.ref_types || [])
+      .filter(refs => refs.length > 0);
+
+    if (allRefs.length <= 1) return false;
+
+    const firstRefs = allRefs[0].sort().join(',');
+    return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+  }
+
 
 
   /**

@@ -239,6 +239,123 @@ button.cancel:hover {
   border: 1px solid #dee2e6;
 }
 
+/* Consolidated Mapping Display */
+.mapping-consolidated {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapping-header {
+  display: flex;
+  align-items: center;
+}
+
+.mapping-details {
+  font-size: 0.85em;
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #6c757d;
+  margin-top: 4px;
+}
+
+/* Action-specific styling for consolidated display */
+.mapping-consolidated[data-action="copy_from"] .mapping-details,
+.mapping-consolidated[data-action="copy_to"] .mapping-details {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #1565c0;
+}
+
+.mapping-consolidated[data-action="fixed"] .mapping-details {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+  color: #e65100;
+}
+
+.mapping-consolidated[data-action="use"] .mapping-details {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.mapping-consolidated[data-action="not_use"] .mapping-details,
+.mapping-consolidated[data-action="empty"] .mapping-details {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+.mapping-consolidated[data-action="manual"] .mapping-details,
+.mapping-consolidated[data-action="extension"] .mapping-details {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+  color: #f57c00;
+}
+
+.mapping-consolidated[data-action="other"] .mapping-details,
+.mapping-consolidated[data-action="medication_service"] .mapping-details {
+  background-color: #fce4ec;
+  border-left-color: #e91e63;
+  color: #ad1457;
+}
+
+/* Recommendations styling */
+.mapping-recommendations {
+  margin-top: 8px;
+}
+
+.recommendations-section {
+  background-color: #f0f8ff;
+  border-left: 3px solid #17a2b8;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.recommendations-header {
+  font-weight: 600;
+  color: #17a2b8;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.recommendation-item {
+  font-size: 0.8em;
+  line-height: 1.4;
+  margin: 2px 0;
+  word-wrap: break-word;
+  color: #495057;
+}
+
+.issue-message {
+  font-weight: 500;
+}
+
+.resolved-indicator {
+  color: #28a745;
+  font-weight: 500;
+}
+
+/* Profile content layout */
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Reference warning indicator */
+.ref-warning {
+  color: #ff9800;
+  font-size: 1.1em;
+  cursor: help;
+  margin-left: 2px;
+}
+
 /* Hover effects */
 .tree-property-column:hover .tree-toggle-btn {
   background-color: #e9ecef;

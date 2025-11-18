@@ -255,17 +255,27 @@
               <ng-container
                 *ngIf="field.profiles?.[p.key] as fp; else notAvailable"
               >
-                <span
-                  class="badge-cardinality"
-                  [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
+                <div
+                  class="profile-content"
+                  [matTooltip]="getRefTooltip(field, p.key)"
+                  matTooltipPosition="above"
                 >
-                  {{ formatCardinality(fp.min, fp.max) }}
-                </span>
+                  <span
+                    class="badge-cardinality"
+                    [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
+                  >
+                    {{ formatCardinality(fp.min, fp.max) }}
+                  </span>
 
-                <span *ngIf="fp.must_support" class="badge-ms">S</span>
+                  <span *ngIf="fp.must_support" class="badge-ms">S</span>
 
-                <div *ngIf="fp.ref_types?.length" class="ref-types">
-                  Ref: {{ fp.ref_types.join(", ") }}
+                  <span
+                    *ngIf="fp.ref_types?.length && hasRefDifferences(field)"
+                    class="ref-warning"
+                    title="Referenz-Unterschiede vorhanden"
+                  >
+                    ❗
+                  </span>
                 </div>
               </ng-container>
               <ng-template #notAvailable>—</ng-template>
