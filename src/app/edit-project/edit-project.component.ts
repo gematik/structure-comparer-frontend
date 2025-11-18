@@ -29,6 +29,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -63,6 +64,7 @@ import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overl
     CommonModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     PackageListComponent,
     ComparisonListComponent,
     MappingListComponent,
@@ -537,6 +539,111 @@ export class EditProjectComponent implements OnInit {
       needs_action: 0,
       total: fields?.length ?? 0
     };
+  }
+
+  /**
+   * Calculates overall project progress by aggregating all mapping statistics
+   * Returns consolidated statistics across all mappings in the project
+   */
+  getProjectOverallSummary(): any {
+    if (!this.mappings || this.mappings.length === 0) {
+      return {
+        total: 0,
+        completed: 0,
+        resolved: 0,
+        needs_action: 0,
+        totalMappings: 0
+      };
+    }
+
+    const summary = {
+      total: 0,
+      completed: 0,
+      resolved: 0,
+      needs_action: 0,
+      totalMappings: this.mappings.length
+    };
+
+    this.mappings.forEach(mapping => {
+      // Use the enhanced evaluation counts if available, fallback to legacy counts
+      summary.total += mapping.totalCount || 0;
+      summary.completed += mapping.compatibleCount || 0;
+      summary.resolved += mapping.resolvedCount || 0;
+      summary.needs_action += mapping.needsActionCount || 0;
+    });
+
+    return summary;
+  }
+
+  /**
+   * Calculates the overall project completion percentage
+   * Considers both compatible and resolved fields as "completed"
+   */
+  getProjectCompletionPercentage(): number {
+    const summary = this.getProjectOverallSummary();
+    if (summary.total === 0) {
+      return 0;
+    }
+
+    const completed = summary.completed + summary.resolved;
+    return Math.round((completed / summary.total) * 100);
+  }
+
+  /**
+   * Gets the percentage for a specific category in the progress bar
+   * @param category The category to calculate percentage for ('completed', 'resolved', 'needs_action')
+   */
+  getProjectProgressPercentage(category: string): number {
+    const summary = this.getProjectOverallSummary();
+    if (summary.total === 0) {
+      return 0;
+    }
+
+    const value = (summary as any)[category] || 0;
+    return (value / summary.total) * 100;
+  }
+
+  /**
+   * Gets a human-readable status description for the project
+   */
+  getProjectStatusDescription(): string {
+    const summary = this.getProjectOverallSummary();
+    const completionPercentage = this.getProjectCompletionPercentage();
+
+    if (summary.total === 0) {
+      return 'Keine Mappings im Projekt vorhanden';
+    }
+
+    if (completionPercentage >= 100) {
+      return 'Alle Felder sind vollständig bearbeitet';
+    } else if (completionPercentage >= 80) {
+      return 'Projekt ist fast vollständig';
+    } else if (completionPercentage >= 50) {
+      return 'Projekt ist zur Hälfte bearbeitet';
+    } else if (completionPercentage > 0) {
+      return 'Projekt ist teilweise bearbeitet';
+    } else {
+      return 'Projekt noch nicht bearbeitet';
+    }
+  }
+
+  /**
+   * Gets the appropriate CSS class for the project progress status
+   */
+  getProjectStatusClass(): string {
+    const completionPercentage = this.getProjectCompletionPercentage();
+
+    if (completionPercentage >= 100) {
+      return 'status-completed';
+    } else if (completionPercentage >= 80) {
+      return 'status-nearly-done';
+    } else if (completionPercentage >= 50) {
+      return 'status-half-done';
+    } else if (completionPercentage > 0) {
+      return 'status-in-progress';
+    } else {
+      return 'status-not-started';
+    }
   }
 
   /**

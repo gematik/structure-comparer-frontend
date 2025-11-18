@@ -35,13 +35,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ComparisonService } from '../comparison.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-project-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatInputModule, MatFormFieldModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, RouterModule, FormsModule, FontAwesomeModule, MatInputModule, MatFormFieldModule, MatButtonModule, MatIcon, MatTooltipModule],
   templateUrl: './project-list.component.html',
   styleUrls: ['./project-list.component.css']
 })
@@ -50,6 +54,10 @@ export class ProjectListComponent implements OnInit {
   projects: any = {};
   // Name for creating a new project
   newProjectName: string = '';
+  // Loading state for progress data
+  isLoadingProgress = false;
+  // Enhanced projects data with progress information
+  projectsWithProgress: any[] = [];
 
   // FontAwesome icons used in the template
   faEye = faEye;
@@ -61,19 +69,23 @@ export class ProjectListComponent implements OnInit {
   constructor(
     private mappingsService: MappingsService,
     private projectService: ProjectService,
+    private comparisonService: ComparisonService,
     private router: Router,
     private dialog: MatDialog
   ) { }
 
   /**
-   * Initializes the component by loading all available projects
+   * Initializes the component by loading all available projects and their progress data
    */
   ngOnInit(): void {
     this.mappingsService.listProjects().subscribe(
-      data => this.projects = data,
+      data => {
+        this.projects = data;
+        // Load progress data for all projects
+        this.loadProjectsProgress();
+      },
       error => console.error(error)
     );
-    console.log('Projects loaded:', this.projects);
   }
 
   /**
@@ -146,5 +158,269 @@ export class ProjectListComponent implements OnInit {
         );
       }
     });
+  }
+
+  /**
+   * Loads progress information for all projects
+   */
+  private loadProjectsProgress(): void {
+    if (!this.projects?.projects?.length) {
+      this.projectsWithProgress = [];
+      return;
+    }
+
+    this.isLoadingProgress = true;
+    
+    // Create an array of observables to load each project's data
+    const projectRequests = this.projects.projects.map((project: any) => {
+      const projectKey = this.extractProjectKey(project.url);
+      
+      return this.mappingsService.initProject(project.url).pipe(
+        // After loading the project, load detailed data for each mapping
+        switchMap((projectData: any) => {
+          if (!projectData?.mappings?.length) {
+            return of({
+              ...project,
+              progressSummary: {
+                total: 0,
+                completed: 0,
+                resolved: 0,
+                needs_action: 0,
+                completionPercentage: 0,
+                totalMappings: 0
+              },
+              projectData
+            });
+          }
+
+          // Load detailed mapping data to get field counts
+          const mappingRequests = projectData.mappings.map((mapping: any) => {
+            return this.mappingsService.getMapping(projectKey, mapping.id).pipe(
+              map((mappingDetail: any) => {
+                // Check if the mapping has pre-calculated counts (from hydrateCounts in EditProjectComponent)
+                if (mappingDetail.totalCount || mappingDetail.compatibleCount || mappingDetail.resolvedCount) {
+                  return {
+                    ...mapping,
+                    totalCount: mappingDetail.totalCount || 0,
+                    compatibleCount: mappingDetail.compatibleCount || 0,
+                    resolvedCount: mappingDetail.resolvedCount || 0,
+                    needsActionCount: mappingDetail.needsActionCount || 0,
+                    fields: mappingDetail.fields || []
+                  };
+                } else {
+                  // Calculate counts from fields if not pre-calculated
+                  const counts = mappingDetail.fields ? this.calculateCountsFromFields(mappingDetail.fields) : 
+                    { total: 0, completed: 0, resolved: 0, needs_action: 0 };
+                  return {
+                    ...mapping,
+                    totalCount: counts.total,
+                    compatibleCount: counts.completed,
+                    resolvedCount: counts.resolved,
+                    needsActionCount: counts.needs_action,
+                    fields: mappingDetail.fields || []
+                  };
+                }
+              }),
+              catchError((error) => {
+                return of({
+                  ...mapping,
+                  totalCount: 0,
+                  compatibleCount: 0,
+                  resolvedCount: 0,
+                  needsActionCount: 0,
+                  fields: []
+                });
+              })
+            );
+          });
+
+          // Load all mapping details in parallel
+          return (forkJoin(mappingRequests) as any).pipe(
+            map((hydratedMappings: any[]) => {
+              const enhancedProjectData = {
+                ...projectData,
+                mappings: hydratedMappings
+              };
+              
+              const progressSummary = this.calculateProjectProgress(enhancedProjectData);
+              return {
+                ...project,
+                progressSummary,
+                projectData: enhancedProjectData
+              };
+            })
+          );
+        }),
+        catchError((error) => {
+          return of({
+            ...project,
+            progressSummary: {
+              total: 0,
+              completed: 0,
+              resolved: 0,
+              needs_action: 0,
+              completionPercentage: 0,
+              totalMappings: 0
+            },
+            projectData: null
+          });
+        })
+      );
+    });
+
+    // Execute all requests in parallel
+    forkJoin(projectRequests).subscribe({
+      next: (projectsWithProgressData) => {
+        this.projectsWithProgress = projectsWithProgressData as any[];
+        this.isLoadingProgress = false;
+      },
+      error: (error) => {
+        this.isLoadingProgress = false;
+      }
+    });
+  }
+
+  /**
+   * Extracts project key from project URL
+   */
+  private extractProjectKey(url: string): string {
+    return url.replace('/project/', '');
+  }
+
+  /**
+   * Calculates progress summary for a project by aggregating all mapping statistics
+   */
+  private calculateProjectProgress(projectData: any): any {
+    if (!projectData?.mappings?.length) {
+      return {
+        total: 0,
+        completed: 0,
+        resolved: 0,
+        needs_action: 0,
+        completionPercentage: 0,
+        totalMappings: 0
+      };
+    }
+
+    const summary = {
+      total: 0,
+      completed: 0,
+      resolved: 0,
+      needs_action: 0,
+      totalMappings: projectData.mappings.length
+    };
+
+    projectData.mappings.forEach((mapping: any, index: number) => {
+      // Check different possible field names and structures
+      const totalCount = mapping.totalCount || mapping.total_count || 0;
+      const compatibleCount = mapping.compatibleCount || mapping.compatible_count || 0;
+      const resolvedCount = mapping.resolvedCount || mapping.resolved_count || 0;
+      const needsActionCount = mapping.needsActionCount || mapping.needs_action_count || 0;
+      
+      // If counts are not available, try to calculate from fields
+      if (totalCount === 0 && mapping.fields && Array.isArray(mapping.fields)) {
+        const counts = this.calculateCountsFromFields(mapping.fields);
+        summary.total += counts.total;
+        summary.completed += counts.completed;
+        summary.resolved += counts.resolved;
+        summary.needs_action += counts.needs_action;
+      } else {
+        summary.total += totalCount;
+        summary.completed += compatibleCount;
+        summary.resolved += resolvedCount;
+        summary.needs_action += needsActionCount;
+      }
+    });
+
+    const completionPercentage = summary.total > 0 
+      ? Math.round(((summary.completed + summary.resolved) / summary.total) * 100)
+      : 0;
+
+    return {
+      ...summary,
+      completionPercentage
+    };
+  }
+
+  /**
+   * Calculates counts from mapping fields if counts are not pre-calculated
+   */
+  private calculateCountsFromFields(fields: any[]): any {
+    const counts = {
+      total: fields.length,
+      completed: 0,
+      resolved: 0,
+      needs_action: 0
+    };
+
+    fields.forEach(field => {
+      const classification = (field.classification || '').toString().toLowerCase();
+      const action = (field.action || 'use').toString().toLowerCase();
+      
+      // Use the same logic as in EditProjectComponent
+      if (classification === 'compatible' || classification === 'warning') {
+        counts.completed++;
+      } else if (classification === 'incompatible' && action !== 'use') {
+        counts.resolved++;
+      } else if (classification === 'incompatible' && action === 'use') {
+        counts.needs_action++;
+      }
+    });
+
+    return counts;
+  }
+
+  /**
+   * Gets the CSS class for project progress status
+   */
+  getProjectProgressClass(progressSummary: any): string {
+    const completionPercentage = progressSummary.completionPercentage;
+
+    if (completionPercentage >= 100) {
+      return 'progress-completed';
+    } else if (completionPercentage >= 80) {
+      return 'progress-nearly-done';
+    } else if (completionPercentage >= 50) {
+      return 'progress-half-done';
+    } else if (completionPercentage > 0) {
+      return 'progress-in-progress';
+    } else {
+      return 'progress-not-started';
+    }
+  }
+
+  /**
+   * Gets a human-readable status description for project progress
+   */
+  getProjectStatusDescription(progressSummary: any): string {
+    const completionPercentage = progressSummary.completionPercentage;
+
+    if (progressSummary.total === 0) {
+      return 'Keine Mappings vorhanden';
+    }
+
+    if (completionPercentage >= 100) {
+      return 'Vollständig bearbeitet';
+    } else if (completionPercentage >= 80) {
+      return 'Fast vollständig';
+    } else if (completionPercentage >= 50) {
+      return 'Zur Hälfte bearbeitet';
+    } else if (completionPercentage > 0) {
+      return 'Teilweise bearbeitet';
+    } else {
+      return 'Noch nicht bearbeitet';
+    }
+  }
+
+  /**
+   * Gets the percentage for a specific category in the progress bar
+   */
+  getProjectProgressPercentage(progressSummary: any, category: string): number {
+    if (progressSummary.total === 0) {
+      return 0;
+    }
+
+    const value = progressSummary[category] || 0;
+    return (value / progressSummary.total) * 100;
   }
 }

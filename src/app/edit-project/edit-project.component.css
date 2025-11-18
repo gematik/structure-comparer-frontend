@@ -281,3 +281,292 @@
 .modern-table td:first-child {
   text-align: left;
 }
+
+/* Project Progress Overview Styles */
+.project-progress-overview {
+  margin: 30px 0;
+  padding: 25px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.project-progress-overview h2 {
+  margin: 0 0 25px 0;
+  color: #495057;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Project Status Section */
+.project-status-section {
+  margin-bottom: 25px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.status-icon mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.status-text {
+  text-align: center;
+}
+
+.completion-percentage {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.status-description {
+  font-size: 1rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Status Classes */
+.status-completed .status-icon {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-completed .completion-percentage {
+  color: #155724;
+}
+
+.status-nearly-done .status-icon {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-nearly-done .completion-percentage {
+  color: #0c5460;
+}
+
+.status-half-done .status-icon {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-half-done .completion-percentage {
+  color: #856404;
+}
+
+.status-in-progress .status-icon {
+  background-color: #e2e3e5;
+  color: #495057;
+}
+
+.status-in-progress .completion-percentage {
+  color: #495057;
+}
+
+.status-not-started .status-icon {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-not-started .completion-percentage {
+  color: #721c24;
+}
+
+/* Project Overview Cards */
+.project-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.project-overview-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.project-overview-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.project-overview-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.project-overview-card .card-title {
+  font-weight: 600;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.project-overview-card .card-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.project-overview-card .card-subtitle {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Card Type Styling */
+.project-overview-card.total-card {
+  border-color: #6c757d;
+}
+
+.project-overview-card.total-card .card-value {
+  color: #495057;
+}
+
+.project-overview-card.success-card {
+  border-color: #28a745;
+}
+
+.project-overview-card.success-card .card-value {
+  color: #28a745;
+}
+
+.project-overview-card.resolved-card {
+  border-color: #17a2b8;
+}
+
+.project-overview-card.resolved-card .card-value {
+  color: #17a2b8;
+}
+
+.project-overview-card.attention-card {
+  border-color: #dc3545;
+}
+
+.project-overview-card.attention-card .card-value {
+  color: #dc3545;
+}
+
+/* Project Progress Bar */
+.project-progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.progress-bar {
+  height: 25px;
+  background-color: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.progress-segment {
+  transition: all 0.3s ease;
+  cursor: help;
+}
+
+.progress-segment.completed {
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.progress-segment.resolved {
+  background: linear-gradient(90deg, #17a2b8, #20c997);
+}
+
+.progress-segment.needs-action {
+  background: linear-gradient(90deg, #dc3545, #e74c3c);
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+/* Responsive Design for Project Overview */
+@media (max-width: 768px) {
+  .project-overview-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .status-indicator {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .status-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .status-icon mat-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .completion-percentage {
+    font-size: 1.5rem;
+  }
+
+  .project-overview-card .card-value {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .project-overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .project-progress-overview {
+    padding: 20px 15px;
+  }
+
+  .project-progress-overview h2 {
+    font-size: 1.3rem;
+  }
+}

@@ -18,24 +18,102 @@
     </div>
   </div>
 
+  <!-- Loading indicator -->
+  <div *ngIf="isLoadingProgress" class="loading-indicator">
+    <mat-icon>refresh</mat-icon>
+    <span>Lade Projektfortschritte...</span>
+  </div>
+
   <!-- Tabelle darunter -->
   <table class="modern-table">
     <tr>
-      <th>Project name</th>
+      <th class="project-name-column">Project name</th>
+      <th class="progress-column">Fortschritt</th>
+      <th class="stats-column">Statistiken</th>
       <th class="actions-column">Actions</th>
     </tr>
-    <tr *ngFor="let project of projects.projects">
+    <tr *ngFor="let project of projectsWithProgress.length > 0 ? projectsWithProgress : projects.projects" class="project-row">
       <td class="project-items">
-        {{ project.name }}
+        <div class="project-name">{{ project.name }}</div>
+        <div *ngIf="project.progressSummary" class="project-status" [ngClass]="getProjectProgressClass(project.progressSummary)">
+          {{ getProjectStatusDescription(project.progressSummary) }}
+        </div>
       </td>
-      <td class="actions-column" >
-        <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm" >
+
+      <!-- Progress Column -->
+      <td class="progress-column" *ngIf="project.progressSummary; else noProgressData">
+        <div class="progress-info">
+          <div class="completion-percentage" [ngClass]="getProjectProgressClass(project.progressSummary)">
+            {{ project.progressSummary.completionPercentage }}%
+          </div>
+          <div class="progress-bar-container">
+            <div class="mini-progress-bar">
+              <div
+                class="progress-segment completed"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'completed')"
+                [matTooltip]="project.progressSummary.completed + ' kompatible Felder'"
+              ></div>
+              <div
+                class="progress-segment resolved"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'resolved')"
+                [matTooltip]="project.progressSummary.resolved + ' gelöste Felder'"
+              ></div>
+              <div
+                class="progress-segment needs-action"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'needs_action')"
+                [matTooltip]="project.progressSummary.needs_action + ' Felder benötigen Aktion'"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <!-- Statistics Column -->
+      <td class="stats-column" *ngIf="project.progressSummary; else noStatsData">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Gesamt:</span>
+            <span class="stat-value total">{{ project.progressSummary.total || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Kompatibel:</span>
+            <span class="stat-value compatible">{{ project.progressSummary.completed || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Gelöst:</span>
+            <span class="stat-value resolved">{{ project.progressSummary.resolved || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Aktion:</span>
+            <span class="stat-value needs-action">{{ project.progressSummary.needs_action || 0 }}</span>
+          </div>
+        </div>
+        
+
+      </td>
+
+      <!-- No Progress Data Template -->
+      <ng-template #noProgressData>
+        <td class="progress-column">
+          <div class="no-data">Daten werden geladen...</div>
+        </td>
+      </ng-template>
+
+      <!-- No Stats Data Template -->
+      <ng-template #noStatsData>
+        <td class="stats-column">
+          <div class="no-data">-</div>
+        </td>
+      </ng-template>
+
+      <!-- Actions Column -->
+      <td class="actions-column">
+        <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm">
           <mat-icon>remove_red_eye</mat-icon>
         </button>
         <button mat-icon-button (click)="deleteProject(project)" class="mat-icon-button-sm" color="warn">
           <mat-icon>delete</mat-icon>
         </button>
-
       </td>
     </tr>
   </table>

@@ -6,7 +6,92 @@
 </app-loading-overlay>
 
 <div class="m-20">
-  <h1>Overview for project "{{ projectName }}"</h1>
+
+  <!-- Project Progress Overview -->
+  <div class="project-progress-overview">
+    <h2>Übersicht Mapping: {{ projectName }}</h2>
+
+    <!-- Project Status -->
+    <div class="project-status-section">
+      <div class="status-indicator" [ngClass]="getProjectStatusClass()">
+        <div class="status-icon">
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 100">check_circle</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 80 && getProjectCompletionPercentage() < 100">radio_button_checked</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 50 && getProjectCompletionPercentage() < 80">schedule</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() > 0 && getProjectCompletionPercentage() < 50">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() === 0">play_circle_outline</mat-icon>
+        </div>
+        <div class="status-text">
+          <div class="completion-percentage">{{ getProjectCompletionPercentage() }}% bearbeitet</div>
+          <div class="status-description">{{ getProjectStatusDescription() }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall Progress Cards -->
+    <div class="project-overview-cards">
+      <!-- Total Fields Card -->
+      <div class="project-overview-card total-card">
+        <div class="card-header">
+          <span class="card-title">Gesamt</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().total }}</div>
+        <div class="card-subtitle">Felder in {{ getProjectOverallSummary().totalMappings }} Mappings</div>
+      </div>
+
+      <!-- Completed Card -->
+      <div class="project-overview-card success-card">
+        <div class="card-header">
+          <span class="card-title">Kompatibel</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().completed }}</div>
+        <div class="card-subtitle">Keine Probleme</div>
+      </div>
+
+      <!-- Resolved Card -->
+      <div class="project-overview-card resolved-card">
+        <div class="card-header">
+          <span class="card-title">Gelöst</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().resolved }}</div>
+        <div class="card-subtitle">Durch Aktionen behoben</div>
+      </div>
+
+      <!-- Needs Action Card -->
+      <div class="project-overview-card attention-card">
+        <div class="card-header">
+          <span class="card-title">Aktion erforderlich</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().needs_action }}</div>
+        <div class="card-subtitle">Müssen bearbeitet werden</div>
+      </div>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    <div class="project-progress-section">
+      <div class="progress-label">Gesamtfortschritt über alle Mappings</div>
+      <div class="progress-bar">
+        <div
+          class="progress-segment completed"
+          [style.width.%]="getProjectProgressPercentage('completed')"
+          [matTooltip]="getProjectOverallSummary().completed + ' kompatible Felder'"
+        ></div>
+        <div
+          class="progress-segment resolved"
+          [style.width.%]="getProjectProgressPercentage('resolved')"
+          [matTooltip]="getProjectOverallSummary().resolved + ' gelöste Felder'"
+        ></div>
+        <div
+          class="progress-segment needs-action"
+          [style.width.%]="getProjectProgressPercentage('needs_action')"
+          [matTooltip]="getProjectOverallSummary().needs_action + ' Felder benötigen Aktion'"
+        ></div>
+      </div>
+      <div class="progress-text">
+        {{ getProjectCompletionPercentage() }}% aller Felder bearbeitet
+      </div>
+    </div>
+  </div>
 
   <!-- Package List Component -->
   <app-package-list
