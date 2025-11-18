@@ -489,52 +489,28 @@ export class EditProjectComponent implements OnInit {
     }
   }
 
-  private countByClassification(fields: any[]) {
-    let warning = 0, incompatible = 0, compatible = 0, resolved = 0, mitigated = 0, needs_action = 0;
-
-    for (const f of fields ?? []) {
-      const cls = (f?.classification ?? '').toString().toLowerCase();
-      const action = (f?.action ?? '').toString().toLowerCase();
-
-      // Enhanced status calculation based on classification and action
-      if (cls === 'compatible') {
-        compatible++;
-      } else if (cls === 'warning') {
-        warning++;
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'manual'].includes(action)) {
-          resolved++;
-        } else if (action === 'use') {
-          needs_action++;
-        } else if (action === 'manual') {
-          mitigated++;
-        }
-      } else if (cls === 'incompatible') {
-        incompatible++;
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'not_use', 'empty'].includes(action)) {
-          resolved++;
-        } else {
-          needs_action++;
-        }
-      }
-    }
-
+  /**
+   * Maps backend evaluation summary to frontend mapping counts
+   * Converts the backend API response format to the format expected by the UI
+   */
+  private mapEvaluationSummaryToCounts(summary: any) {
     return {
-      warning,
-      incompatible,
-      compatible,
-      resolved,
-      mitigated,
-      needs_action,
-      total: fields?.length ?? 0
+      warning: summary.warnings || 0,
+      incompatible: summary.incompatible || 0,
+      compatible: summary.compatible || 0,
+      resolved: summary.action_resolved || 0,
+      mitigated: summary.action_mitigated || 0,
+      needs_action: summary.needs_attention || 0,
+      total: summary.total_fields || 0
     };
   }
 
   private hydrateCounts(): void {
-    // Comparisons
+    // Comparisons - Keep existing basic logic for now (no enhanced evaluation API yet)
     if (this.comparisons?.length) {
       const jobs = this.comparisons.map(c =>
         this.comparisonService.getComparisonData(this.projectKey, c.id).pipe(
-          map(detail => ({ id: c.id, ...this.countByClassification(detail?.fields ?? []) })),
+          map(detail => ({ id: c.id, ...this.countFieldsByBasicClassification(detail?.fields ?? []) })),
           catchError(() => of({ id: c.id, warning: 0, incompatible: 0 }))
         )
       );
@@ -549,21 +525,28 @@ export class EditProjectComponent implements OnInit {
       });
     }
 
-    // Mappings
+    // Mappings - Use backend evaluation summary API
     if (this.mappings?.length) {
       const jobs = this.mappings.map(m =>
-        this.mappingsService.getMapping(this.projectKey, m.id).pipe(
-          map(detail => ({ id: m.id, ...this.countByClassification(detail?.fields ?? []) })),
-          catchError(() => of({
-            id: m.id,
-            warning: 0,
-            incompatible: 0,
-            compatible: 0,
-            resolved: 0,
-            mitigated: 0,
-            needs_action: 0,
-            total: 0
-          }))
+        this.comparisonService.getMappingEvaluationSummary(this.projectKey, m.id).pipe(
+          map(summary => ({ id: m.id, ...this.mapEvaluationSummaryToCounts(summary) })),
+          catchError((error) => {
+            console.warn(`Failed to load evaluation summary for mapping ${m.id}:`, error);
+            // Fallback to loading mapping details and counting locally
+            return this.mappingsService.getMapping(this.projectKey, m.id).pipe(
+              map(detail => ({ id: m.id, ...this.countFieldsByBasicClassification(detail?.fields ?? []) })),
+              catchError(() => of({
+                id: m.id,
+                warning: 0,
+                incompatible: 0,
+                compatible: 0,
+                resolved: 0,
+                mitigated: 0,
+                needs_action: 0,
+                total: 0
+              }))
+            );
+          })
         )
       );
       forkJoin(jobs).subscribe(results => {
@@ -586,5 +569,36 @@ export class EditProjectComponent implements OnInit {
     }
   }
 
+  /**
+   * Fallback method for basic field classification counting
+   * Used when backend evaluation API is not available
+   */
+  private countFieldsByBasicClassification(fields: any[]) {
+    let warning = 0, incompatible = 0, compatible = 0;
 
+    for (const f of fields ?? []) {
+      const cls = (f?.classification ?? '').toString().toLowerCase();
+      switch (cls) {
+        case 'compatible':
+          compatible++;
+          break;
+        case 'warning':
+          warning++;
+          break;
+        case 'incompatible':
+          incompatible++;
+          break;
+      }
+    }
+
+    return {
+      warning,
+      incompatible,
+      compatible,
+      resolved: 0, // Backend evaluation required for these
+      mitigated: 0,
+      needs_action: 0,
+      total: fields?.length ?? 0
+    };
+  }
 }

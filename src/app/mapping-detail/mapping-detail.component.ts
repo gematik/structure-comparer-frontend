@@ -391,6 +391,21 @@ export class MappingDetailComponent implements OnInit {
   }
 
   getStatusSummary(): any {
+    // Use backend evaluation summary if available (preferred for accuracy)
+    const evalSummary = this.getEvaluationSummary();
+    if (evalSummary) {
+      return {
+        total: evalSummary.total_fields,
+        completed: evalSummary.compatible || 0,
+        resolved: evalSummary.action_resolved || 0,
+        mitigated: evalSummary.action_mitigated || 0,
+        in_progress: 0, // Not provided by backend evaluation
+        needs_action: evalSummary.needs_attention || 0,
+        unknown: evalSummary.incompatible || 0
+      };
+    }
+
+    // Fallback to local field counting (only for current page - not accurate for totals)
     if (!this.filtered?.fields) {
       return null;
     }

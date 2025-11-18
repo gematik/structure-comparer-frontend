@@ -65,7 +65,7 @@
         <div class="card-header">
           <span class="card-title">Gesamt</span>
         </div>
-        <div class="card-value">{{ getStatusSummary()?.total || (getEvaluationSummary()?.total_fields || 0) }}</div>
+        <div class="card-value">{{ getStatusSummary()?.total || 0 }}</div>
         <div class="card-subtitle">Felder</div>
       </div>
 
@@ -257,35 +257,35 @@
 
             <!-- Enhanced evaluation indicators -->
             <div *ngIf="mappingEvaluation && mappingEvaluation.field_evaluations && mappingEvaluation.field_evaluations[field.name]" class="evaluation-indicators">
-              <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as evaluation">
+              <ng-container *ngIf="mappingEvaluation.field_evaluations[field.name] as fieldEval">
                 <div class="evaluation-badges">
-                  <span *ngIf="evaluation.issues && evaluation.issues.length > 0"
+                  <span *ngIf="fieldEval.issues && fieldEval.issues.length > 0"
                         class="issue-count"
-                        [matTooltip]="evaluation.issues.length + ' issue(s) found'"
+                        [matTooltip]="fieldEval.issues.length + ' issue(s) found'"
                         matTooltipPosition="above">
-                    ⚠{{ evaluation.issues.length }}
+                    ⚠{{ fieldEval.issues.length }}
                   </span>
-                  <span *ngIf="evaluation.warnings && evaluation.warnings.length > 0"
+                  <span *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0"
                         class="warning-count"
-                        [matTooltip]="evaluation.warnings.length + ' warning(s)'"
+                        [matTooltip]="fieldEval.warnings.length + ' warning(s)'"
                         matTooltipPosition="above">
-                    ⚡{{ evaluation.warnings.length }}
+                    ⚡{{ fieldEval.warnings.length }}
                   </span>
-                  <span *ngIf="evaluation.recommendations && evaluation.recommendations.length > 0"
+                  <span *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0"
                         class="recommendation-count"
-                        [matTooltip]="evaluation.recommendations.length + ' recommendation(s)'"
+                        [matTooltip]="fieldEval.recommendations.length + ' recommendation(s)'"
                         matTooltipPosition="above">
-                    💡{{ evaluation.recommendations.length }}
+                    💡{{ fieldEval.recommendations.length }}
                   </span>
                 </div>
 
                 <!-- Detailed Information -->
                 <div>
                   <!-- Detailed Issues -->
-                  <div *ngIf="evaluation.issues && evaluation.issues.length > 0" class="evaluation-details issues-section">
+                  <div *ngIf="fieldEval.issues && fieldEval.issues.length > 0" class="evaluation-details issues-section">
                     <div class="detail-header">Issues:</div>
                     <ul class="issue-list">
-                      <li *ngFor="let issue of evaluation.issues"
+                      <li *ngFor="let issue of fieldEval.issues"
                           class="issue-item"
                           [ngClass]="'severity-' + issue.severity">
                         <span class="issue-message">{{ issue.message }}</span>
@@ -297,20 +297,20 @@
                   </div>
 
                   <!-- Detailed Warnings -->
-                  <div *ngIf="evaluation.warnings && evaluation.warnings.length > 0" class="evaluation-details warnings-section">
+                  <div *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0" class="evaluation-details warnings-section">
                     <div class="detail-header">Warnings:</div>
                     <ul class="warning-list">
-                      <li *ngFor="let warning of evaluation.warnings" class="warning-item">
+                      <li *ngFor="let warning of fieldEval.warnings" class="warning-item">
                         {{ warning }}
                       </li>
                     </ul>
                   </div>
 
                   <!-- Detailed Recommendations -->
-                  <div *ngIf="evaluation.recommendations && evaluation.recommendations.length > 0" class="evaluation-details recommendations-section">
+                  <div *ngIf="fieldEval.recommendations && fieldEval.recommendations.length > 0" class="evaluation-details recommendations-section">
                     <div class="detail-header">💡 Empfehlungen:</div>
                     <ul class="recommendation-list">
-                      <li *ngFor="let recommendation of evaluation.recommendations" class="recommendation-item">
+                      <li *ngFor="let recommendation of fieldEval.recommendations" class="recommendation-item">
                         {{ recommendation }}
                       </li>
                     </ul>
