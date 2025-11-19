@@ -26,6 +26,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { PropertyTreeNode } from '../../models/property-tree-node.model';
 import { buildPropertyTree, filterTreeNodes } from '../mapping-tree.util';
 import { MappingEvaluation } from '../../models/mapping-evaluation.model';
+import { MappingTextHelper } from '../../mapping-detail/mapping-detail-helpers';
 
 export interface DisplayRow {
   node: PropertyTreeNode;
@@ -394,56 +395,14 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   getConsolidatedMappingText(field: any): string {
-    const parts: string[] = [];
+    // Use the centralized MappingTextHelper that includes show_mapping_content logic
+    return MappingTextHelper.getConsolidatedMappingText(field);
+  }
 
-    switch (field.action) {
-      case 'copy_from':
-        if (field.other) {
-          parts.push(`← Kopiert von: ${field.other}`);
-        }
-        break;
-      case 'copy_to':
-        if (field.other) {
-          parts.push(`→ Kopiert zu: ${field.other}`);
-        }
-        break;
-      case 'fixed':
-        if (field.fixed) {
-          parts.push(`Fester Wert: "${field.fixed}"`);
-        }
-        break;
-      case 'manual':
-        if (field.remark) {
-          parts.push(`Manuell: ${field.remark}`);
-        } else {
-          parts.push('Manuelle Bearbeitung erforderlich');
-        }
-        break;
-      case 'extension':
-        if (field.remark) {
-          parts.push(`Extension: ${field.remark}`);
-        } else {
-          parts.push('Extension-Behandlung');
-        }
-        break;
-      case 'not_use':
-        parts.push('Wird nicht verwendet');
-        break;
-      case 'empty':
-        parts.push('Wird nicht befüllt');
-        break;
-      case 'use':
-        parts.push('Wird direkt übernommen');
-        break;
-      case 'other':
-        parts.push('Sonderbehandlung erforderlich');
-        break;
-      case 'medication_service':
-        parts.push('Medikations-Service Integration');
-        break;
-    }
-
-    return parts.join(' • ');
+  shouldShowRecommendations(field: any): boolean {
+    return this.mappingEvaluation?.field_evaluations?.[field.name] != null &&
+           (field.show_mapping_content === false || 
+            (!this.getConsolidatedMappingText(field) && field.action === 'use'));
   }
 
   getRemarkTooltip(field: any): string {

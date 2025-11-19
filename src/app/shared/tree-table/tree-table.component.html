@@ -243,15 +243,15 @@
         (mouseleave)="onStopHover()"
       >
         <ng-container *ngIf="row.field">
-        <div *ngIf="editingIndex !== i">
+        <div *ngIf="editingIndex !== i" class="mapping-content-container">
           <!-- Consolidated Mapping Display -->
           <div
+            *ngIf="getConsolidatedMappingText(row.field)"
             class="mapping-consolidated"
             [attr.data-action]="row.field.action"
           >
             <div class="mapping-header"></div>
             <div
-              *ngIf="getConsolidatedMappingText(row.field)"
               class="mapping-details"
               [matTooltip]="getRemarkTooltip(row.field)"
               matTooltipPosition="above"
@@ -260,19 +260,14 @@
             </div>
           </div>
 
-          <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
+          <!-- Recommendations anzeigen when mapping content is hidden or for use action -->
           <div
-            *ngIf="
-              mappingEvaluation &&
-              mappingEvaluation.field_evaluations &&
-              mappingEvaluation.field_evaluations[row.field.name] &&
-              (!row.field.action || row.field.action === 'use')
-            "
+            *ngIf="shouldShowRecommendations(row.field)"
             class="mapping-recommendations"
           >
             <ng-container
               *ngIf="
-                mappingEvaluation.field_evaluations[row.field.name] as fieldEval
+                mappingEvaluation?.field_evaluations?.[row.field.name] as fieldEval
               "
             >
               <div

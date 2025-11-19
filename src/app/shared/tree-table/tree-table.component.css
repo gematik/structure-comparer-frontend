@@ -390,3 +390,27 @@ button.cancel:hover {
   margin: 0;
   font-size: 1rem;
 }
+
+/* Mapping content container */
+.mapping-content-container {
+  position: relative;
+  min-height: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Ensure edit button is accessible */
+.tree-table tr td:last-child {
+  position: relative;
+}
+
+.tree-table tr:hover button[mat-button] {
+  z-index: 10;
+  position: relative;
+}
+
+/* Mapping recommendations styling */
+.mapping-recommendations {
+  margin-top: 4px;
+}
