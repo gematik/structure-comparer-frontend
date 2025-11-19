@@ -1,23 +1,29 @@
-// Helper utilities for mapping detail component
+// Helper utilities for mapping detail component aligned with ActionInfo & EvaluationResult
 
-import { MappingEvaluation } from '../models/mapping-evaluation.model';
+import { MappingField } from '../models/mapping.model';
+import {
+  ActionInfo,
+  ActionType,
+  EvaluationReason,
+  EvaluationResult,
+  EvaluationStatus,
+} from '../models/mapping-evaluation.model';
 
-// Status configuration
-export const STATUS_CONFIG = {
+export type ProcessingStatus = 'completed' | 'resolved' | 'needs_action';
+
+export const STATUS_CONFIG: Record<ProcessingStatus, { label: string; cssClass: string }> = {
   completed: { label: 'Kompatibel', cssClass: 'status-completed' },
   resolved: { label: 'Gelöst', cssClass: 'status-resolved' },
-  needs_action: { label: 'Aktion erforderlich', cssClass: 'status-needs-action' }
-} as const;
+  needs_action: { label: 'Aktion erforderlich', cssClass: 'status-needs-action' },
+};
 
-// Classification CSS mapping
 export const CLASSIFICATION_CSS = {
   compatible: 'compatible',
   warning: 'warning',
-  incompatible: 'incompatible'
+  incompatible: 'incompatible',
 } as const;
 
-// Action CSS mapping
-export const ACTION_CSS = {
+export const ACTION_CSS: Record<string, string> = {
   use: 'row-use',
   not_use: 'row-not-use',
   empty: 'row-empty',
@@ -27,8 +33,15 @@ export const ACTION_CSS = {
   copy_from: 'row-copy-from',
   copy_to: 'row-copy-to',
   fixed: 'row-fixed',
-  medication_service: 'row-medication-service'
-} as const;
+  medication_service: 'row-medication-service',
+};
+
+export interface StatusSummary {
+  total: number;
+  completed: number;
+  resolved: number;
+  needs_action: number;
+}
 
 // Cardinality utilities
 export class CardinalityHelper {
@@ -36,54 +49,247 @@ export class CardinalityHelper {
     return Math.min(max, Math.max(min, n));
   }
 
-  static formatCardinality(minVal: any, maxVal: any): string {
-    const min = Number.isFinite(+minVal) ? +minVal : 0;
-    const max = (maxVal === '*' || maxVal === '∞') ? '*' : (Number.isFinite(+maxVal) ? +maxVal : 0);
+  static formatCardinality(minVal: unknown, maxVal: unknown): string {
+    const minNum = Number(minVal);
+    const min = Number.isFinite(minNum) ? minNum : 0;
+    if (maxVal === '*' || maxVal === '∞') {
+      return `${min} .. *`;
+    }
+    const maxNum = Number(maxVal);
+    const max = Number.isFinite(maxNum) ? maxNum : 0;
     return `${min} .. ${max}`;
   }
 
-  static getCardinalityStyle(minVal: any, maxVal: any): { [k: string]: string } {
-    const min = Number.isFinite(+minVal) ? +minVal : 0;
-    const maxIsStar = (maxVal === '*' || maxVal === '∞');
-    const maxNum = maxIsStar ? 10 : (Number.isFinite(+maxVal) ? +maxVal : 0);
+  static getCardinalityStyle(minVal: unknown, maxVal: unknown): Record<string, string> {
+    const minNum = Number(minVal);
+    const min = Number.isFinite(minNum) ? minNum : 0;
+    const maxIsStar = maxVal === '*' || maxVal === '∞';
+    const rawMaxNum = Number(maxVal);
+    const maxNum = maxIsStar ? 10 : Number.isFinite(rawMaxNum) ? rawMaxNum : 0;
 
-    const minN = 1 - (CardinalityHelper.clamp(min, 0, 2) / 2);
-    const maxN = (CardinalityHelper.clamp(maxNum, 0, 10) / 10);
+    const minN = 1 - CardinalityHelper.clamp(min, 0, 2) / 2;
+    const maxN = CardinalityHelper.clamp(maxNum, 0, 10) / 10;
     const openness = CardinalityHelper.clamp(0.5 * minN + 0.5 * maxN, 0, 1);
-    const hue = Math.round(0 + openness * 130);
+    const hue = Math.round(openness * 130);
 
     return {
       backgroundColor: `hsl(${hue}, 90%, 92%)`,
       color: `hsl(${hue}, 60%, 25%)`,
-      borderColor: `hsl(${hue}, 65%, 45%)`
+      borderColor: `hsl(${hue}, 65%, 45%)`,
     };
+  }
+}
+
+const ACTION_LABELS: Record<ActionType, string> = {
+  use: 'Wird verwendet',
+  not_use: 'Wird nicht verwendet',
+  empty: 'Bleibt leer',
+  extension: 'Als Extension verwenden',
+  copy_from: 'Aus anderem Feld kopieren',
+  copy_to: 'In anderes Feld kopieren',
+  fixed: 'Fester Wert',
+  other: 'Andere Aktion',
+};
+
+const STATUS_LABELS: Record<EvaluationStatus, string> = {
+  ok: 'Kompatibel',
+  action_required: 'Aktion erforderlich',
+  resolved: 'Gelöst',
+  incompatible: 'Inkompatibel',
+  unknown: 'Unklar',
+  evaluation_failed: 'Bewertung fehlgeschlagen',
+};
+
+const STATUS_CLASS: Record<EvaluationStatus, string> = {
+  ok: 'status-ok',
+  action_required: 'status-needs-action',
+  resolved: 'status-resolved',
+  incompatible: 'status-incompatible',
+  unknown: 'status-unknown',
+  evaluation_failed: 'status-evaluation-failed',
+};
+
+// Mapping text generation
+export class MappingTextHelper {
+  static buildActionLabel(actionInfo?: ActionInfo | null, fallback?: string): string {
+    if (!actionInfo) {
+      return fallback ?? 'Keine Aktion definiert';
+    }
+
+    const base = ACTION_LABELS[actionInfo.action] ?? 'Unbekannte Aktion';
+    const inheritedSuffix = actionInfo.source === 'inherited' && actionInfo.inherited_from
+      ? ` (vererbt von ${actionInfo.inherited_from})`
+      : '';
+
+    if (actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') {
+      const target = actionInfo.other_value;
+      if (typeof target === 'string' && target.trim().length > 0) {
+        return `${base} (${target})${inheritedSuffix}`;
+      }
+    }
+
+    if (actionInfo.action === 'fixed') {
+      const fixed = MappingTextHelper.formatValue(actionInfo.fixed_value);
+      if (fixed) {
+        return `${base} (${fixed})${inheritedSuffix}`;
+      }
+    }
+
+    return `${base}${inheritedSuffix}`;
+  }
+
+  static buildActionSubLabel(actionInfo?: ActionInfo | null): string | null {
+    if (!actionInfo) {
+      return null;
+    }
+
+    if (actionInfo.system_remark && actionInfo.system_remark.trim().length > 0) {
+      return actionInfo.system_remark;
+    }
+
+    if (actionInfo.action === 'fixed') {
+      const fixed = MappingTextHelper.formatValue(actionInfo.fixed_value);
+      return fixed ? `Festwert: ${fixed}` : null;
+    }
+
+    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') && actionInfo.other_value) {
+      const other = MappingTextHelper.formatValue(actionInfo.other_value);
+      return other ? `Referenz: ${other}` : null;
+    }
+
+    return null;
+  }
+
+  static buildActionTooltip(actionInfo?: ActionInfo | null): string | null {
+    if (!actionInfo) {
+      return null;
+    }
+
+    const lines: string[] = [];
+
+    if (actionInfo.user_remark) {
+      lines.push(`Hinweis: ${actionInfo.user_remark}`);
+    }
+
+    if (actionInfo.system_remark) {
+      lines.push(actionInfo.system_remark);
+    }
+
+    if (actionInfo.action === 'fixed') {
+      const value = MappingTextHelper.formatValue(actionInfo.fixed_value);
+      if (value) {
+        lines.push(`Festwert: ${value}`);
+      }
+    }
+
+    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') && actionInfo.other_value) {
+      const reference = MappingTextHelper.formatValue(actionInfo.other_value);
+      if (reference) {
+        lines.push(`Referenz: ${reference}`);
+      }
+    }
+
+    if (actionInfo.source === 'inherited' && actionInfo.inherited_from) {
+      lines.push(`Vererbt von ${actionInfo.inherited_from}`);
+    }
+
+    if (actionInfo.source === 'system_default') {
+      lines.push('Systemstandard angewendet');
+    }
+
+    return lines.length > 0 ? lines.join('\n') : null;
+  }
+
+  static resolveRowClass(field: MappingField): string {
+    const action = field.action_info?.action ?? (field.action as string);
+    return ACTION_CSS[action] ?? 'row-unknown';
+  }
+
+  private static formatValue(value: unknown): string | null {
+    if (value === undefined || value === null) {
+      return null;
+    }
+    if (typeof value === 'string') {
+      return value.trim() || null;
+    }
+    return JSON.stringify(value);
+  }
+}
+
+// Evaluation utilities
+export class EvaluationHelper {
+  static buildStatusLabel(evaluation?: EvaluationResult | null): string {
+    if (!evaluation) {
+      return 'Keine Bewertung';
+    }
+    return STATUS_LABELS[evaluation.status] ?? 'Unbekannt';
+  }
+
+  static buildStatusClass(evaluation?: EvaluationResult | null): string {
+    if (!evaluation) {
+      return 'status-unknown';
+    }
+    return STATUS_CLASS[evaluation.status] ?? 'status-unknown';
+  }
+
+  static buildEvaluationTooltipLines(evaluation?: EvaluationResult | null): string[] {
+    if (!evaluation) {
+      return [];
+    }
+
+    if (evaluation.reasons.length === 0) {
+      const lines: string[] = [];
+      if (evaluation.summary_key) {
+        lines.push(evaluation.summary_key);
+      }
+      if (evaluation.has_warnings) {
+        lines.push('Warnungen liegen vor.');
+      }
+      if (evaluation.has_errors) {
+        lines.push('Fehler erkannt.');
+      }
+      return lines;
+    }
+
+    return evaluation.reasons.map((reason: EvaluationReason) => {
+      const severity = reason.severity.toUpperCase();
+      const actionSuffix = reason.related_action ? ` (Aktion: ${reason.related_action})` : '';
+      const details = Object.keys(reason.details ?? {}).length > 0
+        ? ` ${JSON.stringify(reason.details)}`
+        : '';
+      return `[${severity}] ${reason.message_key}${details}${actionSuffix}`;
+    });
   }
 }
 
 // Status calculation logic
 export class StatusHelper {
-  static getProcessingStatus(field: any, evaluation?: MappingEvaluation): string {
-    const fieldEvaluation = evaluation?.field_evaluations?.[field.name];
+  static getProcessingStatus(field: MappingField): ProcessingStatus {
+    const evaluation = field.evaluation;
 
-    // Priority 1: Use backend processing_status if available
-    if (fieldEvaluation?.processing_status) {
-      return fieldEvaluation.processing_status;
-    }
-
-    // Priority 2: Use enhanced evaluation logic if available
-    if (fieldEvaluation) {
-      const { original_classification, action } = fieldEvaluation;
-
-      if (original_classification === 'compatible' || original_classification === 'warning') {
-        return 'completed';
-      } else if (original_classification === 'incompatible' && action !== 'use') {
-        return 'resolved';
-      } else if (original_classification === 'incompatible' && action === 'use') {
-        return 'needs_action';
+    if (evaluation) {
+      switch (evaluation.status) {
+        case 'ok':
+          return 'completed';
+        case 'resolved':
+          return 'resolved';
+        case 'action_required':
+        case 'incompatible':
+        case 'evaluation_failed':
+          return 'needs_action';
+        case 'unknown':
+        default:
+          if (evaluation.has_errors) {
+            return 'needs_action';
+          }
+          if (evaluation.has_warnings) {
+            return 'resolved';
+          }
+          return 'completed';
       }
     }
 
-    // Priority 3: Fallback logic for backward compatibility
+    // Fallback to legacy classification mapping if no evaluation is present.
     switch (field.classification) {
       case 'compatible':
       case 'warning':
@@ -95,226 +301,74 @@ export class StatusHelper {
     }
   }
 
-  static getStatusLabel(status: string): string {
-    return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.label || status;
+  static getStatusLabel(status: ProcessingStatus): string {
+    return STATUS_CONFIG[status]?.label ?? status;
   }
 
-  static getStatusCssClass(status: string): string {
-    return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.cssClass || 'status-needs-action';
+  static getStatusCssClass(status: ProcessingStatus): string {
+    return STATUS_CONFIG[status]?.cssClass ?? 'status-needs-action';
   }
 
-  static getStatusTooltip(field: any, status: string, evaluation?: MappingEvaluation): string {
-    const tooltips = {
-      completed: 'Feld ist kompatibel und benötigt keine weiteren Aktionen',
-      resolved: 'Ursprünglich inkompatibel, aber durch Mapping-Aktion gelöst',
-      needs_action: 'Feld benötigt eine Mapping-Aktion'
-    };
-    return tooltips[status as keyof typeof tooltips] || 'Status unbekannt';
-  }
-}
+  static getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
+    const evaluation = field.evaluation;
+    const evaluationLines = EvaluationHelper.buildEvaluationTooltipLines(evaluation);
 
-// Mapping text generation
-export class MappingTextHelper {
-  static getConsolidatedMappingText(field: any): string {
-    // If show_mapping_content is explicitly false, return empty string
-    // This allows only recommendations to be displayed for needs_action fields
-    if (field.show_mapping_content === false) {
-      return '';
+    if (evaluationLines.length > 0) {
+      return evaluationLines.join('\n');
     }
 
-    // Get base text from action (prioritized over evaluation texts)
-    const baseText = MappingTextHelper.getBaseTextFromAction(field);
-    if (!baseText) {
-      return '';
-    }
-
-    const parts: string[] = [baseText];
-
-    // Add inheritance information if field was auto-generated
-    if (field.auto_generated && field.inherited_from) {
-      parts.push(`(vererbt von ${field.inherited_from})`);
-    }
-
-    return parts.join(' • ');
-  }
-
-  private static getBaseTextFromAction(field: any): string | null {
-    switch (field.action) {
-      case 'not_use':
-        return 'Wird nicht verwendet';
-      case 'empty':
-        return 'Wird nicht befüllt';
-      case 'extension':
-        // For extension, show custom remark only if it's user-defined (not auto-generated)
-        const baseText = 'Als Extension verwenden';
-        if (field.remark && !field.auto_generated &&
-            field.remark !== 'Extension and value(s) will be retained') {
-          return `${baseText} • Details: ${field.remark}`;
-        }
-        return baseText;
-      case 'copy_from':
-        if (field.other || field.targetField) {
-          const target = field.other || field.targetField;
-          return `Aus "${target}" kopieren`;
-        }
-        return 'Aus anderem Feld kopieren';
-      case 'copy_to':
-        if (field.other || field.targetField) {
-          const target = field.other || field.targetField;
-          return `In "${target}" kopieren`;
-        }
-        return 'In anderes Feld kopieren';
-      case 'fixed':
-        if (field.fixed || field.fixedValue) {
-          const value = field.fixed || field.fixedValue;
-          return `Fixer Wert: "${value}"`;
-        }
-        return 'Fester Wert';
-      case 'manual':
-        const manualText = 'Manuelle Anpassung erforderlich';
-        if (field.remark && !field.auto_generated) {
-          return `${manualText} • Hinweis: ${field.remark}`;
-        }
-        return manualText;
-      case 'use':
-        return 'Wird direkt übernommen';
-      case 'other':
-        return 'Andere Behandlung';
-      case 'medication_service':
-        return 'Medication Service';
-      default:
-        return null;
-    }
-  }
-
-  static getActionName(action: string): string {
-    const actionNames = {
-      use: 'Verwenden',
-      not_use: 'Nicht verwenden',
-      empty: 'Leer lassen',
-      extension: 'Extension',
-      manual: 'Manuell',
-      copy_from: 'Kopieren von',
-      copy_to: 'Kopieren nach',
-      fixed: 'Fester Wert'
-    };
-    return actionNames[action as keyof typeof actionNames] || action;
-  }
-
-  static getRemarkTooltip(field: any): string {
-    const tooltips = {
-      use: 'Feld wird direkt ohne Änderungen übernommen',
-      not_use: 'Feld wird im Zielprofil nicht verwendet',
-      empty: 'Feld wird leer gelassen',
-      extension: 'Feld wird als Extension behandelt',
-      manual: 'Manuelle Implementierung erforderlich - siehe Dokumentation',
-      copy_from: field.other || field.targetField ?
-        `Wert wird aus ${field.other || field.targetField} übernommen` :
-        'Wert wird aus anderem Feld übernommen',
-      copy_to: field.other || field.targetField ?
-        `Wert wird in ${field.other || field.targetField} geschrieben` :
-        'Wert wird in anderes Feld geschrieben',
-      fixed: field.fixed || field.fixedValue ?
-        `Fixer Wert: ${field.fixed || field.fixedValue}` :
-        'Feld erhält einen festen Wert'
+    const defaults: Record<ProcessingStatus, string> = {
+      completed: 'Feld ist kompatibel und benötigt keine weiteren Aktionen.',
+      resolved: 'Ursprünglich inkompatibel, aber durch Mapping-Aktion gelöst.',
+      needs_action: 'Feld benötigt eine Mapping-Aktion.',
     };
 
-    let tooltip = tooltips[field.action as keyof typeof tooltips] || 'Keine zusätzlichen Informationen';
-
-    // Add inheritance information if available
-    if (field.auto_generated && field.inherited_from) {
-      tooltip += ` (Action wurde von ${field.inherited_from} vererbt)`;
-    }
-
-    return tooltip;
+    return defaults[status];
   }
 }
 
 // Summary calculation utilities
 export class SummaryHelper {
-  static calculateStatusSummary(fields: any[], evaluation?: MappingEvaluation): any {
-    if (evaluation?.summary) {
-      const { summary } = evaluation;
-      let simplified_compatible = 0;
-      let simplified_resolved = 0;
-      let simplified_needs_action = 0;
+  static calculateStatusSummary(fields: MappingField[]): StatusSummary {
+    const summary: StatusSummary = { total: fields.length, completed: 0, resolved: 0, needs_action: 0 };
 
-      if (evaluation.field_evaluations) {
-        Object.values(evaluation.field_evaluations).forEach((fieldEval: any) => {
-          const { original_classification, action } = fieldEval;
-
-          if (original_classification === 'compatible' || original_classification === 'warning') {
-            simplified_compatible++;
-          } else if (original_classification === 'incompatible' && action !== 'use') {
-            simplified_resolved++;
-          } else if (original_classification === 'incompatible' && action === 'use') {
-            simplified_needs_action++;
-          }
-        });
-      }
-
-      return {
-        total: summary.total_fields,
-        completed: simplified_compatible,
-        resolved: simplified_resolved,
-        needs_action: simplified_needs_action
-      };
-    }
-
-    // Fallback calculation
-    const summary = { total: fields.length, completed: 0, resolved: 0, needs_action: 0 };
-    fields.forEach((field: any) => {
-      const status = StatusHelper.getProcessingStatus(field, evaluation);
-      if (summary.hasOwnProperty(status)) {
-        (summary as any)[status]++;
-      }
+    fields.forEach((field) => {
+      const status = StatusHelper.getProcessingStatus(field);
+      summary[status] = summary[status] + 1;
     });
 
     return summary;
   }
 
-  static getTotalProgressPercentage(summary: any, status: string): number {
-    if (!summary || summary.total === 0) return 0;
+  static getTotalProgressPercentage(summary: StatusSummary, status: ProcessingStatus): number {
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
     const value = summary[status] || 0;
     return (value / summary.total) * 100;
   }
 
-  static getTotalCompletionPercentage(summary: any): number {
-    if (!summary || summary.total === 0) return 0;
+  static getTotalCompletionPercentage(summary: StatusSummary): number {
+    if (!summary || summary.total === 0) {
+      return 0;
+    }
     const completed = summary.completed + summary.resolved;
     return Math.round((completed / summary.total) * 100);
   }
 }
 
-// Enhanced evaluation utilities
-export class EvaluationHelper {
-  static getEnhancedTooltip(field: any, evaluation: MappingEvaluation | null, fallbackFn: (field: any) => string): string {
-    const fieldEvaluation = evaluation?.field_evaluations[field.name];
-    return fieldEvaluation ?
-      `Enhanced: ${fieldEvaluation.enhanced_classification}` :
-      fallbackFn(field);
-  }
-
-  static getEnhancedCssClass(field: any, evaluation: MappingEvaluation | null, fallbackFn: (classification: string) => string): string {
-    const fieldEvaluation = evaluation?.field_evaluations[field.name];
-    return fieldEvaluation ?
-      fieldEvaluation.enhanced_classification :
-      fallbackFn(field.classification);
-  }
-}
-
-// Utility functions
+// Utility functions used by component
 export function normalizeString(value: unknown): string {
   return (value ?? '').toString().trim().toLowerCase();
 }
 
 export function compare(a: number | string, b: number | string, isAsc: boolean): number {
-  const A = (a ?? '') as any;
-  const B = (b ?? '') as any;
+  const A = (a ?? '') as number | string;
+  const B = (b ?? '') as number | string;
   return (A < B ? -1 : A > B ? 1 : 0) * (isAsc ? 1 : -1);
 }
 
-export function tupleCompare(A: Array<number>, B: Array<number>, isAsc: boolean): number {
+export function tupleCompare(A: number[], B: number[], isAsc: boolean): number {
   for (let i = 0; i < Math.max(A.length, B.length); i++) {
     const a = A[i] ?? 0;
     const b = B[i] ?? 0;

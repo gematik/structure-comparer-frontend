@@ -19,37 +19,64 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-/**
- * Interfaces for enhanced mapping evaluation data structures
- */
+/** Action and evaluation domain models mirrored from backend Step 3. */
+export type ActionType =
+  | 'use'
+  | 'not_use'
+  | 'empty'
+  | 'extension'
+  | 'copy_from'
+  | 'copy_to'
+  | 'fixed'
+  | 'other';
 
-export interface EvaluationIssue {
-  issue_type: string;
-  severity: string;
-  message: string;
-  resolved_by_action?: string;
-  requires_attention: boolean;
+export type ActionSource = 'manual' | 'inherited' | 'system_default';
+
+export type EvaluationSeverity = 'info' | 'warning' | 'error';
+
+export type EvaluationStatus =
+  | 'ok'
+  | 'action_required'
+  | 'resolved'
+  | 'incompatible'
+  | 'unknown'
+  | 'evaluation_failed';
+
+export interface ActionInfo {
+  action: ActionType;
+  source: ActionSource;
+
+  inherited_from?: string | null;
+  auto_generated?: boolean;
+
+  user_remark?: string | null;
+  system_remark?: string | null;
+
+  fixed_value?: unknown;
+  other_value?: unknown;
+
+  raw_manual_entry?: Record<string, unknown> | null;
 }
 
-export interface FieldEvaluation {
-  field_name: string;
-  original_classification: string;
-  enhanced_classification: string;
-  action: string;
-  issues: EvaluationIssue[];
-  warnings: string[];
-  recommendations: string[];
-  processing_status?: string;
+export interface EvaluationReason {
+  code: string;
+  severity: EvaluationSeverity;
+  message_key: string;
+  details: Record<string, unknown>;
+  related_action?: ActionType | null;
 }
 
-export interface MappingEvaluation {
-  mapping_id: string;
-  mapping_name: string;
-  field_evaluations: { [key: string]: FieldEvaluation };
-  summary: MappingEvaluationSummary;
+export interface EvaluationResult {
+  status: EvaluationStatus;
+  reasons: EvaluationReason[];
+  has_warnings: boolean;
+  has_errors: boolean;
+  summary_key?: string | null;
 }
 
 export interface MappingEvaluationSummary {
+  mapping_id: string;
+  mapping_name: string;
   total_fields: number;
   compatible: number;
   warnings: number;
@@ -57,19 +84,22 @@ export interface MappingEvaluationSummary {
   action_resolved: number;
   action_mitigated: number;
   needs_attention: number;
+  simplified_compatible?: number | null;
+  simplified_resolved?: number | null;
+  simplified_needs_action?: number | null;
 }
 
-export interface EnhancedMappingField {
-  // Original field properties
-  name: string;
-  action: string;
-  classification: string;
-  profiles: any;
-  remark?: string;
-  issues?: string[];
-
-  // Enhanced evaluation properties
-  evaluation?: FieldEvaluation;
-  enhancedTooltip?: string;
-  cssClass?: string;
+export interface MappingEvaluation {
+  mapping_id: string;
+  mapping_name: string;
+  field_evaluations: Record<string, EvaluationResult>;
+  summary: {
+    total_fields: number;
+    compatible: number;
+    warnings: number;
+    incompatible: number;
+    action_resolved: number;
+    action_mitigated: number;
+    needs_attention: number;
+  };
 }

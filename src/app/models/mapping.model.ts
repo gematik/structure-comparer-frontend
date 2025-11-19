@@ -18,6 +18,8 @@
  *
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
+import { ActionInfo, EvaluationResult } from './mapping-evaluation.model';
+
 /**
  * Interface representing a source profile in a mapping
  */
@@ -113,6 +115,10 @@ export interface MappingField {
   auto_generated?: boolean;
   // Parent field name if this field was inherited from a parent action
   inherited_from?: string | null;
+  // Detailed action metadata supplied by the backend
+  action_info?: ActionInfo | null;
+  // Evaluation result supplied by the backend
+  evaluation?: EvaluationResult | null;
 }
 
 /**

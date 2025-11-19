@@ -24,9 +24,22 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatSortModule } from '@angular/material/sort';
 import { PropertyTreeNode } from '../../models/property-tree-node.model';
-import { buildPropertyTree, filterTreeNodes } from '../mapping-tree.util';
-import { MappingEvaluation } from '../../models/mapping-evaluation.model';
-import { MappingTextHelper } from '../../mapping-detail/mapping-detail-helpers';
+import { buildPropertyTree } from '../mapping-tree.util';
+import { MappingField } from '../../models/mapping.model';
+import {
+  MappingTextHelper,
+  StatusHelper,
+  CardinalityHelper,
+  EvaluationHelper,
+  ProcessingStatus,
+  ACTION_CSS,
+} from '../../mapping-detail/mapping-detail-helpers';
+
+const LEGACY_CLASSIFICATION_CLASS: Record<string, string> = {
+  compatible: 'status-ok',
+  warning: 'status-warning',
+  incompatible: 'status-incompatible',
+};
 
 export interface DisplayRow {
   node: PropertyTreeNode;
@@ -60,9 +73,8 @@ export interface EditFieldEvent {
   styleUrls: ['./tree-table.component.css']
 })
 export class TreeTableComponent implements OnInit, OnChanges {
-  @Input() fields: any[] = [];
+  @Input() fields: MappingField[] = [];
   @Input() config: TreeTableConfig = { profileColumns: [] };
-  @Input() mappingEvaluation: MappingEvaluation | null = null;
   @Input() currentQuickFilter: string | null = null;
   @Input() availableFields: any[] = [];
   @Input() classifications: any[] = [];
@@ -242,191 +254,65 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
   // Helper methods - these should match the parent component's implementation
 
-  getProcessingStatus(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
-
-    if (evaluation) {
-      const originalClassification = evaluation.original_classification;
-      const action = evaluation.action;
-
-      if (originalClassification === 'compatible' || originalClassification === 'warning') {
-        return 'completed';
-      } else if (originalClassification === 'incompatible' && action !== 'use') {
-        return 'resolved';
-      } else if (originalClassification === 'incompatible' && action === 'use') {
-        return 'needs_action';
-      }
-    }
-
-    // Fallback logic
-    switch (field.classification) {
-      case 'compatible':
-        return 'completed';
-      case 'warning':
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'manual'].includes(field.action)) {
-          return 'resolved';
-        } else if (field.action === 'use') {
-          return 'needs_action';
-        } else {
-          return 'in_progress';
-        }
-      case 'incompatible':
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'not_use', 'empty'].includes(field.action)) {
-          return 'resolved';
-        } else {
-          return 'needs_action';
-        }
-      default:
-        return 'unknown';
-    }
+  getProcessingStatus(field: MappingField): ProcessingStatus {
+    return StatusHelper.getProcessingStatus(field);
   }
 
-  getStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      'completed': 'Kompatibel',
-      'resolved': 'Gelöst',
-      'needs_action': 'Aktion erforderlich'
-    };
-    return labels[status] || status;
+  getStatusLabel(status: ProcessingStatus): string {
+    return StatusHelper.getStatusLabel(status);
   }
 
-  getStatusCssClass(status: string): string {
-    const cssClasses: { [key: string]: string } = {
-      'completed': 'status-completed',
-      'resolved': 'status-resolved',
-      'needs_action': 'status-needs-action'
-    };
-    return cssClasses[status] || 'status-needs-action';
+  getStatusCssClass(status: ProcessingStatus): string {
+    return StatusHelper.getStatusCssClass(status);
   }
 
-  getStatusTooltip(field: any, status: string): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
-
-    switch (status) {
-      case 'completed':
-        return 'Dieses Feld ist kompatibel und benötigt keine weiteren Aktionen.';
-      case 'resolved':
-        return `Problem wurde durch ${field.action} Aktion gelöst. ${evaluation?.issues?.length ? 'Details: ' + evaluation.issues.map((i: any) => i.message).join('; ') : ''}`;
-      case 'needs_action':
-        return `${field.classification === 'incompatible' ? 'Inkompatibilität' : 'Warnung'} erfordert eine Aktion zur Lösung.`;
-      default:
-        return 'Status unbekannt';
-    }
+  getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
+    return StatusHelper.getStatusTooltip(field, status);
   }
 
   getClassificationCssClass(action: string): string {
-    const CSS_CLASS: { [key: string]: string } = {
-      use: 'row-use',
-      not_use: 'row-not-use',
-      empty: 'row-empty',
-      extension: 'row-extension',
-      manual: 'row-manual',
-      other: 'row-other',
-      copy_from: 'row-copy-from',
-      copy_to: 'row-copy-to',
-      fixed: 'row-fixed',
-      medication_service: 'row-medication-service',
-    };
-    return CSS_CLASS[action] || '';
+    return ACTION_CSS[action as keyof typeof ACTION_CSS] || '';
   }
 
-  formatCardinality(minVal: any, maxVal: any): string {
-    const min = Number.isFinite(+minVal) ? +minVal : 0;
-    const max = (maxVal === '*' || maxVal === '∞') ? '*' : (Number.isFinite(+maxVal) ? +maxVal : 0);
-    return `${min} .. ${max}`;
-  }
+  formatCardinality = CardinalityHelper.formatCardinality;
 
-  private clamp(n: number, min: number, max: number) {
-    return Math.min(max, Math.max(min, n));
-  }
+  getCardinalityStyle = CardinalityHelper.getCardinalityStyle;
 
-  getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
-    const min = Number.isFinite(+minVal) ? +minVal : 0;
-    const maxIsStar = (maxVal === '*' || maxVal === '∞');
-    const maxNum = maxIsStar ? 10 : (Number.isFinite(+maxVal) ? +maxVal : 0);
-
-    const minN = 1 - (this.clamp(min, 0, 2) / 2);
-    const maxN = (this.clamp(maxNum, 0, 10) / 10);
-    const openness = this.clamp(0.5 * minN + 0.5 * maxN, 0, 1);
-    const hue = Math.round(0 + openness * 130);
-
-    const bg = `hsl(${hue}, 90%, 92%)`;
-    const border = `hsl(${hue}, 65%, 45%)`;
-    const text = `hsl(${hue}, 60%, 25%)`;
-
-    return {
-      backgroundColor: bg,
-      color: text,
-      borderColor: border
-    };
-  }
-
-  getEnhancedCssClass(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
-    if (evaluation) {
-      return this.loadComparisonCSSProperty(evaluation.enhanced_classification);
+  getEnhancedCssClass(field: MappingField): string {
+    if (field.evaluation) {
+      return EvaluationHelper.buildStatusClass(field.evaluation);
     }
-    return this.loadComparisonCSSProperty(field.classification);
+    return LEGACY_CLASSIFICATION_CLASS[field.classification ?? ''] ?? 'status-unknown';
   }
 
-  getEnhancedTooltip(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
-    if (evaluation) {
-      // Return enhanced tooltip based on evaluation
-      return this.getClassificationDescription(field);
+  getEnhancedTooltip(field: MappingField): string {
+    const lines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
+    if (lines.length > 0) {
+      return lines.join('\n');
     }
-    return this.getClassificationDescription(field);
-  }
-
-  private loadComparisonCSSProperty(compatibility: string): string {
-    const CSS_CLASS: { [key: string]: string } = {
-      compatible: 'compatible',
-      warning: 'warning',
-      incompatible: 'incompatible',
-      action_resolved: 'action_resolved',
-      action_mitigated: 'action_mitigated',
-    };
-    return CSS_CLASS[compatibility] || '';
-  }
-
-  private getClassificationDescription(field: any): string {
-    // Simplified tooltip - can be enhanced later
-    return `Classification: ${field.classification}`;
-  }
-
-  getConsolidatedMappingText(field: any): string {
-    // Use the centralized MappingTextHelper that includes show_mapping_content logic
-    return MappingTextHelper.getConsolidatedMappingText(field);
-  }
-
-  shouldShowRecommendations(field: any): boolean {
-    return this.mappingEvaluation?.field_evaluations?.[field.name] != null &&
-           (field.show_mapping_content === false ||
-            (!this.getConsolidatedMappingText(field) && field.action === 'use'));
-  }
-
-  getRemarkTooltip(field: any): string {
-    switch (field.action) {
-      case 'use':
-        return 'No action needed for this mapping';
-      case 'not_use':
-      case 'empty':
-        return 'Information will be removed or left empty in this mapping';
-      case 'extension':
-      case 'manual':
-        return 'Special action required for this mapping';
-      case 'other':
-      case 'medication_service':
-        return 'Caution reference!';
-      case 'copy_from':
-        return `This field copies its value from the following field: ${field.other}`;
-      case 'copy_to':
-        return `This field copies its value into the following field: ${field.other}`;
-      case 'fixed':
-        return `This field has a fixed value: ${field.fixed}`;
-      default:
-        return 'No additional information';
+    if (field.classification) {
+      return `Legacy-Status: ${field.classification}`;
     }
+    return 'Keine Bewertung verfügbar.';
+  }
+
+  getEnhancedLabel(field: MappingField): string {
+    if (field.evaluation) {
+      return EvaluationHelper.buildStatusLabel(field.evaluation);
+    }
+    return field.classification ?? 'Unbekannt';
+  }
+
+  getConsolidatedMappingText(field: MappingField): string {
+    return MappingTextHelper.buildActionLabel(field.action_info, field.action);
+  }
+
+  getActionSubLabel(field: MappingField): string | null {
+    return MappingTextHelper.buildActionSubLabel(field.action_info);
+  }
+
+  getRemarkTooltip(field: MappingField): string | null {
+    return MappingTextHelper.buildActionTooltip(field.action_info);
   }
 
   getDescriptionForMapping(useValue: string): string | undefined {

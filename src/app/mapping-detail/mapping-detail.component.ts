@@ -13,12 +13,10 @@ import { MappingsService } from '../mappings.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
-import { ComparisonService } from '../comparison.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
-import { MappingEvaluation, FieldEvaluation, EnhancedMappingField } from '../models/mapping-evaluation.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 
 // Imported helpers for cleaner code organization
@@ -29,9 +27,16 @@ import {
   SummaryHelper,
   EvaluationHelper,
   normalizeString,
-  CLASSIFICATION_CSS,
-  ACTION_CSS
+  ACTION_CSS,
+  StatusSummary,
+  ProcessingStatus,
 } from './mapping-detail-helpers';
+
+const LEGACY_CLASSIFICATION_CLASS: Record<string, string> = {
+  compatible: 'status-ok',
+  warning: 'status-warning',
+  incompatible: 'status-incompatible',
+};
 
 export interface IProfile {
   name?: string;
@@ -71,14 +76,6 @@ export class MappingDetailComponent implements OnInit {
   editingIndex: number | null = null;
   hoverIndex: number | null = null;
   filtered: any;
-
-  // Enhanced evaluation data
-  mappingEvaluation: MappingEvaluation | null = null;
-  enhancedFields: EnhancedMappingField[] = [];
-  showEnhancedView = true;
-  enhancedViewAvailable = false;
-  evaluationLoadingError: string | null = null;
-  showDetailedRecommendations = true;
   currentQuickFilter: string | null = null;
 
   // Profile columns and view settings
@@ -98,7 +95,6 @@ export class MappingDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
-    private comparisonService: ComparisonService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
@@ -132,7 +128,6 @@ export class MappingDetailComponent implements OnInit {
       }))
       .subscribe(mapping => {
         this.processLoadedMapping(mapping);
-        this.loadMappingEvaluation(projectKey, mappingId);
       });
   }
 
@@ -184,172 +179,40 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => this.classifications = data.actions);
   }
 
-  loadMappingEvaluation(projectKey: string, mappingId: string): void {
-    this.comparisonService.getMappingEvaluation(projectKey, mappingId)
-      .pipe(catchError(err => {
-        console.error('Error loading mapping evaluation', err);
-        this.evaluationLoadingError = err.message || 'Failed to load enhanced evaluation';
-        this.enhancedViewAvailable = false;
-        this.createFallbackEvaluation();
-        return of(null);
-      }))
-      .subscribe(evaluation => {
-        if (evaluation) {
-          this.mappingEvaluation = evaluation;
-          this.enhancedViewAvailable = true;
-          this.evaluationLoadingError = null;
-          this.enhanceFieldsWithEvaluation();
-        }
-      });
-  }
-
-  enhanceFieldsWithEvaluation(): void {
-    if (!this.mappingEvaluation || !this.filtered?.fields) return;
-
-    this.enhancedFields = this.filtered.fields.map((field: any) => {
-      const evaluation = this.mappingEvaluation!.field_evaluations[field.name];
-      const enhancedField: EnhancedMappingField = { ...field, evaluation };
-
-      if (evaluation) {
-        enhancedField.enhancedTooltip = this.comparisonService.getEnhancedClassificationDescription(evaluation);
-        enhancedField.cssClass = this.comparisonService.getEnhancedClassificationCssClass(evaluation.enhanced_classification);
-      }
-
-      return enhancedField;
-    });
-  }
-
-  createFallbackEvaluation(): void {
-    if (!this.filtered?.fields) return;
-
-    const fieldEvaluations: any = {};
-    this.filtered.fields.forEach((field: any) => {
-      let enhancedClassification = 'compatible';
-      let issues: any[] = [];
-      let warnings: string[] = [];
-      let recommendations: string[] = [];
-
-      switch (field.classification) {
-        case 'incompatible':
-          enhancedClassification = 'incompatible';
-          issues.push({ message: 'Field is incompatible', severity: 'error', requires_attention: true });
-          break;
-        case 'warning':
-          enhancedClassification = 'warning';
-          warnings.push('Field may have compatibility issues');
-          break;
-      }
-
-      if (field.action === 'manual') {
-        enhancedClassification = 'action_mitigated';
-        recommendations.push('Ensure manual implementation is properly documented');
-      }
-
-      fieldEvaluations[field.name] = {
-        field_name: field.name,
-        original_classification: field.classification,
-        enhanced_classification: enhancedClassification,
-        action: field.action,
-        issues, warnings, recommendations
-      };
-    });
-
-    this.mappingEvaluation = {
-      mapping_id: this.mappingId,
-      mapping_name: this.filtered.name,
-      field_evaluations: fieldEvaluations,
-      summary: {
-        total_fields: this.filtered.fields.length,
-        compatible: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'compatible').length,
-        warnings: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'warning').length,
-        incompatible: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'incompatible').length,
-        action_resolved: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'action_resolved').length,
-        action_mitigated: Object.values(fieldEvaluations).filter((e: any) => e.enhanced_classification === 'action_mitigated').length,
-        needs_attention: Object.values(fieldEvaluations).filter((e: any) => e.issues?.some((i: any) => i.requires_attention)).length
-      }
-    };
-
-    this.enhancedViewAvailable = true;
-    this.enhanceFieldsWithEvaluation();
-  }
-
   // === SUMMARY & STATUS METHODS (delegated to helpers) ===
-  getEvaluationSummary(): any {
-    const summary = this.mappingEvaluation?.summary;
-    if (!summary) return null;
-
-    let simplified_compatible = 0;
-    let simplified_resolved = 0;
-    let simplified_needs_action = 0;
-
-    if (this.mappingEvaluation?.field_evaluations) {
-      Object.values(this.mappingEvaluation.field_evaluations).forEach((fieldEval: any) => {
-        const { original_classification, action } = fieldEval;
-
-        if (original_classification === 'compatible' || original_classification === 'warning') {
-          simplified_compatible++;
-        } else if (original_classification === 'incompatible' && action !== 'use') {
-          simplified_resolved++;
-        } else if (original_classification === 'incompatible' && action === 'use') {
-          simplified_needs_action++;
-        }
-      });
-    }
-
-    return { ...summary, simplified_compatible, simplified_resolved, simplified_needs_action };
+  getStatusSummary(): StatusSummary | null {
+    return this.filtered?.fields ? SummaryHelper.calculateStatusSummary(this.filtered.fields) : null;
   }
 
-  getStatusSummary(): any {
-    const evalSummary = this.getEvaluationSummary();
-    if (evalSummary) {
-      return {
-        total: evalSummary.total_fields,
-        completed: evalSummary.simplified_compatible || 0,
-        resolved: evalSummary.simplified_resolved || 0,
-        needs_action: evalSummary.simplified_needs_action || 0
-      };
-    }
-
-    return this.filtered?.fields ?
-      SummaryHelper.calculateStatusSummary(this.filtered.fields, this.mappingEvaluation ?? undefined) :
-      null;
+  getTotalStatusSummary(): StatusSummary | null {
+    return this.original?.fields ? SummaryHelper.calculateStatusSummary(this.original.fields) : null;
   }
 
-  getTotalStatusSummary(): any {
-    return this.original?.fields ?
-      SummaryHelper.calculateStatusSummary(this.original.fields, this.mappingEvaluation ?? undefined) :
-      null;
-  }
-
-  getTotalProgressPercentage(status: string): number {
+  getTotalProgressPercentage(status: ProcessingStatus): number {
     const summary = this.getTotalStatusSummary();
-    return SummaryHelper.getTotalProgressPercentage(summary, status);
+    return summary ? SummaryHelper.getTotalProgressPercentage(summary, status) : 0;
   }
 
   getTotalCompletionPercentage(): number {
     const summary = this.getTotalStatusSummary();
-    return SummaryHelper.getTotalCompletionPercentage(summary);
+    return summary ? SummaryHelper.getTotalCompletionPercentage(summary) : 0;
   }
 
   // === STATUS METHODS (delegated to helpers) ===
-  loadComparisonCSSProperty(compatibility: string): string {
-    return CLASSIFICATION_CSS[compatibility as keyof typeof CLASSIFICATION_CSS] || '';
+  getProcessingStatus(field: MappingField): ProcessingStatus {
+    return StatusHelper.getProcessingStatus(field);
   }
 
-  getProcessingStatus(field: any): string {
-    return StatusHelper.getProcessingStatus(field, this.mappingEvaluation ?? undefined);
-  }
-
-  getStatusLabel(status: string): string {
+  getStatusLabel(status: ProcessingStatus): string {
     return StatusHelper.getStatusLabel(status);
   }
 
-  getStatusCssClass(status: string): string {
+  getStatusCssClass(status: ProcessingStatus): string {
     return StatusHelper.getStatusCssClass(status);
   }
 
-  getStatusTooltip(field: any, status: string): string {
-    return StatusHelper.getStatusTooltip(field, status, this.mappingEvaluation ?? undefined);
+  getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
+    return StatusHelper.getStatusTooltip(field, status);
   }
 
   // === CARDINALITY METHODS (delegated to helpers) ===
@@ -357,29 +220,57 @@ export class MappingDetailComponent implements OnInit {
   getCardinalityStyle = CardinalityHelper.getCardinalityStyle;
 
   // === MAPPING TEXT METHODS (delegated to helpers) ===
-  getRemarkTooltip = MappingTextHelper.getRemarkTooltip;
-  getConsolidatedMappingText = MappingTextHelper.getConsolidatedMappingText;
+  getConsolidatedMappingText(field: MappingField): string {
+    return MappingTextHelper.buildActionLabel(field.action_info, field.action);
+  }
 
-  getMappingResult(field: any): string {
+  getRemarkTooltip(field: MappingField): string | null {
+    return MappingTextHelper.buildActionTooltip(field.action_info);
+  }
+
+  getActionSubLabel(field: MappingField): string | null {
+    return MappingTextHelper.buildActionSubLabel(field.action_info);
+  }
+
+  getMappingResult(field: MappingField): string {
     return this.getConsolidatedMappingText(field);
   }
 
-  // === ENHANCED EVALUATION METHODS (delegated to helpers) ===
-  getEnhancedTooltip(field: any): string {
-    return EvaluationHelper.getEnhancedTooltip(field, this.mappingEvaluation, this.getTooltipComparison.bind(this));
+  // === EVALUATION PRESENTATION ===
+  getEnhancedTooltip(field: MappingField): string {
+    const lines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
+    if (lines.length > 0) {
+      return lines.join('\n');
+    }
+
+    if (field.evaluation?.summary_key) {
+      return field.evaluation.summary_key;
+    }
+
+    if (field.classification) {
+      return `Legacy-Status: ${field.classification}`;
+    }
+
+    return 'Keine Bewertung verfügbar.';
   }
 
-  getEnhancedCssClass(field: any): string {
-    return EvaluationHelper.getEnhancedCssClass(field, this.mappingEvaluation, this.loadComparisonCSSProperty.bind(this));
+  getEnhancedCssClass(field: MappingField): string {
+    if (field.evaluation) {
+      return EvaluationHelper.buildStatusClass(field.evaluation);
+    }
+    return LEGACY_CLASSIFICATION_CLASS[field.classification ?? ''] ?? 'status-unknown';
+  }
+
+  getEnhancedLabel(field: MappingField): string {
+    if (field.evaluation) {
+      return EvaluationHelper.buildStatusLabel(field.evaluation);
+    }
+    return field.classification ?? 'unbekannt';
   }
 
   // === UTILITY METHODS ===
   getDescriptionForMapping(useValue: string): string | undefined {
     return this.classifications.find(item => item.value === useValue)?.description;
-  }
-
-  getTooltipComparison(field: any): string {
-    return this.comparisonService.getClassificationDescription(field);
   }
 
   getClassificationInstruction(action: string): string {
@@ -473,14 +364,14 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private handleSorting(e: any): void {
-    const data = [...(this.filtered?.fields ?? [])];
+    const data = [...(this.filtered?.fields ?? [])] as MappingField[];
     if (!e.active || e.direction === '') {
       this.filtered = { ...this.filtered, fields: data };
       return;
     }
 
     const isAsc = e.direction === 'asc';
-    const sortedData = data.sort((a: IProfile, b: IProfile) => {
+    const sortedData = data.sort((a: MappingField, b: MappingField) => {
       switch (e.active) {
         case 'name':
           return this.compareStrings(a.name ?? '', b.name ?? '', isAsc);
@@ -506,7 +397,7 @@ export class MappingDetailComponent implements OnInit {
     return (a < b ? -1 : a > b ? 1 : 0) * (isAsc ? 1 : -1);
   }
 
-  private compareProfiles(a: any, b: any, profileKey: string, isAsc: boolean): number {
+  private compareProfiles(a: MappingField, b: MappingField, profileKey: string, isAsc: boolean): number {
     const profileA = a.profiles?.[profileKey];
     const profileB = b.profiles?.[profileKey];
 
@@ -514,8 +405,13 @@ export class MappingDetailComponent implements OnInit {
     if (!profileA) return isAsc ? -1 : 1;
     if (!profileB) return isAsc ? 1 : -1;
 
-    const cardA = [profileA.min ?? 0, profileA.max === '*' ? 999 : (profileA.max ?? 0)];
-    const cardB = [profileB.min ?? 0, profileB.max === '*' ? 999 : (profileB.max ?? 0)];
+    const minA = Number(profileA.min ?? 0);
+    const maxA = profileA.max === '*' ? 999 : Number(profileA.max ?? 0);
+    const cardA = [minA, maxA];
+
+    const minB = Number(profileB.min ?? 0);
+    const maxB = profileB.max === '*' ? 999 : Number(profileB.max ?? 0);
+    const cardB = [minB, maxB];
 
     return this.tupleCompare(cardA, cardB, isAsc);
   }

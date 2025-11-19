@@ -23,6 +23,41 @@ table {
   white-space: nowrap;
 }
 
+.pill.status-ok {
+  background-color: #e3fcef;
+  color: #1b5e20;
+}
+
+.pill.status-resolved {
+  background-color: #e0f3ff;
+  color: #0c4a6e;
+}
+
+.pill.status-needs-action {
+  background-color: #fff3cd;
+  color: #7f4f00;
+}
+
+.pill.status-warning {
+  background-color: #fff6e6;
+  color: #875f00;
+}
+
+.pill.status-incompatible {
+  background-color: #fdecea;
+  color: #7a1f1f;
+}
+
+.pill.status-unknown {
+  background-color: #eceff1;
+  color: #37474f;
+}
+
+.pill.status-evaluation-failed {
+  background-color: #ffebef;
+  color: #8a1c33;
+}
+
 .copy_from {
   background-color: #d0f0ff;
   color: #004466;
@@ -115,6 +150,45 @@ tr:hover {
 
 .pill--medication_service {
   background-color: #FADBD8;
+}
+
+.evaluation-reasons {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+}
+
+.reason-message {
+  font-size: 0.85em;
+  line-height: 1.3;
+  word-wrap: break-word;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+
+.reason-message.severity-info {
+  background-color: #e8f4fd;
+  color: #0c4a6e;
+  border-color: #0c4a6e;
+}
+
+.reason-message.severity-warning {
+  background-color: #fff6e6;
+  color: #7f4f00;
+  border-color: #d39e00;
+}
+
+.reason-message.severity-error {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #c62828;
+}
+
+.mapping-sub-text {
+  font-size: 0.8em;
+  color: #5f6368;
+  margin-top: 4px;
 }
 
 /* Stile für Wrapper der DataTable, falls verwendet */

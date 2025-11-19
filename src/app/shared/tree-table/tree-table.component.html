@@ -136,88 +136,24 @@
         <ng-container *ngIf="row.field">
           <span
             class="pill"
-            [ngClass]="'pill--' + getEnhancedCssClass(row.field)"
+            [ngClass]="getEnhancedCssClass(row.field)"
             [matTooltipHideDelay]="1000"
             [matTooltip]="getEnhancedTooltip(row.field)"
           >
-            <ng-container
-              *ngIf="
-                mappingEvaluation &&
-                  mappingEvaluation.field_evaluations &&
-                  mappingEvaluation.field_evaluations[row.field.name];
-                else standardClassification"
-            >
-              {{
-                mappingEvaluation.field_evaluations[row.field.name]
-                  .enhanced_classification | titlecase
-              }}
-            </ng-container>
-            <ng-template #standardClassification>
-              {{ row.field.classification }}
-            </ng-template>
+            {{ getEnhancedLabel(row.field) }}
           </span>
 
-          <!-- Enhanced evaluation indicators - Direct Issues Display -->
           <div
-            *ngIf="
-              mappingEvaluation &&
-              mappingEvaluation.field_evaluations &&
-              mappingEvaluation.field_evaluations[row.field.name]
-            "
-            class="evaluation-indicators"
+            *ngIf="row.field.evaluation?.reasons?.length"
+            class="evaluation-reasons"
           >
-            <ng-container
-              *ngIf="
-                mappingEvaluation.field_evaluations[row.field.name] as fieldEval
-              "
+            <div
+              *ngFor="let reason of row.field.evaluation?.reasons"
+              class="reason-message"
+              [ngClass]="'severity-' + reason.severity"
             >
-              <!-- Direct Issues Display -->
-              <div
-                *ngIf="fieldEval.issues && fieldEval.issues.length > 0"
-                class="direct-issues"
-              >
-                <div
-                  *ngFor="let issue of fieldEval.issues"
-                  class="issue-message"
-                  [ngClass]="'severity-' + issue.severity"
-                  style="
-                    font-size: 0.85em;
-                    margin: 2px 0;
-                    line-height: 1.3;
-                    word-wrap: break-word;
-                  "
-                >
-                  {{ issue.message }}
-                  <span
-                    *ngIf="issue.resolved_by_action"
-                    class="resolved-indicator"
-                    style="color: #28a745; font-weight: 500"
-                  >
-                    <br />(✓ Gelöst durch: {{ issue.resolved_by_action }})
-                  </span>
-                </div>
-              </div>
-
-              <!-- Direct Warnings Display -->
-              <div
-                *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0"
-                class="direct-warnings"
-              >
-                <div
-                  *ngFor="let warning of fieldEval.warnings"
-                  class="warning-message"
-                  style="
-                    font-size: 0.85em;
-                    margin: 2px 0;
-                    line-height: 1.3;
-                    word-wrap: break-word;
-                    color: #ffc107;
-                  "
-                >
-                  {{ warning }}
-                </div>
-              </div>
-            </ng-container>
+              {{ reason.message_key }}
+            </div>
           </div>
         </ng-container>
       </td>
@@ -254,63 +190,14 @@
             <div class="mapping-header"></div>
             <div
               class="mapping-details"
-              [matTooltip]="getRemarkTooltip(row.field)"
+              [matTooltip]="getRemarkTooltip(row.field) || ''"
               matTooltipPosition="above"
             >
               {{ getConsolidatedMappingText(row.field) }}
             </div>
-          </div>
-
-          <!-- Recommendations anzeigen when mapping content is hidden or for use action -->
-          <div
-            *ngIf="shouldShowRecommendations(row.field)"
-            class="mapping-recommendations"
-          >
-            <ng-container
-              *ngIf="
-                mappingEvaluation?.field_evaluations?.[row.field.name] as fieldEval
-              "
-            >
-              <div
-                *ngIf="
-                  fieldEval.recommendations &&
-                  fieldEval.recommendations.length > 0
-                "
-                class="recommendations-section"
-                style="
-                  margin-top: 8px;
-                  padding: 6px;
-                  background-color: #f8f9fa;
-                  border-left: 3px solid #17a2b8;
-                  border-radius: 4px;
-                "
-              >
-                <div
-                  class="recommendations-header"
-                  style="
-                    font-weight: 600;
-                    color: #17a2b8;
-                    font-size: 0.85em;
-                    margin-bottom: 4px;
-                  "
-                >
-                  💡 Empfehlungen:
-                </div>
-                <div
-                  *ngFor="let recommendation of fieldEval.recommendations"
-                  class="recommendation-item"
-                  style="
-                    font-size: 0.8em;
-                    line-height: 1.4;
-                    margin: 2px 0;
-                    word-wrap: break-word;
-                    color: #495057;
-                  "
-                >
-                  • {{ recommendation }}
-                </div>
-              </div>
-            </ng-container>
+            <div *ngIf="getActionSubLabel(row.field)" class="mapping-sub-text">
+              {{ getActionSubLabel(row.field) }}
+            </div>
           </div>
         </div>
 

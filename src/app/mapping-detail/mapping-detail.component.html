@@ -42,13 +42,11 @@
           <a [href]="filtered.target.url" target="_blank">{{
             filtered.target.name
           }}</a>
-        </div>
 
         <div class="info-item">
           <span class="info-label">Version:</span>
           <span class="info-value">{{ filtered.version }}</span>
         </div>
-
         <div class="info-item">
           <span class="info-label">Status:</span>
           <span
@@ -163,10 +161,6 @@
     "
   >
     <div style="display: flex; gap: 10px; align-items: center">
-      <div *ngIf="evaluationLoadingError" class="evaluation-error">
-        <small class="text-muted">{{ evaluationLoadingError }}</small>
-      </div>
-
       <!-- View Mode Toggle -->
       <div class="view-mode-toggle">
         <button
@@ -286,89 +280,24 @@
           <td class="default-td">
             <span
               class="pill"
-              [ngClass]="'pill--' + getEnhancedCssClass(field)"
+              [ngClass]="getEnhancedCssClass(field)"
               [matTooltipHideDelay]="1000"
               [matTooltip]="getEnhancedTooltip(field)"
             >
-              <ng-container
-                *ngIf="
-                  mappingEvaluation &&
-                    mappingEvaluation.field_evaluations &&
-                    mappingEvaluation.field_evaluations[field.name];
-                  else standardClassification
-                "
-              >
-                {{
-                  mappingEvaluation.field_evaluations[field.name]
-                    .enhanced_classification | titlecase
-                }}
-              </ng-container>
-              <ng-template #standardClassification>
-                {{ field.classification }}
-              </ng-template>
+              {{ getEnhancedLabel(field) }}
             </span>
 
-            <!-- Enhanced evaluation indicators - Direct Issues Display -->
             <div
-              *ngIf="
-                mappingEvaluation &&
-                mappingEvaluation.field_evaluations &&
-                mappingEvaluation.field_evaluations[field.name]
-              "
-              class="evaluation-indicators"
+              *ngIf="field.evaluation?.reasons?.length"
+              class="evaluation-reasons"
             >
-              <ng-container
-                *ngIf="
-                  mappingEvaluation.field_evaluations[field.name] as fieldEval
-                "
+              <div
+                *ngFor="let reason of field.evaluation?.reasons"
+                class="reason-message"
+                [ngClass]="'severity-' + reason.severity"
               >
-                <!-- Direct Issues Display -->
-                <div
-                  *ngIf="fieldEval.issues && fieldEval.issues.length > 0"
-                  class="direct-issues"
-                >
-                  <div
-                    *ngFor="let issue of fieldEval.issues"
-                    class="issue-message"
-                    [ngClass]="'severity-' + issue.severity"
-                    style="
-                      font-size: 0.85em;
-                      margin: 2px 0;
-                      line-height: 1.3;
-                      word-wrap: break-word;
-                    "
-                  >
-                    {{ issue.message }}
-                    <span
-                      *ngIf="issue.resolved_by_action"
-                      class="resolved-indicator"
-                      style="color: #28a745; font-weight: 500"
-                    >
-                      <br />(✓ Gelöst durch: {{ issue.resolved_by_action }})
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Direct Warnings Display -->
-                <div
-                  *ngIf="fieldEval.warnings && fieldEval.warnings.length > 0"
-                  class="direct-warnings"
-                >
-                  <div
-                    *ngFor="let warning of fieldEval.warnings"
-                    class="warning-message"
-                    style="
-                      font-size: 0.85em;
-                      margin: 2px 0;
-                      line-height: 1.3;
-                      word-wrap: break-word;
-                      color: #ffc107;
-                    "
-                  >
-                    {{ warning }}
-                  </div>
-                </div>
-              </ng-container>
+                {{ reason.message_key }}
+              </div>
             </div>
           </td>
 
@@ -400,69 +329,17 @@
                 <div
                   *ngIf="getConsolidatedMappingText(field)"
                   class="mapping-details"
-                  [matTooltip]="getRemarkTooltip(field)"
+                  [matTooltip]="getRemarkTooltip(field) || ''"
                   matTooltipPosition="above"
                 >
                   {{ getConsolidatedMappingText(field) }}
                 </div>
+                <div *ngIf="getActionSubLabel(field)" class="mapping-sub-text">
+                  {{ getActionSubLabel(field) }}
+                </div>
               </div>
 
               <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
-              <div
-                *ngIf="
-                  mappingEvaluation &&
-                  mappingEvaluation.field_evaluations &&
-                  mappingEvaluation.field_evaluations[field.name] &&
-                  (!field.action || field.action === 'use')
-                "
-                class="mapping-recommendations"
-              >
-                <ng-container
-                  *ngIf="
-                    mappingEvaluation.field_evaluations[field.name] as fieldEval
-                  "
-                >
-                  <div
-                    *ngIf="
-                      fieldEval.recommendations &&
-                      fieldEval.recommendations.length > 0
-                    "
-                    class="recommendations-section"
-                    style="
-                      margin-top: 8px;
-                      padding: 6px;
-                      background-color: #f8f9fa;
-                      border-left: 3px solid #17a2b8;
-                      border-radius: 4px;
-                    "
-                  >
-                    <div
-                      class="recommendations-header"
-                      style="
-                        font-weight: 600;
-                        color: #17a2b8;
-                        font-size: 0.85em;
-                        margin-bottom: 4px;
-                      "
-                    >
-                      💡 Empfehlungen:
-                    </div>
-                    <div
-                      *ngFor="let recommendation of fieldEval.recommendations"
-                      class="recommendation-item"
-                      style="
-                        font-size: 0.8em;
-                        line-height: 1.4;
-                        margin: 2px 0;
-                        word-wrap: break-word;
-                        color: #495057;
-                      "
-                    >
-                      • {{ recommendation }}
-                    </div>
-                  </div>
-                </ng-container>
-              </div>
             </div>
 
             <button
@@ -549,8 +426,9 @@
       *ngIf="viewMode === 'tree'"
       [config]="treeTableConfig"
       [fields]="filtered?.fields || []"
-      [mappingEvaluation]="mappingEvaluation"
       [currentQuickFilter]="currentQuickFilter"
+      [availableFields]="availableFields"
+      [classifications]="classifications"
       [editingIndex]="editingIndex ?? null"
       [hoverIndex]="hoverIndex ?? null"
       (editField)="openEditPropertyActionDialog($event.field, $event.index)"
