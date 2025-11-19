@@ -554,6 +554,8 @@
       [editingIndex]="editingIndex ?? null"
       [hoverIndex]="hoverIndex ?? null"
       (editField)="openEditPropertyActionDialog($event.field, $event.index)"
+      (startHover)="handleEdit($event).startHover()"
+      (stopHover)="handleEdit().stopHover()"
     >
     </app-tree-table>
   </div>

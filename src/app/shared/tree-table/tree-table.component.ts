@@ -461,7 +461,19 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   isHovering(index: number): boolean {
-    return this.localHoverIndex === index;
+    const localMatch = this.localHoverIndex === index;
+    const parentMatch = this.hoverIndex === index;
+    const result = localMatch || parentMatch;
+
+    console.log(`TreeTable isHovering(${index}):`, {
+      localHoverIndex: this.localHoverIndex,
+      parentHoverIndex: this.hoverIndex,
+      localMatch,
+      parentMatch,
+      result
+    });
+
+    return result;
   }
 
   onSortChange(event: any): void {

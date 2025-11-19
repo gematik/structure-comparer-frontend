@@ -237,13 +237,14 @@
       </td>
 
       <!-- Mapping-Aktion -->
-      <td
-        class="default-td"
-        (mouseenter)="onStartHover(i)"
-        (mouseleave)="onStopHover()"
-      >
+      <td class="default-td">
         <ng-container *ngIf="row.field">
-        <div *ngIf="editingIndex !== i" class="mapping-content-container">
+        <div
+          *ngIf="editingIndex !== i"
+          class="mapping-content-container"
+          (mouseenter)="onStartHover(i)"
+          (mouseleave)="onStopHover()"
+        >
           <!-- Consolidated Mapping Display -->
           <div
             *ngIf="getConsolidatedMappingText(row.field)"
@@ -315,7 +316,7 @@
 
         <button
           mat-button
-          *ngIf="isHovering(i) && editingIndex !== i"
+          *ngIf="localHoverIndex === i && editingIndex !== i"
           (click)="onEditPropertyAction(row.field, i)"
           color="primary"
         >
