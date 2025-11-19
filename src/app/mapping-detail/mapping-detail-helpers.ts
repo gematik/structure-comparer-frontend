@@ -122,66 +122,111 @@ export class MappingTextHelper {
       return '';
     }
 
-    const parts: string[] = [];
+    // Get base text from action (prioritized over evaluation texts)
+    const baseText = MappingTextHelper.getBaseTextFromAction(field);
+    if (!baseText) {
+      return '';
+    }
 
-    switch (field.action) {
-      case 'copy_from':
-        if (field.targetField) {
-          parts.push(`Aus "${field.targetField}" kopieren`);
-        }
-        break;
-      case 'copy_to':
-        if (field.targetField) {
-          parts.push(`In "${field.targetField}" kopieren`);
-        }
-        break;
-      case 'fixed':
-        if (field.fixedValue) {
-          parts.push(`Fixer Wert: "${field.fixedValue}"`);
-        }
-        break;
-      case 'manual':
-        parts.push('Manuelle Anpassung erforderlich');
-        if (field.remark) {
-          parts.push(`Hinweis: ${field.remark}`);
-        }
-        break;
-      case 'extension':
-        parts.push('Als Extension verwenden');
-        if (field.remark) {
-          parts.push(`Details: ${field.remark}`);
-        }
-        break;
-      case 'not_use':
-        parts.push('Nicht verwenden');
-        break;
-      case 'empty':
-        parts.push('Leer lassen');
-        break;
-      case 'use':
-        parts.push('Direkt verwenden');
-        break;
-      case 'other':
-        parts.push('Andere Behandlung');
-        break;
-      case 'medication_service':
-        parts.push('Medication Service');
-        break;
+    const parts: string[] = [baseText];
+
+    // Add inheritance information if field was auto-generated
+    if (field.auto_generated && field.inherited_from) {
+      parts.push(`(vererbt von ${field.inherited_from})`);
     }
 
     return parts.join(' • ');
+  }
+
+  private static getBaseTextFromAction(field: any): string | null {
+    switch (field.action) {
+      case 'not_use':
+        return 'Wird nicht verwendet';
+      case 'empty':
+        return 'Wird nicht befüllt';
+      case 'extension':
+        // For extension, show custom remark only if it's user-defined (not auto-generated)
+        const baseText = 'Als Extension verwenden';
+        if (field.remark && !field.auto_generated &&
+            field.remark !== 'Extension and value(s) will be retained') {
+          return `${baseText} • Details: ${field.remark}`;
+        }
+        return baseText;
+      case 'copy_from':
+        if (field.other || field.targetField) {
+          const target = field.other || field.targetField;
+          return `Aus "${target}" kopieren`;
+        }
+        return 'Aus anderem Feld kopieren';
+      case 'copy_to':
+        if (field.other || field.targetField) {
+          const target = field.other || field.targetField;
+          return `In "${target}" kopieren`;
+        }
+        return 'In anderes Feld kopieren';
+      case 'fixed':
+        if (field.fixed || field.fixedValue) {
+          const value = field.fixed || field.fixedValue;
+          return `Fixer Wert: "${value}"`;
+        }
+        return 'Fester Wert';
+      case 'manual':
+        const manualText = 'Manuelle Anpassung erforderlich';
+        if (field.remark && !field.auto_generated) {
+          return `${manualText} • Hinweis: ${field.remark}`;
+        }
+        return manualText;
+      case 'use':
+        return 'Wird direkt übernommen';
+      case 'other':
+        return 'Andere Behandlung';
+      case 'medication_service':
+        return 'Medication Service';
+      default:
+        return null;
+    }
+  }
+
+  static getActionName(action: string): string {
+    const actionNames = {
+      use: 'Verwenden',
+      not_use: 'Nicht verwenden',
+      empty: 'Leer lassen',
+      extension: 'Extension',
+      manual: 'Manuell',
+      copy_from: 'Kopieren von',
+      copy_to: 'Kopieren nach',
+      fixed: 'Fester Wert'
+    };
+    return actionNames[action as keyof typeof actionNames] || action;
   }
 
   static getRemarkTooltip(field: any): string {
     const tooltips = {
       use: 'Feld wird direkt ohne Änderungen übernommen',
       not_use: 'Feld wird im Zielprofil nicht verwendet',
+      empty: 'Feld wird leer gelassen',
+      extension: 'Feld wird als Extension behandelt',
       manual: 'Manuelle Implementierung erforderlich - siehe Dokumentation',
-      copy_from: field.targetField ? `Wert wird aus ${field.targetField} übernommen` : 'Wert wird aus anderem Feld übernommen',
-      copy_to: field.targetField ? `Wert wird in ${field.targetField} geschrieben` : 'Wert wird in anderes Feld geschrieben',
-      fixed: field.fixedValue ? `Fixer Wert: ${field.fixedValue}` : 'Feld erhält einen festen Wert'
+      copy_from: field.other || field.targetField ?
+        `Wert wird aus ${field.other || field.targetField} übernommen` :
+        'Wert wird aus anderem Feld übernommen',
+      copy_to: field.other || field.targetField ?
+        `Wert wird in ${field.other || field.targetField} geschrieben` :
+        'Wert wird in anderes Feld geschrieben',
+      fixed: field.fixed || field.fixedValue ?
+        `Fixer Wert: ${field.fixed || field.fixedValue}` :
+        'Feld erhält einen festen Wert'
     };
-    return tooltips[field.action as keyof typeof tooltips] || 'No additional information';
+
+    let tooltip = tooltips[field.action as keyof typeof tooltips] || 'Keine zusätzlichen Informationen';
+
+    // Add inheritance information if available
+    if (field.auto_generated && field.inherited_from) {
+      tooltip += ` (Action wurde von ${field.inherited_from} vererbt)`;
+    }
+
+    return tooltip;
   }
 }
 

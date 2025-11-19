@@ -109,6 +109,10 @@ export interface MappingField {
   fixed?: string;
   // Whether to show mapping content or only recommendations
   show_mapping_content?: boolean;
+  // Whether this field was automatically generated from parent action
+  auto_generated?: boolean;
+  // Parent field name if this field was inherited from a parent action
+  inherited_from?: string | null;
 }
 
 /**
@@ -123,6 +127,10 @@ export interface MappingFieldUpdateRequest {
   fixed?: string;
   // Remark for manual actions
   remark?: string;
+  // Whether this field was automatically generated from parent action
+  auto_generated?: boolean;
+  // Parent field name if this field was inherited from a parent action
+  inherited_from?: string | null;
 }
 
 /**
