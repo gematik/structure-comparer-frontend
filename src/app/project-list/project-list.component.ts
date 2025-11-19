@@ -170,11 +170,11 @@ export class ProjectListComponent implements OnInit {
     }
 
     this.isLoadingProgress = true;
-    
+
     // Create an array of observables to load each project's data
     const projectRequests = this.projects.projects.map((project: any) => {
       const projectKey = this.extractProjectKey(project.url);
-      
+
       return this.mappingsService.initProject(project.url).pipe(
         // After loading the project, load detailed data for each mapping
         switchMap((projectData: any) => {
@@ -209,7 +209,7 @@ export class ProjectListComponent implements OnInit {
                   };
                 } else {
                   // Calculate counts from fields if not pre-calculated
-                  const counts = mappingDetail.fields ? this.calculateCountsFromFields(mappingDetail.fields) : 
+                  const counts = mappingDetail.fields ? this.calculateCountsFromFields(mappingDetail.fields) :
                     { total: 0, completed: 0, resolved: 0, needs_action: 0 };
                   return {
                     ...mapping,
@@ -241,7 +241,7 @@ export class ProjectListComponent implements OnInit {
                 ...projectData,
                 mappings: hydratedMappings
               };
-              
+
               const progressSummary = this.calculateProjectProgress(enhancedProjectData);
               return {
                 ...project,
@@ -316,7 +316,7 @@ export class ProjectListComponent implements OnInit {
       const compatibleCount = mapping.compatibleCount || mapping.compatible_count || 0;
       const resolvedCount = mapping.resolvedCount || mapping.resolved_count || 0;
       const needsActionCount = mapping.needsActionCount || mapping.needs_action_count || 0;
-      
+
       // If counts are not available, try to calculate from fields
       if (totalCount === 0 && mapping.fields && Array.isArray(mapping.fields)) {
         const counts = this.calculateCountsFromFields(mapping.fields);
@@ -332,7 +332,7 @@ export class ProjectListComponent implements OnInit {
       }
     });
 
-    const completionPercentage = summary.total > 0 
+    const completionPercentage = summary.total > 0
       ? Math.round(((summary.completed + summary.resolved) / summary.total) * 100)
       : 0;
 
@@ -356,7 +356,7 @@ export class ProjectListComponent implements OnInit {
     fields.forEach(field => {
       const classification = (field.classification || '').toString().toLowerCase();
       const action = (field.action || 'use').toString().toLowerCase();
-      
+
       // Use the same logic as in EditProjectComponent
       if (classification === 'compatible' || classification === 'warning') {
         counts.completed++;

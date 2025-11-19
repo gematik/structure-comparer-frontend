@@ -38,7 +38,7 @@ mat-form-field {
 }
 
 .project-input {
-  width: 250px; 
+  width: 250px;
   font-size: 14px;
 }
 
@@ -322,7 +322,7 @@ mat-form-field {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  
+
   .stat-item {
     font-size: 12px;
   }
@@ -333,27 +333,27 @@ mat-form-field {
   .modern-table td {
     padding: 12px 8px;
   }
-  
+
   .project-name-column {
     width: 30%;
   }
-  
+
   .progress-column {
     width: 30%;
   }
-  
+
   .stats-column {
     width: 25%;
   }
-  
+
   .actions-column {
     width: 15%;
   }
-  
+
   .completion-percentage {
     font-size: 16px;
   }
-  
+
   .mini-progress-bar {
     height: 10px;
   }
@@ -363,15 +363,15 @@ mat-form-field {
   .stats-column {
     display: none;
   }
-  
+
   .project-name-column {
     width: 40%;
   }
-  
+
   .progress-column {
     width: 40%;
   }
-  
+
   .actions-column {
     width: 20%;
   }
