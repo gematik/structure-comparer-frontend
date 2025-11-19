@@ -522,6 +522,27 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => this.saveFile(data, filename));
   }
 
+  downloadStructureMapFsh(): void {
+    const filenameBase = this.sanitizeFilename(this.filtered?.name || this.mappingId);
+    const filename = `${filenameBase}_structuremap.fsh`;
+
+    this.mappingsService.downloadStructureMapFsh(this.projectKey, this.mappingId)
+      .pipe(catchError(err => {
+        console.error('Error downloading FSH export', err);
+        this.snackBar.open('Fehler beim Herunterladen der FSH-Datei', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(new Blob());
+      }))
+      .subscribe(data => {
+        if (data.size > 0) {
+          this.saveFile(data, filename);
+          this.snackBar.open('FSH-Datei erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
+        }
+      });
+  }
+
   private saveFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

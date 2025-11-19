@@ -1,5 +1,5 @@
 <div class="m-20" *ngIf="filtered">
-  <div style="display: flex; justify-content: flex-end; margin-bottom: 20px">
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px">
     <button
       mat-raised-button
       color="primary"
@@ -7,6 +7,16 @@
       aria-label="Download mapping"
     >
       Download mapping
+    </button>
+    <button
+      mat-raised-button
+      color="accent"
+      (click)="downloadStructureMapFsh()"
+      aria-label="Download StructureMap (FSH)"
+      matTooltip="Export als FHIR StructureMap in FSH-Format"
+    >
+      <mat-icon>file_download</mat-icon>
+      StructureMap (FSH)
     </button>
   </div>
 

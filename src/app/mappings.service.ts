@@ -232,6 +232,19 @@ export class MappingsService {
   }
 
   /**
+   * Downloads a FHIR StructureMap in FSH format for a mapping
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the FSH file as a blob
+   */
+  downloadStructureMapFsh(projectKey: string, mappingId: string): Observable<Blob> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/structuremap.fsh`, { responseType: 'blob' })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Handles HTTP errors and provides user-friendly error messages
    * @param error The HTTP error response
    * @returns Observable error with formatted message
