@@ -59,6 +59,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
   targetField: string = '';
   fixedValue: string = '';
   remarkText: string = '';
+  fieldSearchText: string = '';
+  filteredFields: { name: string }[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
@@ -69,6 +71,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
     this.targetField = data.field.other || '';
     this.fixedValue = data.field.fixed || '';
     this.remarkText = data.field.remark || '';
+    this.filteredFields = [...(data.availableFields ?? [])];
   }
 
   ngOnInit(): void {
@@ -81,6 +84,20 @@ export class EditPropertyActionDialogComponent implements OnInit {
   getActionDescription(actionValue: MappingAction): string {
     const action = this.data.availableActions.find(a => a.value === actionValue);
     return action?.description || actionValue;
+  }
+
+  onFieldSearchChange(value: string): void {
+    this.fieldSearchText = value;
+    const query = value.trim().toLowerCase();
+    if (!query) {
+      this.filteredFields = [...this.data.availableFields];
+      return;
+    }
+
+    const available = this.data.availableFields ?? [];
+    this.filteredFields = available.filter(field =>
+      field.name.toLowerCase().includes(query)
+    );
   }
 
   /**

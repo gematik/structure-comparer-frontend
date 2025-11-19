@@ -55,16 +55,36 @@
     <!-- Target Field Selection (for copy_from / copy_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
       <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Feldersuche</mat-label>
+        <input matInput
+               type="search"
+               placeholder="Feldname suchen..."
+               [(ngModel)]="fieldSearchText"
+               (ngModelChange)="onFieldSearchChange($event)">
+        <button mat-icon-button
+                matSuffix
+                aria-label="Suchfeld leeren"
+                *ngIf="fieldSearchText"
+                (click)="onFieldSearchChange('')"
+                type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
         <mat-label>
           <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
           <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
         </mat-label>
         <mat-select [(value)]="targetField" required>
           <mat-option value="">-- Feld auswählen --</mat-option>
-          <mat-option *ngFor="let field of data.availableFields" [value]="field.name">
+          <mat-option *ngFor="let field of filteredFields" [value]="field.name">
             {{ field.name }}
           </mat-option>
         </mat-select>
+        <mat-hint *ngIf="filteredFields.length === 0">
+          Keine Felder gefunden
+        </mat-hint>
         <mat-error *ngIf="!targetField.trim()">
           Bitte wählen Sie ein Feld aus
         </mat-error>
