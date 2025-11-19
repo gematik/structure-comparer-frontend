@@ -30,16 +30,9 @@ import {
   MappingTextHelper,
   StatusHelper,
   CardinalityHelper,
-  EvaluationHelper,
-  ProcessingStatus,
   ACTION_CSS,
 } from '../../mapping-detail/mapping-detail-helpers';
-
-const LEGACY_CLASSIFICATION_CLASS: Record<string, string> = {
-  compatible: 'status-ok',
-  warning: 'status-warning',
-  incompatible: 'status-incompatible',
-};
+import { MappingStatus } from '../../models/mapping-evaluation.model';
 
 export interface DisplayRow {
   node: PropertyTreeNode;
@@ -75,7 +68,7 @@ export interface EditFieldEvent {
 export class TreeTableComponent implements OnInit, OnChanges {
   @Input() fields: MappingField[] = [];
   @Input() config: TreeTableConfig = { profileColumns: [] };
-  @Input() currentQuickFilter: string | null = null;
+  @Input() currentQuickFilter: MappingStatus | null = null;
   @Input() availableFields: any[] = [];
   @Input() classifications: any[] = [];
   @Input() editingIndex: number | null = null;
@@ -130,7 +123,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     // Filter the original fields first based on status
     const filteredFields = this.fields.filter(field => {
-      const fieldStatus = this.getProcessingStatus(field);
+      const fieldStatus = this.getFieldStatus(field);
       return fieldStatus === this.currentQuickFilter;
     });
 
@@ -254,20 +247,20 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
   // Helper methods - these should match the parent component's implementation
 
-  getProcessingStatus(field: MappingField): ProcessingStatus {
-    return StatusHelper.getProcessingStatus(field);
+  getFieldStatus(field: MappingField): MappingStatus {
+    return StatusHelper.getFieldStatus(field);
   }
 
-  getStatusLabel(status: ProcessingStatus): string {
-    return StatusHelper.getStatusLabel(status);
+  getStatusLabel(status: MappingStatus): string {
+    return StatusHelper.getLabelForStatus(status);
   }
 
-  getStatusCssClass(status: ProcessingStatus): string {
-    return StatusHelper.getStatusCssClass(status);
+  getStatusCssClass(status: MappingStatus): string {
+    return StatusHelper.getClassForStatus(status);
   }
 
-  getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
-    return StatusHelper.getStatusTooltip(field, status);
+  getStatusTooltip(field: MappingField): string {
+    return StatusHelper.getFieldStatusTooltip(field).join('\n');
   }
 
   getClassificationCssClass(action: string): string {
@@ -277,31 +270,6 @@ export class TreeTableComponent implements OnInit, OnChanges {
   formatCardinality = CardinalityHelper.formatCardinality;
 
   getCardinalityStyle = CardinalityHelper.getCardinalityStyle;
-
-  getEnhancedCssClass(field: MappingField): string {
-    if (field.evaluation) {
-      return EvaluationHelper.buildStatusClass(field.evaluation);
-    }
-    return LEGACY_CLASSIFICATION_CLASS[field.classification ?? ''] ?? 'status-unknown';
-  }
-
-  getEnhancedTooltip(field: MappingField): string {
-    const lines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
-    if (lines.length > 0) {
-      return lines.join('\n');
-    }
-    if (field.classification) {
-      return `Legacy-Status: ${field.classification}`;
-    }
-    return 'Keine Bewertung verfügbar.';
-  }
-
-  getEnhancedLabel(field: MappingField): string {
-    if (field.evaluation) {
-      return EvaluationHelper.buildStatusLabel(field.evaluation);
-    }
-    return field.classification ?? 'Unbekannt';
-  }
 
   getConsolidatedMappingText(field: MappingField): string {
     return MappingTextHelper.buildActionLabel(field.action_info, field.action);

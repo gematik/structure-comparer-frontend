@@ -42,6 +42,12 @@ export type EvaluationStatus =
   | 'unknown'
   | 'evaluation_failed';
 
+export type MappingStatus =
+  | 'incompatible'
+  | 'warning'
+  | 'solved'
+  | 'compatible';
+
 export interface ActionInfo {
   action: ActionType;
   source: ActionSource;
@@ -72,6 +78,7 @@ export interface EvaluationResult {
   has_warnings: boolean;
   has_errors: boolean;
   summary_key?: string | null;
+  mapping_status: MappingStatus;
 }
 
 export interface MappingEvaluationSummary {

@@ -43,6 +43,8 @@
             filtered.target.name
           }}</a>
 
+        </div>
+
         <div class="info-item">
           <span class="info-label">Version:</span>
           <span class="info-value">{{ filtered.version }}</span>
@@ -77,53 +79,112 @@
         <div class="card-header">
           <span class="card-title">Gesamt</span>
         </div>
-        <div class="card-value">{{ getStatusSummary()?.total || 0 }}</div>
+        <div class="card-value">
+          {{ getTotalFieldCount() }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredFieldCount() }} angezeigt)
+          </span>
+        </div>
         <div class="card-subtitle">Felder</div>
       </div>
 
-      <!-- Completed Card -->
+      <!-- Compatible Card -->
       <div
         class="overview-card success-card clickable-card"
-        (click)="applyQuickFilter('completed')"
-        [class.active]="currentQuickFilter === 'completed'"
+        (click)="applyQuickFilter('compatible')"
+        [class.active]="currentQuickFilter === 'compatible'"
         matTooltip="Nur kompatible Felder anzeigen"
       >
         <div class="card-header">
           <span class="card-title">Kompatibel</span>
         </div>
-        <div class="card-value">{{ getStatusSummary()?.completed || 0 }}</div>
+        <div class="card-value">
+          {{ getStatusSummary()?.compatible || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.compatible || 0 }} angezeigt)
+          </span>
+        </div>
         <div class="card-subtitle">Keine Probleme</div>
       </div>
 
-      <!-- Resolved Card -->
+      <!-- Solved Card -->
       <div
         class="overview-card resolved-card clickable-card"
-        (click)="applyQuickFilter('resolved')"
-        [class.active]="currentQuickFilter === 'resolved'"
+        (click)="applyQuickFilter('solved')"
+        [class.active]="currentQuickFilter === 'solved'"
         matTooltip="Nur gelöste Felder anzeigen"
       >
         <div class="card-header">
           <span class="card-title">Gelöst</span>
         </div>
-        <div class="card-value">{{ getStatusSummary()?.resolved || 0 }}</div>
+        <div class="card-value">
+          {{ getStatusSummary()?.solved || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.solved || 0 }} angezeigt)
+          </span>
+        </div>
         <div class="card-subtitle">Durch Aktionen behoben</div>
       </div>
 
-      <!-- Needs Action Card -->
+      <!-- Warning Card -->
       <div
         class="overview-card attention-card clickable-card"
-        (click)="applyQuickFilter('needs_action')"
-        [class.active]="currentQuickFilter === 'needs_action'"
-        matTooltip="Nur Felder anzeigen, die Aktion benötigen"
+        (click)="applyQuickFilter('warning')"
+        [class.active]="currentQuickFilter === 'warning'"
+        matTooltip="Nur Warnungen anzeigen"
       >
         <div class="card-header">
-          <span class="card-title">Aktion erforderlich</span>
+          <span class="card-title">Warnung</span>
         </div>
         <div class="card-value">
-          {{ getStatusSummary()?.needs_action || 0 }}
+          {{ getStatusSummary()?.warning || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.warning || 0 }} angezeigt)
+          </span>
         </div>
-        <div class="card-subtitle">Müssen bearbeitet werden</div>
+        <div class="card-subtitle">Überprüfung empfohlen</div>
       </div>
+
+      <!-- Incompatible Card -->
+      <div
+        class="overview-card danger-card clickable-card"
+        (click)="applyQuickFilter('incompatible')"
+        [class.active]="currentQuickFilter === 'incompatible'"
+        matTooltip="Nur inkompatible Felder anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Inkompatibel</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusSummary()?.incompatible || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.incompatible || 0 }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Aktion erforderlich</div>
+      </div>
+    </div>
+
+    <div
+      class="filter-info"
+      *ngIf="isFilteredView()"
+    >
+      Anzeige gefiltert: {{ getFilteredFieldCount() }} von {{ getTotalFieldCount() }} Feldern.
     </div>
 
     <!-- Progress Bar -->
@@ -131,19 +192,24 @@
       <div class="progress-label">Fortschritt (Gesamt)</div>
       <div class="progress-bar">
         <div
-          class="progress-segment completed"
-          [style.width.%]="getTotalProgressPercentage('completed')"
-          [matTooltip]="getStatusSummary()?.completed + ' kompatibel'"
+          class="progress-segment compatible"
+          [style.width.%]="getStatusPercentage('compatible')"
+          [matTooltip]="(getTotalStatusSummary()?.compatible || 0) + ' kompatibel'"
         ></div>
         <div
-          class="progress-segment resolved"
-          [style.width.%]="getTotalProgressPercentage('resolved')"
-          [matTooltip]="getStatusSummary()?.resolved + ' gelöst'"
+          class="progress-segment solved"
+          [style.width.%]="getStatusPercentage('solved')"
+          [matTooltip]="(getTotalStatusSummary()?.solved || 0) + ' gelöst'"
         ></div>
         <div
-          class="progress-segment needs-action"
-          [style.width.%]="getTotalProgressPercentage('needs_action')"
-          [matTooltip]="getStatusSummary()?.needs_action + ' benötigt Aktion'"
+          class="progress-segment warning"
+          [style.width.%]="getStatusPercentage('warning')"
+          [matTooltip]="(getTotalStatusSummary()?.warning || 0) + ' Warnung'"
+        ></div>
+        <div
+          class="progress-segment incompatible"
+          [style.width.%]="getStatusPercentage('incompatible')"
+          [matTooltip]="(getTotalStatusSummary()?.incompatible || 0) + ' inkompatibel'"
         ></div>
       </div>
       <div class="progress-text">
@@ -203,7 +269,7 @@
       style="width: 100%"
       *ngIf="viewMode === 'flat' && filtered?.fields?.length"
       matSort
-      [matSortActive]="'compatibility'"
+      [matSortActive]="'status'"
       [matSortDirection]="'desc'"
       (matSortChange)="handleTable($event).sorter()"
     >
@@ -217,11 +283,6 @@
               {{ p.name }}
             </th>
           </ng-container>
-
-          <!-- Classification / Compatibility (unverändert) -->
-          <th class="default-th" mat-sort-header="compatibility">
-            Compatibility
-          </th>
 
           <!-- Status Column -->
           <th class="default-th" mat-sort-header="status">Status</th>
@@ -276,15 +337,15 @@
             </td>
           </ng-container>
 
-          <!-- Classification / Compatibility -->
+          <!-- Status Column -->
           <td class="default-td">
             <span
-              class="pill"
-              [ngClass]="getEnhancedCssClass(field)"
-              [matTooltipHideDelay]="1000"
-              [matTooltip]="getEnhancedTooltip(field)"
+              class="status-pill"
+              [ngClass]="getStatusCssClass(getFieldStatus(field))"
+              [matTooltip]="getStatusTooltip(field)"
+              matTooltipPosition="above"
             >
-              {{ getEnhancedLabel(field) }}
+              {{ getStatusLabel(getFieldStatus(field)) }}
             </span>
 
             <div
@@ -299,18 +360,6 @@
                 {{ reason.message_key }}
               </div>
             </div>
-          </td>
-
-          <!-- Status Column -->
-          <td class="default-td">
-            <span
-              class="status-pill"
-              [ngClass]="getStatusCssClass(getProcessingStatus(field))"
-              [matTooltip]="getStatusTooltip(field, getProcessingStatus(field))"
-              matTooltipPosition="above"
-            >
-              {{ getStatusLabel(getProcessingStatus(field)) }}
-            </span>
           </td>
 
           <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
@@ -425,7 +474,7 @@
     <app-tree-table
       *ngIf="viewMode === 'tree'"
       [config]="treeTableConfig"
-      [fields]="filtered?.fields || []"
+      [fields]="filteredFields"
       [currentQuickFilter]="currentQuickFilter"
       [availableFields]="availableFields"
       [classifications]="classifications"

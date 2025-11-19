@@ -6,22 +6,35 @@ import {
   ActionType,
   EvaluationReason,
   EvaluationResult,
-  EvaluationStatus,
+  MappingStatus,
 } from '../models/mapping-evaluation.model';
 
-export type ProcessingStatus = 'completed' | 'resolved' | 'needs_action';
-
-export const STATUS_CONFIG: Record<ProcessingStatus, { label: string; cssClass: string }> = {
-  completed: { label: 'Kompatibel', cssClass: 'status-completed' },
-  resolved: { label: 'Gelöst', cssClass: 'status-resolved' },
-  needs_action: { label: 'Aktion erforderlich', cssClass: 'status-needs-action' },
+export type StatusSummary = Record<MappingStatus, number> & {
+  total: number;
 };
 
-export const CLASSIFICATION_CSS = {
-  compatible: 'compatible',
-  warning: 'warning',
-  incompatible: 'incompatible',
-} as const;
+const STATUS_META: Record<MappingStatus, { label: string; cssClass: string; defaultTooltip: string }> = {
+  incompatible: {
+    label: 'Inkompatibel',
+    cssClass: 'status-incompatible',
+    defaultTooltip: 'Aktion erforderlich, Feld ist aktuell inkompatibel.',
+  },
+  warning: {
+    label: 'Warnung',
+    cssClass: 'status-warning',
+    defaultTooltip: 'Überprüfung empfohlen, mögliche Abweichungen erkannt.',
+  },
+  solved: {
+    label: 'Gelöst',
+    cssClass: 'status-solved',
+    defaultTooltip: 'Konflikt wurde durch eine manuelle Aktion gelöst.',
+  },
+  compatible: {
+    label: 'Kompatibel',
+    cssClass: 'status-compatible',
+    defaultTooltip: 'Feld ist kompatibel, keine Aktion erforderlich.',
+  },
+};
 
 export const ACTION_CSS: Record<string, string> = {
   use: 'row-use',
@@ -36,12 +49,7 @@ export const ACTION_CSS: Record<string, string> = {
   medication_service: 'row-medication-service',
 };
 
-export interface StatusSummary {
-  total: number;
-  completed: number;
-  resolved: number;
-  needs_action: number;
-}
+const FALLBACK_STATUS: MappingStatus = 'incompatible';
 
 // Cardinality utilities
 export class CardinalityHelper {
@@ -89,24 +97,6 @@ const ACTION_LABELS: Record<ActionType, string> = {
   copy_to: 'In anderes Feld kopieren',
   fixed: 'Fester Wert',
   other: 'Andere Aktion',
-};
-
-const STATUS_LABELS: Record<EvaluationStatus, string> = {
-  ok: 'Kompatibel',
-  action_required: 'Aktion erforderlich',
-  resolved: 'Gelöst',
-  incompatible: 'Inkompatibel',
-  unknown: 'Unklar',
-  evaluation_failed: 'Bewertung fehlgeschlagen',
-};
-
-const STATUS_CLASS: Record<EvaluationStatus, string> = {
-  ok: 'status-ok',
-  action_required: 'status-needs-action',
-  resolved: 'status-resolved',
-  incompatible: 'status-incompatible',
-  unknown: 'status-unknown',
-  evaluation_failed: 'status-evaluation-failed',
 };
 
 // Mapping text generation
@@ -218,20 +208,6 @@ export class MappingTextHelper {
 
 // Evaluation utilities
 export class EvaluationHelper {
-  static buildStatusLabel(evaluation?: EvaluationResult | null): string {
-    if (!evaluation) {
-      return 'Keine Bewertung';
-    }
-    return STATUS_LABELS[evaluation.status] ?? 'Unbekannt';
-  }
-
-  static buildStatusClass(evaluation?: EvaluationResult | null): string {
-    if (!evaluation) {
-      return 'status-unknown';
-    }
-    return STATUS_CLASS[evaluation.status] ?? 'status-unknown';
-  }
-
   static buildEvaluationTooltipLines(evaluation?: EvaluationResult | null): string[] {
     if (!evaluation) {
       return [];
@@ -264,87 +240,86 @@ export class EvaluationHelper {
 
 // Status calculation logic
 export class StatusHelper {
-  static getProcessingStatus(field: MappingField): ProcessingStatus {
-    const evaluation = field.evaluation;
+  static getStatusFromEvaluation(evaluation?: EvaluationResult | null): MappingStatus | null {
+    return evaluation?.mapping_status ?? null;
+  }
 
-    if (evaluation) {
-      switch (evaluation.status) {
-        case 'ok':
-          return 'completed';
-        case 'resolved':
-          return 'resolved';
-        case 'action_required':
-        case 'incompatible':
-        case 'evaluation_failed':
-          return 'needs_action';
-        case 'unknown':
-        default:
-          if (evaluation.has_errors) {
-            return 'needs_action';
-          }
-          if (evaluation.has_warnings) {
-            return 'resolved';
-          }
-          return 'completed';
-      }
+  static getFallbackStatus(field: MappingField): MappingStatus {
+    const classification = (field.classification ?? '').toLowerCase();
+
+    if (classification === 'incompatible') {
+      return 'incompatible';
+    }
+    if (classification === 'warning') {
+      return 'warning';
     }
 
-    // Fallback to legacy classification mapping if no evaluation is present.
-    switch (field.classification) {
-      case 'compatible':
-      case 'warning':
-        return field.action && field.action !== 'use' ? 'resolved' : 'completed';
-      case 'incompatible':
-        return field.action && field.action !== 'use' ? 'resolved' : 'needs_action';
-      default:
-        return 'needs_action';
+    // Heuristic: if a manual action is present without evaluation, treat as solved.
+    const source = field.action_info?.source;
+    if (source === 'manual') {
+      return 'solved';
     }
+
+    return 'compatible';
   }
 
-  static getStatusLabel(status: ProcessingStatus): string {
-    return STATUS_CONFIG[status]?.label ?? status;
+  static getFieldStatus(field: MappingField): MappingStatus {
+    return this.getStatusFromEvaluation(field.evaluation) ?? this.getFallbackStatus(field);
   }
 
-  static getStatusCssClass(status: ProcessingStatus): string {
-    return STATUS_CONFIG[status]?.cssClass ?? 'status-needs-action';
+  static getLabelForStatus(status: MappingStatus): string {
+    return STATUS_META[status]?.label ?? STATUS_META[FALLBACK_STATUS].label;
   }
 
-  static getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
-    const evaluation = field.evaluation;
-    const evaluationLines = EvaluationHelper.buildEvaluationTooltipLines(evaluation);
+  static getClassForStatus(status: MappingStatus): string {
+    return STATUS_META[status]?.cssClass ?? STATUS_META[FALLBACK_STATUS].cssClass;
+  }
 
+  static getDefaultTooltip(status: MappingStatus): string {
+    return STATUS_META[status]?.defaultTooltip ?? STATUS_META[FALLBACK_STATUS].defaultTooltip;
+  }
+
+  static getFieldStatusLabel(field: MappingField): string {
+    return this.getLabelForStatus(this.getFieldStatus(field));
+  }
+
+  static getFieldStatusClass(field: MappingField): string {
+    return this.getClassForStatus(this.getFieldStatus(field));
+  }
+
+  static getFieldStatusTooltip(field: MappingField): string[] {
+    const evaluationLines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
     if (evaluationLines.length > 0) {
-      return evaluationLines.join('\n');
+      return evaluationLines;
     }
-
-    const defaults: Record<ProcessingStatus, string> = {
-      completed: 'Feld ist kompatibel und benötigt keine weiteren Aktionen.',
-      resolved: 'Ursprünglich inkompatibel, aber durch Mapping-Aktion gelöst.',
-      needs_action: 'Feld benötigt eine Mapping-Aktion.',
-    };
-
-    return defaults[status];
+    return [this.getDefaultTooltip(this.getFieldStatus(field))];
   }
 }
 
 // Summary calculation utilities
 export class SummaryHelper {
   static calculateStatusSummary(fields: MappingField[]): StatusSummary {
-    const summary: StatusSummary = { total: fields.length, completed: 0, resolved: 0, needs_action: 0 };
+    const summary: StatusSummary = {
+      total: fields.length,
+      incompatible: 0,
+      warning: 0,
+      solved: 0,
+      compatible: 0,
+    };
 
     fields.forEach((field) => {
-      const status = StatusHelper.getProcessingStatus(field);
-      summary[status] = summary[status] + 1;
+      const status = StatusHelper.getFieldStatus(field);
+      summary[status] = (summary[status] ?? 0) + 1;
     });
 
     return summary;
   }
 
-  static getTotalProgressPercentage(summary: StatusSummary, status: ProcessingStatus): number {
+  static getStatusPercentage(summary: StatusSummary, status: MappingStatus): number {
     if (!summary || summary.total === 0) {
       return 0;
     }
-    const value = summary[status] || 0;
+    const value = summary[status] ?? 0;
     return (value / summary.total) * 100;
   }
 
@@ -352,7 +327,7 @@ export class SummaryHelper {
     if (!summary || summary.total === 0) {
       return 0;
     }
-    const completed = summary.completed + summary.resolved;
+    const completed = (summary.compatible ?? 0) + (summary.solved ?? 0);
     return Math.round((completed / summary.total) * 100);
   }
 }

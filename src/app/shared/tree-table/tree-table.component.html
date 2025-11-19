@@ -25,7 +25,7 @@
   style="width: 100%"
   *ngIf="getVisibleTreeRows().length"
   matSort
-  [matSortActive]="'compatibility'"
+  [matSortActive]="'status'"
   [matSortDirection]="'desc'"
   (matSortChange)="onSortChange($event)"
 >
@@ -39,11 +39,6 @@
           {{ p.name }}
         </th>
       </ng-container>
-
-      <!-- Classification / Compatibility -->
-      <th class="default-th" mat-sort-header="compatibility">
-        Compatibility
-      </th>
 
       <!-- Status Column -->
       <th class="default-th" mat-sort-header="status">Status</th>
@@ -131,16 +126,16 @@
         </td>
       </ng-container>
 
-      <!-- Classification / Compatibility -->
+      <!-- Status Column -->
       <td class="default-td">
         <ng-container *ngIf="row.field">
           <span
-            class="pill"
-            [ngClass]="getEnhancedCssClass(row.field)"
-            [matTooltipHideDelay]="1000"
-            [matTooltip]="getEnhancedTooltip(row.field)"
+            class="status-pill"
+            [ngClass]="getStatusCssClass(getFieldStatus(row.field))"
+            [matTooltip]="getStatusTooltip(row.field)"
+            matTooltipPosition="above"
           >
-            {{ getEnhancedLabel(row.field) }}
+            {{ getStatusLabel(getFieldStatus(row.field)) }}
           </span>
 
           <div
@@ -155,20 +150,6 @@
               {{ reason.message_key }}
             </div>
           </div>
-        </ng-container>
-      </td>
-
-      <!-- Status Column -->
-      <td class="default-td">
-        <ng-container *ngIf="row.field">
-          <span
-            class="status-pill"
-            [ngClass]="getStatusCssClass(getProcessingStatus(row.field))"
-            [matTooltip]="getStatusTooltip(row.field, getProcessingStatus(row.field))"
-            matTooltipPosition="above"
-          >
-            {{ getStatusLabel(getProcessingStatus(row.field)) }}
-          </span>
         </ng-container>
       </td>
 

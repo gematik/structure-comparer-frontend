@@ -25,18 +25,11 @@ import {
   StatusHelper,
   MappingTextHelper,
   SummaryHelper,
-  EvaluationHelper,
   normalizeString,
   ACTION_CSS,
   StatusSummary,
-  ProcessingStatus,
 } from './mapping-detail-helpers';
-
-const LEGACY_CLASSIFICATION_CLASS: Record<string, string> = {
-  compatible: 'status-ok',
-  warning: 'status-warning',
-  incompatible: 'status-incompatible',
-};
+import { MappingStatus } from '../models/mapping-evaluation.model';
 
 export interface IProfile {
   name?: string;
@@ -76,7 +69,8 @@ export class MappingDetailComponent implements OnInit {
   editingIndex: number | null = null;
   hoverIndex: number | null = null;
   filtered: any;
-  currentQuickFilter: string | null = null;
+  currentQuickFilter: MappingStatus | null = null;
+  filteredFields: MappingField[] = [];
 
   // Profile columns and view settings
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
@@ -158,6 +152,7 @@ export class MappingDetailComponent implements OnInit {
     this.totalLength = fields.length;
     this.original = mapping;
     this.mapping = mapping;
+    this.filteredFields = fields;
     this.filtered = { ...mapping, fields: fields.slice(0, this.pageSize) };
   }
 
@@ -181,38 +176,55 @@ export class MappingDetailComponent implements OnInit {
 
   // === SUMMARY & STATUS METHODS (delegated to helpers) ===
   getStatusSummary(): StatusSummary | null {
-    return this.filtered?.fields ? SummaryHelper.calculateStatusSummary(this.filtered.fields) : null;
-  }
-
-  getTotalStatusSummary(): StatusSummary | null {
     return this.original?.fields ? SummaryHelper.calculateStatusSummary(this.original.fields) : null;
   }
 
-  getTotalProgressPercentage(status: ProcessingStatus): number {
-    const summary = this.getTotalStatusSummary();
-    return summary ? SummaryHelper.getTotalProgressPercentage(summary, status) : 0;
+  getTotalStatusSummary(): StatusSummary | null {
+    return this.getStatusSummary();
+  }
+
+  getFilteredStatusSummary(): StatusSummary | null {
+    return this.filteredFields.length ? SummaryHelper.calculateStatusSummary(this.filteredFields) : null;
+  }
+
+  getFilteredFieldCount(): number {
+    return this.filteredFields.length;
+  }
+
+  getTotalFieldCount(): number {
+    return this.original?.fields?.length ?? 0;
+  }
+
+  isFilteredView(): boolean {
+    const total = this.getTotalFieldCount();
+    return total > 0 && this.filteredFields.length !== total;
+  }
+
+  getStatusPercentage(status: MappingStatus): number {
+    const summary = this.getStatusSummary();
+    return summary ? SummaryHelper.getStatusPercentage(summary, status) : 0;
   }
 
   getTotalCompletionPercentage(): number {
-    const summary = this.getTotalStatusSummary();
+    const summary = this.getStatusSummary();
     return summary ? SummaryHelper.getTotalCompletionPercentage(summary) : 0;
   }
 
   // === STATUS METHODS (delegated to helpers) ===
-  getProcessingStatus(field: MappingField): ProcessingStatus {
-    return StatusHelper.getProcessingStatus(field);
+  getFieldStatus(field: MappingField): MappingStatus {
+    return StatusHelper.getFieldStatus(field);
   }
 
-  getStatusLabel(status: ProcessingStatus): string {
-    return StatusHelper.getStatusLabel(status);
+  getStatusLabel(status: MappingStatus): string {
+    return StatusHelper.getLabelForStatus(status);
   }
 
-  getStatusCssClass(status: ProcessingStatus): string {
-    return StatusHelper.getStatusCssClass(status);
+  getStatusCssClass(status: MappingStatus): string {
+    return StatusHelper.getClassForStatus(status);
   }
 
-  getStatusTooltip(field: MappingField, status: ProcessingStatus): string {
-    return StatusHelper.getStatusTooltip(field, status);
+  getStatusTooltip(field: MappingField): string {
+    return StatusHelper.getFieldStatusTooltip(field).join('\n');
   }
 
   // === CARDINALITY METHODS (delegated to helpers) ===
@@ -232,42 +244,7 @@ export class MappingDetailComponent implements OnInit {
     return MappingTextHelper.buildActionSubLabel(field.action_info);
   }
 
-  getMappingResult(field: MappingField): string {
-    return this.getConsolidatedMappingText(field);
-  }
-
   // === EVALUATION PRESENTATION ===
-  getEnhancedTooltip(field: MappingField): string {
-    const lines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
-    if (lines.length > 0) {
-      return lines.join('\n');
-    }
-
-    if (field.evaluation?.summary_key) {
-      return field.evaluation.summary_key;
-    }
-
-    if (field.classification) {
-      return `Legacy-Status: ${field.classification}`;
-    }
-
-    return 'Keine Bewertung verfügbar.';
-  }
-
-  getEnhancedCssClass(field: MappingField): string {
-    if (field.evaluation) {
-      return EvaluationHelper.buildStatusClass(field.evaluation);
-    }
-    return LEGACY_CLASSIFICATION_CLASS[field.classification ?? ''] ?? 'status-unknown';
-  }
-
-  getEnhancedLabel(field: MappingField): string {
-    if (field.evaluation) {
-      return EvaluationHelper.buildStatusLabel(field.evaluation);
-    }
-    return field.classification ?? 'unbekannt';
-  }
-
   // === UTILITY METHODS ===
   getDescriptionForMapping(useValue: string): string | undefined {
     return this.classifications.find(item => item.value === useValue)?.description;
@@ -306,10 +283,10 @@ export class MappingDetailComponent implements OnInit {
   }
 
   // === FILTER & SORT LOGIC ===
-  applyQuickFilter(filterType: string): void {
+  applyQuickFilter(filterType: MappingStatus): void {
     this.currentQuickFilter = filterType;
-    const filteredFields = (this.original?.fields ?? []).filter((field: any) => {
-      const fieldStatus = this.getProcessingStatus(field);
+    const filteredFields = (this.original?.fields ?? []).filter((field: MappingField) => {
+      const fieldStatus = this.getFieldStatus(field);
       return fieldStatus === filterType;
     });
 
@@ -324,7 +301,9 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private updateFilteredData(fields: any[]): void {
-    this.mapping = { ...this.mapping, fields };
+    const baseMapping = this.mapping ?? this.original ?? {};
+    this.mapping = { ...baseMapping, fields };
+    this.filteredFields = fields;
     this.totalLength = fields.length;
     this.pageIndex = 0;
 
@@ -375,11 +354,9 @@ export class MappingDetailComponent implements OnInit {
       switch (e.active) {
         case 'name':
           return this.compareStrings(a.name ?? '', b.name ?? '', isAsc);
-        case 'compatibility':
-          return this.compareStrings(a.action ?? '', b.action ?? '', isAsc);
         case 'status':
-          const statusA = this.getProcessingStatus(a);
-          const statusB = this.getProcessingStatus(b);
+          const statusA = this.getFieldStatus(a);
+          const statusB = this.getFieldStatus(b);
           return this.compareStrings(statusA, statusB, isAsc);
         default:
           if (e.active.startsWith('profile-')) {
@@ -437,12 +414,14 @@ export class MappingDetailComponent implements OnInit {
       return;
     }
 
-    const filteredFields = (this.original?.fields ?? []).filter((record: IProfile) => {
+    const sourceFields = this.original?.fields ?? [];
+    const filteredFields = sourceFields.filter((record: IProfile & MappingField) => {
       const name = normalizeString(record.name);
       const classification = normalizeString(record.action);
       const remark = normalizeString(record.remark);
+      const status = normalizeString(this.getStatusLabel(this.getFieldStatus(record as MappingField)));
 
-      return name.includes(val) || classification.includes(val) || remark.includes(val);
+      return name.includes(val) || classification.includes(val) || remark.includes(val) || status.includes(val);
     });
 
     this.updateFilteredData(filteredFields);
