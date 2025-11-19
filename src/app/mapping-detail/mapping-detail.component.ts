@@ -1,23 +1,3 @@
-﻿/*
- *
- * Copyright 2025 gematik GmbH
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * *******
- *
- * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
- */
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -39,8 +19,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { MappingEvaluation, FieldEvaluation, EnhancedMappingField } from '../models/mapping-evaluation.model';
-
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
+
+// Imported helpers for cleaner code organization
+import {
+  CardinalityHelper,
+  StatusHelper,
+  MappingTextHelper,
+  SummaryHelper,
+  EvaluationHelper,
+  normalizeString,
+  CLASSIFICATION_CSS,
+  ACTION_CSS
+} from './mapping-detail-helpers';
 
 export interface IProfile {
   name?: string;
@@ -70,38 +61,39 @@ export interface IProfile {
   styleUrls: ['./mapping-detail.component.css'],
 })
 export class MappingDetailComponent implements OnInit {
-
-  projectKey: string;
-  mappingId: string;
+  // Component properties
+  projectKey: string = '';
+  mappingId: string = '';
   original: any;
   mapping: any;
   availableFields: any[] = [];
   classifications: ActionOptionModel[] = [];
-  editingIndex: number | null | undefined = null;
-  hoverIndex: number | null | undefined = null;
+  editingIndex: number | null = null;
+  hoverIndex: number | null = null;
   filtered: any;
 
   // Enhanced evaluation data
   mappingEvaluation: MappingEvaluation | null = null;
   enhancedFields: EnhancedMappingField[] = [];
-  showEnhancedView = true; // Always enabled
+  showEnhancedView = true;
   enhancedViewAvailable = false;
   evaluationLoadingError: string | null = null;
-  showDetailedRecommendations = true; // Always enabled
+  showDetailedRecommendations = true;
   currentQuickFilter: string | null = null;
 
-  // Dynamische Spalten: alle Source-Profile + Target-Profile
+  // Profile columns and view settings
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
-
-  // Tree view properties
   viewMode: 'flat' | 'tree' = 'flat';
   treeTableConfig: TreeTableConfig = { profileColumns: [] };
 
-  // Paginator
+  // Pagination
   totalLength: number = 0;
   pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
+
+  // Debug configuration
+  private readonly DEBUG = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -109,194 +101,114 @@ export class MappingDetailComponent implements OnInit {
     private comparisonService: ComparisonService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
-  ) {
-    this.projectKey = "";
-    this.mappingId = "";
-  }
-
-  private readonly DEBUG = false;
-
-  private dbg(...args: any[]) {
-    if (this.DEBUG) console.log('[MappingDetail]', ...args);
-  }
-  private dbgTable(label: string, rows: any[]) {
-    if (this.DEBUG && console.table) {
-      console.log(`[MappingDetail] ${label}`);
-      console.table(rows);
-    }
-  }
-
-  // Für konsistentes, null-sicheres Normalisieren
-  private norm(v: unknown): string {
-    return (v ?? '').toString().trim().toLowerCase();
-  }
+  ) {}
 
   ngOnInit(): void {
+    this.initializeComponent();
+  }
+
+  // === LIFECYCLE & INITIALIZATION ===
+  private initializeComponent(): void {
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
     this.mappingId = this.route.snapshot.paramMap.get('mappingId') || '';
+
     if (this.projectKey && this.mappingId) {
-      this.loadMapping(this.projectKey, this.mappingId);
-      this.loadFields(this.projectKey, this.mappingId);
-      this.loadActions();
-      // loadMappingEvaluation is called after loadMapping completes
+      this.loadAllData();
     }
   }
 
-  loadMapping(projectKey: string, mappingId: string) {
-    this.mappingsService
-      .getMapping(projectKey, mappingId)
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading mapping detail', err);
-          return of({});
-        })
-      )
-      .subscribe((mapping) => {
-        console.log('mapping', mapping);
+  private loadAllData(): void {
+    this.loadMapping(this.projectKey, this.mappingId);
+    this.loadFields(this.projectKey, this.mappingId);
+    this.loadActions();
+  }
 
-        // initial: classification DESC
-        const sortedFields = [...(mapping.fields ?? [])].sort((a: any, b: any) => {
-          const A = (a?.classification ?? '').toString();
-          const B = (b?.classification ?? '').toString();
-          return A < B ? 1 : A > B ? -1 : 0; // DESC
-        });
-
-        const sortedMapping = { ...mapping, fields: sortedFields };
-
-        // Profilspalten (alle Sources + Target) für die Kopfzeile aufbauen
-        const sources = Array.isArray(sortedMapping.sources) ? sortedMapping.sources : [];
-        const targetArr = sortedMapping.target ? [sortedMapping.target] : [];
-        this.profileColumns = [...sources, ...targetArr];
-
-        this.totalLength = sortedFields.length;
-        this.original = sortedMapping;
-        this.mapping = sortedMapping;
-        this.filtered = {
-          ...sortedMapping,
-          fields: sortedFields.slice(0, this.pageSize),
-        };
-
-        // Update tree table config
-        this.updateTreeTableConfig();
-
-        // Load evaluation after mapping data is loaded
-        if (this.projectKey && this.mappingId) {
-          this.loadMappingEvaluation(this.projectKey, this.mappingId);
-        }
+  // === DATA LOADING ===
+  private loadMapping(projectKey: string, mappingId: string): void {
+    this.mappingsService.getMapping(projectKey, mappingId)
+      .pipe(catchError(err => {
+        console.error('Error loading mapping detail', err);
+        return of({});
+      }))
+      .subscribe(mapping => {
+        this.processLoadedMapping(mapping);
+        this.loadMappingEvaluation(projectKey, mappingId);
       });
   }
 
-  getDescriptionForMapping(useValue: string): string | undefined {
-    return this.classifications.find(item => item.value === useValue)?.description;
+  private processLoadedMapping(mapping: any): void {
+    const sortedFields = this.sortFieldsByClassification(mapping.fields ?? []);
+    const processedMapping = { ...mapping, fields: sortedFields };
+
+    this.setupProfileColumns(processedMapping);
+    this.initializeMappingData(processedMapping, sortedFields);
+    this.updateTreeTableConfig();
   }
 
-  getTooltipComparison(field: any): string {
-    return this.comparisonService.getClassificationDescription(field);
+  private sortFieldsByClassification(fields: any[]): any[] {
+    return [...fields].sort((a, b) => {
+      const classA = (a?.classification ?? '').toString();
+      const classB = (b?.classification ?? '').toString();
+      return classA < classB ? 1 : classA > classB ? -1 : 0;
+    });
   }
 
-  loadFields(projectKey: string, mappingId: string) {
-    this.mappingsService
-      .getMappingFields(projectKey, mappingId)
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading fields', err);
-          return of([]);
-        })
-      )
-      .subscribe((fields) => (this.availableFields = fields.fields));
+  private setupProfileColumns(mapping: any): void {
+    const sources = Array.isArray(mapping.sources) ? mapping.sources : [];
+    const target = mapping.target ? [mapping.target] : [];
+    this.profileColumns = [...sources, ...target];
   }
 
-  saveFile(blob: Blob, filename: string) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+  private initializeMappingData(mapping: any, fields: any[]): void {
+    this.totalLength = fields.length;
+    this.original = mapping;
+    this.mapping = mapping;
+    this.filtered = { ...mapping, fields: fields.slice(0, this.pageSize) };
   }
 
-  sanitizeFilename(name: string): string {
-    return name
-      .replace(/[^a-zA-Z0-9._-]+/g, "_") // alle Sonderzeichen -> _
-      .replace(/_+/g, "_")              // mehrere _ auf eins reduzieren
-      .replace(/^_+|_+$/g, "");         // führende/abschließende _ entfernen
+  private loadFields(projectKey: string, mappingId: string): void {
+    this.mappingsService.getMappingFields(projectKey, mappingId)
+      .pipe(catchError(err => {
+        console.error('Error loading fields', err);
+        return of([]);
+      }))
+      .subscribe(fields => this.availableFields = fields.fields);
   }
 
-  getStaticMappings() {
-    const filenameBase = this.sanitizeFilename(this.filtered.name);
-    const filename = `${filenameBase}.html`;
-
-    this.mappingsService
-      .getStaticMapping(this.projectKey, this.mappingId, true, true)
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading static mappings', err);
-          return of([]);
-        })
-      )
-      .subscribe((data) => {
-        console.log('static mappings', data);
-        this.saveFile(data, filename);
-      });
+  private loadActions(): void {
+    this.mappingsService.getActions()
+      .pipe(catchError(err => {
+        console.error('Error loading actions', err);
+        return of([]);
+      }))
+      .subscribe(data => this.classifications = data.actions);
   }
 
-  loadActions() {
-    this.mappingsService
-      .getActions()
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading classifications', err);
-          return of([]);
-        })
-      )
-      .subscribe((data) => {
-        console.log('actions', data);
-        this.classifications = data.actions;
-        console.log('classifications', this.classifications);
-      });
-  }
-
-  loadMappingEvaluation(projectKey: string, mappingId: string) {
-    console.log('Loading mapping evaluation for:', projectKey, mappingId);
-
-    this.comparisonService
-      .getMappingEvaluation(projectKey, mappingId)
-      .pipe(
-        catchError((err) => {
-          console.error('Error loading mapping evaluation', err);
-          this.evaluationLoadingError = err.message || 'Failed to load enhanced evaluation';
-          this.enhancedViewAvailable = false;
-          // For development: Enable enhanced view even without API
-          this.createFallbackEvaluation();
-          return of(null);
-        })
-      )
-      .subscribe((evaluation) => {
+  loadMappingEvaluation(projectKey: string, mappingId: string): void {
+    this.comparisonService.getMappingEvaluation(projectKey, mappingId)
+      .pipe(catchError(err => {
+        console.error('Error loading mapping evaluation', err);
+        this.evaluationLoadingError = err.message || 'Failed to load enhanced evaluation';
+        this.enhancedViewAvailable = false;
+        this.createFallbackEvaluation();
+        return of(null);
+      }))
+      .subscribe(evaluation => {
         if (evaluation) {
           this.mappingEvaluation = evaluation;
           this.enhancedViewAvailable = true;
           this.evaluationLoadingError = null;
           this.enhanceFieldsWithEvaluation();
-          console.log('Enhanced mapping evaluation loaded', evaluation);
-        } else {
-          console.log('No evaluation data received');
         }
       });
   }
 
-  enhanceFieldsWithEvaluation() {
-    if (!this.mappingEvaluation || !this.filtered?.fields) {
-      return;
-    }
+  enhanceFieldsWithEvaluation(): void {
+    if (!this.mappingEvaluation || !this.filtered?.fields) return;
 
     this.enhancedFields = this.filtered.fields.map((field: any) => {
       const evaluation = this.mappingEvaluation!.field_evaluations[field.name];
-      const enhancedField: EnhancedMappingField = {
-        ...field,
-        evaluation: evaluation
-      };
+      const enhancedField: EnhancedMappingField = { ...field, evaluation };
 
       if (evaluation) {
         enhancedField.enhancedTooltip = this.comparisonService.getEnhancedClassificationDescription(evaluation);
@@ -307,36 +219,11 @@ export class MappingDetailComponent implements OnInit {
     });
   }
 
-  getEnhancedTooltip(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations[field.name];
-    if (evaluation) {
-      return this.comparisonService.getEnhancedClassificationDescription(evaluation);
-    }
-    return this.getTooltipComparison(field);
-  }
-
-  getEnhancedCssClass(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations[field.name];
-    if (evaluation) {
-      return this.comparisonService.getEnhancedClassificationCssClass(evaluation.enhanced_classification);
-    }
-    return this.loadComparisonCSSProperty(field.classification);
-  }
-
-
-
-  createFallbackEvaluation() {
-    // Create a fallback evaluation for testing when API is not available
-    console.log('Creating fallback evaluation for testing');
-
-    if (!this.filtered?.fields) {
-      return;
-    }
+  createFallbackEvaluation(): void {
+    if (!this.filtered?.fields) return;
 
     const fieldEvaluations: any = {};
-
     this.filtered.fields.forEach((field: any) => {
-      // Create mock evaluation based on field classification
       let enhancedClassification = 'compatible';
       let issues: any[] = [];
       let warnings: string[] = [];
@@ -344,20 +231,12 @@ export class MappingDetailComponent implements OnInit {
 
       switch (field.classification) {
         case 'incompatible':
-          enhancedClassification = field.action === 'extension' ? 'action_resolved' : 'incompatible';
-          if (field.action === 'extension') {
-            issues.push({
-              issue_type: 'min',
-              severity: 'action_resolved',
-              message: 'Incompatibility resolved by extension action',
-              resolved_by_action: 'extension',
-              requires_attention: true
-            });
-          }
+          enhancedClassification = 'incompatible';
+          issues.push({ message: 'Field is incompatible', severity: 'error', requires_attention: true });
           break;
         case 'warning':
-          enhancedClassification = field.action === 'use' ? 'warning' : 'action_mitigated';
-          warnings.push('Potential compatibility issues detected');
+          enhancedClassification = 'warning';
+          warnings.push('Field may have compatibility issues');
           break;
       }
 
@@ -371,9 +250,7 @@ export class MappingDetailComponent implements OnInit {
         original_classification: field.classification,
         enhanced_classification: enhancedClassification,
         action: field.action,
-        issues: issues,
-        warnings: warnings,
-        recommendations: recommendations
+        issues, warnings, recommendations
       };
     });
 
@@ -394,297 +271,115 @@ export class MappingDetailComponent implements OnInit {
 
     this.enhancedViewAvailable = true;
     this.enhanceFieldsWithEvaluation();
-    console.log('Fallback evaluation created:', this.mappingEvaluation);
   }
 
+  // === SUMMARY & STATUS METHODS (delegated to helpers) ===
   getEvaluationSummary(): any {
     const summary = this.mappingEvaluation?.summary;
-    if (!summary) {
-      return null;
-    }
+    if (!summary) return null;
 
-    // Use the new simplified logic that matches the backend
-    // Categories are now non-overlapping and sum to total
-    let simplified_compatible = 0;     // Originally compatible fields
-    let simplified_resolved = 0;       // Originally incompatible but with mapping action
-    let simplified_needs_action = 0;   // Originally incompatible and still needs action (USE action)
+    let simplified_compatible = 0;
+    let simplified_resolved = 0;
+    let simplified_needs_action = 0;
 
     if (this.mappingEvaluation?.field_evaluations) {
-      const fieldEvaluations = this.mappingEvaluation.field_evaluations;
-      for (const fieldName in fieldEvaluations) {
-        const fieldEval = fieldEvaluations[fieldName];
-        const originalClassification = fieldEval.original_classification;
-        const action = fieldEval.action;
+      Object.values(this.mappingEvaluation.field_evaluations).forEach((fieldEval: any) => {
+        const { original_classification, action } = fieldEval;
 
-        // Kompatibel: Felder die vom Comparison-Algorithmus als kompatibel oder warning eingestuft wurden
-        if (originalClassification === 'compatible' || originalClassification === 'warning') {
+        if (original_classification === 'compatible' || original_classification === 'warning') {
           simplified_compatible++;
-        }
-        // Gelöst: Ursprünglich inkompatible Felder, die inzwischen ein manuelles Mapping erhalten haben
-        else if (originalClassification === 'incompatible' && action !== 'use') {
+        } else if (original_classification === 'incompatible' && action !== 'use') {
           simplified_resolved++;
-        }
-        // Aktion erforderlich: Inkompatible Felder minus der bereits gelösten Felder
-        else if (originalClassification === 'incompatible' && action === 'use') {
+        } else if (original_classification === 'incompatible' && action === 'use') {
           simplified_needs_action++;
         }
-      }
+      });
     }
 
-    return {
-      ...summary,
-      simplified_compatible,
-      simplified_resolved,
-      simplified_needs_action
-    };
+    return { ...summary, simplified_compatible, simplified_resolved, simplified_needs_action };
   }
 
   getStatusSummary(): any {
-    // Use backend evaluation summary if available (preferred for accuracy)
     const evalSummary = this.getEvaluationSummary();
     if (evalSummary) {
-      // Use simplified categories calculated by backend
       return {
         total: evalSummary.total_fields,
-        completed: evalSummary.simplified_compatible || 0,    // Kompatibel
-        resolved: evalSummary.simplified_resolved || 0,       // Gelöst (Backend berechnet)
-        needs_action: evalSummary.simplified_needs_action || 0 // Aktion erforderlich (Backend berechnet)
+        completed: evalSummary.simplified_compatible || 0,
+        resolved: evalSummary.simplified_resolved || 0,
+        needs_action: evalSummary.simplified_needs_action || 0
       };
     }
 
-    // Fallback to local field counting (only for current page - not accurate for totals)
-    if (!this.filtered?.fields) {
-      return null;
-    }
-
-    const summary = {
-      total: this.filtered.fields.length,
-      completed: 0,
-      resolved: 0,
-      needs_action: 0
-    };
-
-    this.filtered.fields.forEach((field: any) => {
-      const status = this.getProcessingStatus(field);
-      if (summary.hasOwnProperty(status)) {
-        (summary as any)[status]++;
-      }
-    });
-
-    return summary;
+    return this.filtered?.fields ?
+      SummaryHelper.calculateStatusSummary(this.filtered.fields, this.mappingEvaluation ?? undefined) :
+      null;
   }
 
-
-
   getTotalStatusSummary(): any {
-    if (!this.original?.fields) {
-      return null;
-    }
-
-    const summary = {
-      total: this.original.fields.length,
-      completed: 0,
-      resolved: 0,
-      mitigated: 0,
-      in_progress: 0,
-      needs_action: 0,
-      unknown: 0
-    };
-
-    this.original.fields.forEach((field: any) => {
-      const status = this.getProcessingStatus(field);
-      if (summary.hasOwnProperty(status)) {
-        (summary as any)[status]++;
-      }
-    });
-
-    return summary;
+    return this.original?.fields ?
+      SummaryHelper.calculateStatusSummary(this.original.fields, this.mappingEvaluation ?? undefined) :
+      null;
   }
 
   getTotalProgressPercentage(status: string): number {
     const summary = this.getTotalStatusSummary();
-    if (!summary || summary.total === 0) {
-      return 0;
-    }
-
-    const value = (summary as any)[status] || 0;
-    return (value / summary.total) * 100;
+    return SummaryHelper.getTotalProgressPercentage(summary, status);
   }
 
   getTotalCompletionPercentage(): number {
     const summary = this.getTotalStatusSummary();
-    if (!summary || summary.total === 0) {
-      return 0;
-    }
-
-    const completed = summary.completed + summary.resolved;
-    return Math.round((completed / summary.total) * 100);
+    return SummaryHelper.getTotalCompletionPercentage(summary);
   }
 
-  applyQuickFilter(filterType: string): void {
-    this.currentQuickFilter = filterType;
-
-    // Filter fields by status using the new simplified logic
-    const filteredFields = (this.original?.fields ?? []).filter((field: any) => {
-      const fieldStatus = this.getProcessingStatus(field);
-      return fieldStatus === filterType;
-    });
-
-    this.dbg('Quick filter applied:', { filterType, totalBefore: this.original?.fields?.length ?? 0, totalAfter: filteredFields.length });
-
-    // Update the mapping and filtered data
-    this.mapping = { ...this.mapping, fields: filteredFields };
-    this.totalLength = filteredFields.length;
-    this.pageIndex = 0;
-
-    this.filtered = {
-      ...this.mapping,
-      fields: filteredFields.slice(
-        this.pageSize * this.pageIndex,
-        this.pageSize * (this.pageIndex + 1)
-      ),
-    };
-
-    // Update tree table config for tree view filtering
-    this.updateTreeTableConfig();
-
-    // Clear the text filter input
-    const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
-    if (filterInput) {
-      filterInput.value = '';
-    }
-  }
-
-  clearQuickFilter(): void {
-    this.currentQuickFilter = null;
-
-    // Reset to show all fields
-    this.mapping = { ...this.original };
-    this.totalLength = this.original?.fields?.length ?? 0;
-    this.pageIndex = 0;
-
-    this.filtered = {
-      ...this.mapping,
-      fields: (this.mapping.fields ?? []).slice(
-        this.pageSize * this.pageIndex,
-        this.pageSize * (this.pageIndex + 1)
-      ),
-    };
-
-    // Update tree table config
-    this.updateTreeTableConfig();
-
-    // Clear the text filter input
-    const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
-    if (filterInput) {
-      filterInput.value = '';
-    }
-  }
-
+  // === STATUS METHODS (delegated to helpers) ===
   loadComparisonCSSProperty(compatibility: string): string {
-    const CSS_CLASS: { [key: string]: string } = {
-      compatible: 'compatible',
-      warning: 'warning',
-      incompatible: 'incompatible',
-    };
-    return CSS_CLASS[compatibility] || '';
+    return CLASSIFICATION_CSS[compatibility as keyof typeof CLASSIFICATION_CSS] || '';
   }
 
-  /**
-   * Determines the processing status of a field based on its classification and action
-   * Simplified logic: Compatible, Resolved (any action), or Needs Action
-   */
   getProcessingStatus(field: any): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
-
-    // Use the new simplified logic that matches the backend
-    if (evaluation) {
-      const originalClassification = evaluation.original_classification;
-      const action = evaluation.action;
-
-      // Kompatibel: Felder die vom Comparison-Algorithmus als kompatibel oder warning eingestuft wurden
-      if (originalClassification === 'compatible' || originalClassification === 'warning') {
-        return 'completed';
-      }
-      // Gelöst: Ursprünglich inkompatible Felder, die inzwischen ein manuelles Mapping erhalten haben
-      else if (originalClassification === 'incompatible' && action !== 'use') {
-        return 'resolved';
-      }
-      // Aktion erforderlich: Inkompatible Felder minus der bereits gelösten Felder
-      else if (originalClassification === 'incompatible' && action === 'use') {
-        return 'needs_action';
-      }
-    }
-
-    // Fallback to original classification logic
-    switch (field.classification) {
-      case 'compatible':
-        return 'completed';
-      case 'warning':
-        // Check if action addresses the warning
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'manual'].includes(field.action)) {
-          return 'resolved';
-        } else if (field.action === 'use') {
-          return 'needs_action';
-        } else {
-          return 'in_progress';
-        }
-      case 'incompatible':
-        // Check if action addresses the incompatibility
-        if (['extension', 'copy_from', 'copy_to', 'fixed', 'not_use', 'empty'].includes(field.action)) {
-          return 'resolved';
-        } else {
-          return 'needs_action';
-        }
-      default:
-        return 'unknown';
-    }
+    return StatusHelper.getProcessingStatus(field, this.mappingEvaluation ?? undefined);
   }
 
-  /**
-   * Gets a human-readable status label
-   */
   getStatusLabel(status: string): string {
-    const labels: { [key: string]: string } = {
-      'completed': 'Kompatibel',
-      'resolved': 'Gelöst',
-      'needs_action': 'Aktion erforderlich'
-    };
-    return labels[status] || status;
+    return StatusHelper.getStatusLabel(status);
   }
 
-  /**
-   * Gets CSS class for status
-   */
   getStatusCssClass(status: string): string {
-    const cssClasses: { [key: string]: string } = {
-      'completed': 'status-completed',
-      'resolved': 'status-resolved',
-      'needs_action': 'status-needs-action'
-    };
-    return cssClasses[status] || 'status-needs-action';
+    return StatusHelper.getStatusCssClass(status);
   }
 
-  /**
-   * Gets tooltip for status
-   */
   getStatusTooltip(field: any, status: string): string {
-    const evaluation = this.mappingEvaluation?.field_evaluations?.[field.name];
+    return StatusHelper.getStatusTooltip(field, status, this.mappingEvaluation ?? undefined);
+  }
 
-    switch (status) {
-      case 'completed':
-        return 'Dieses Feld ist kompatibel und benötigt keine weiteren Aktionen.';
-      case 'resolved':
-        return `Problem wurde durch ${field.action} Aktion gelöst. ${evaluation?.issues?.length ? 'Details: ' + evaluation.issues.map((i: any) => i.message).join('; ') : ''}`;
-      case 'mitigated':
-        return `Problem wurde behandelt, erfordert aber Aufmerksamkeit. ${evaluation?.recommendations?.length ? 'Empfehlungen: ' + evaluation.recommendations.join('; ') : ''}`;
-      case 'in_progress':
-        return 'Aktion ist definiert, aber das Problem ist möglicherweise nicht vollständig gelöst.';
-      case 'needs_action':
-        return `${field.classification === 'incompatible' ? 'Inkompatibilität' : 'Warnung'} erfordert eine Aktion zur Lösung.`;
-      default:
-        return 'Status unbekannt';
-    }
+  // === CARDINALITY METHODS (delegated to helpers) ===
+  formatCardinality = CardinalityHelper.formatCardinality;
+  getCardinalityStyle = CardinalityHelper.getCardinalityStyle;
+
+  // === MAPPING TEXT METHODS (delegated to helpers) ===
+  getRemarkTooltip = MappingTextHelper.getRemarkTooltip;
+  getConsolidatedMappingText = MappingTextHelper.getConsolidatedMappingText;
+
+  getMappingResult(field: any): string {
+    return this.getConsolidatedMappingText(field);
+  }
+
+  // === ENHANCED EVALUATION METHODS (delegated to helpers) ===
+  getEnhancedTooltip(field: any): string {
+    return EvaluationHelper.getEnhancedTooltip(field, this.mappingEvaluation, this.getTooltipComparison.bind(this));
+  }
+
+  getEnhancedCssClass(field: any): string {
+    return EvaluationHelper.getEnhancedCssClass(field, this.mappingEvaluation, this.loadComparisonCSSProperty.bind(this));
+  }
+
+  // === UTILITY METHODS ===
+  getDescriptionForMapping(useValue: string): string | undefined {
+    return this.classifications.find(item => item.value === useValue)?.description;
+  }
+
+  getTooltipComparison(field: any): string {
+    return this.comparisonService.getClassificationDescription(field);
   }
 
   getClassificationInstruction(action: string): string {
@@ -692,439 +387,189 @@ export class MappingDetailComponent implements OnInit {
     return found ? found.description : '';
   }
 
-  private clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
-}
-
-formatCardinality(minVal: any, maxVal: any): string {
-  const min = Number.isFinite(+minVal) ? +minVal : 0;
-  const max = (maxVal === '*' || maxVal === '∞') ? '*' : (Number.isFinite(+maxVal) ? +maxVal : 0);
-  return `${min} .. ${max}`;
-}
-
-/**
- * Erzeugt eine HSL-Farbskala:
- * - 0..0  => hue ~ 0 (rot)
- * - 0..*  => hue ~ 130 (grün)
- * - Zwischenwerte interpoliert:
- *   - je kleiner min, desto „offener“ => mehr Grün
- *   - je größer max (oder '*'), desto „offener“ => mehr Grün
- */
-getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
-  const min = Number.isFinite(+minVal) ? +minVal : 0;
-
-  // Max als Zahl normalisieren: '*' / '∞' gelten als sehr offen
-  const maxIsStar = (maxVal === '*' || maxVal === '∞');
-  const maxNum = maxIsStar ? 10 : (Number.isFinite(+maxVal) ? +maxVal : 0);
-
-  // Normierung: min ∈ [0,2], max ∈ [0,10]
-  const minN = 1 - (this.clamp(min, 0, 2) / 2);   // 1 = offen (min=0), 0 = geschlossen (min=2)
-  const maxN = (this.clamp(maxNum, 0, 10) / 10);  // 0 = geschlossen (max=0), 1 = offen (max='*'≈10)
-
-  // Openness ∈ [0..1]
-  const openness = this.clamp(0.5 * minN + 0.5 * maxN, 0, 1);
-
-  // Hue von Rot (0) bis Grün (~130)
-  const hue = Math.round(0 + openness * 130);
-
-  // Lesbare Badge-Farben (heller Hintergrund, kontrastierender Text & Border)
-  const bg = `hsl(${hue}, 90%, 92%)`;
-  const border = `hsl(${hue}, 65%, 45%)`;
-  const text = `hsl(${hue}, 60%, 25%)`;
-
-  return {
-    backgroundColor: bg,
-    color: text,
-    borderColor: border
-  };
-}
-
-  getRemarkTooltip(field: any): string {
-    switch (field.action) {
-      case 'use':
-        return 'No action needed for this mapping';
-      case 'not_use':
-      case 'empty':
-        return 'Information will be removed or left empty in this mapping';
-      case 'extension':
-      case 'manual':
-        return 'Special action required for this mapping';
-      case 'other':
-      case 'medication_service':
-        return 'Caution reference!';
-      case 'copy_from':
-        return `This field copies its value from the following field: ${field.other}`;
-      case 'copy_to':
-        return `This field copies its value into the following field: ${field.other}`;
-      case 'fixed':
-        return `This field has a fixed value: ${field.fixed}`;
-      default:
-        return 'No additional information';
-    }
-  }
-
-  /**
-   * Gets the mapping result text to display in the table
-   * Shows the concrete result/target of the mapping action
-   */
-  getMappingResult(field: any): string {
-    switch (field.action) {
-      case 'copy_from':
-        return field.other ? `🔄 Kopiert von: ${field.other}` : '';
-      case 'copy_to':
-        return field.other ? `🔄 Kopiert zu: ${field.other}` : '';
-      case 'fixed':
-        return field.fixed ? `📌 Fester Wert: "${field.fixed}"` : '';
-      case 'manual':
-        return field.remark ? `✋ Manuell: ${field.remark}` : '✋ Manuelle Bearbeitung erforderlich';
-      case 'extension':
-        return field.remark ? `🔧 Extension: ${field.remark}` : '🔧 Extension-Behandlung';
-      case 'not_use':
-        return '❌ Wird nicht verwendet';
-      case 'empty':
-        return '🗑️ Wird geleert';
-      case 'use':
-        return '✅ Wird übernommen';
-      case 'other':
-        return '⚠️ Sonderbehandlung';
-      case 'medication_service':
-        return '💊 Medikations-Service';
-      default:
-        return '';
-    }
-  }
-
-  /**
-   * Gets consolidated mapping text that combines all relevant information
-   * Replaces the separate displays of result and remark
-   */
-  getConsolidatedMappingText(field: any): string {
-    const parts: string[] = [];
-
-    switch (field.action) {
-      case 'copy_from':
-        if (field.other) {
-          parts.push(`← Kopiert von: ${field.other}`);
-        }
-        break;
-      case 'copy_to':
-        if (field.other) {
-          parts.push(`→ Kopiert zu: ${field.other}`);
-        }
-        break;
-      case 'fixed':
-        if (field.fixed) {
-          parts.push(`Fester Wert: "${field.fixed}"`);
-        }
-        break;
-      case 'manual':
-        if (field.remark) {
-          parts.push(`Manuell: ${field.remark}`);
-        } else {
-          parts.push('Manuelle Bearbeitung erforderlich');
-        }
-        break;
-      case 'extension':
-        if (field.remark) {
-          parts.push(`Extension: ${field.remark}`);
-        } else {
-          parts.push('Extension-Behandlung');
-        }
-        break;
-      case 'not_use':
-        parts.push('Wird nicht verwendet');
-        break;
-      case 'empty':
-        parts.push('Wird nicht befüllt');
-        break;
-      case 'use':
-        parts.push('Wird direkt übernommen');
-        break;
-      case 'other':
-        parts.push('Sonderbehandlung erforderlich');
-        break;
-      case 'medication_service':
-        parts.push('Medikations-Service Integration');
-        break;
-    }
-
-    return parts.join(' • ');
+  getClassificationCssClass(action: string): string {
+    return ACTION_CSS[action as keyof typeof ACTION_CSS] || '';
   }
 
   isProfilePresent(fieldProfiles: { [key: string]: any }, profileName: string): boolean {
     return !!fieldProfiles[profileName];
   }
 
-  handleTable = (e: any) => {
-    const paginator = () => {
-      this.pageSize = e.pageSize;
-      this.pageIndex = e.pageIndex;
-      this.filtered = {
-        ...this.mapping,
-        fields: this.mapping.fields.slice(
-          this.pageSize * this.pageIndex,
-          this.pageSize * (this.pageIndex + 1)
-        ),
-      };
-    };
-
-    const sorter = () => {
-      const data = [...(this.filtered?.fields ?? [])]; // Kopie
-      if (!e.active || e.direction === '') {
-        this.filtered = { ...this.filtered, fields: data };
-        return;
-      }
-      const isAsc = e.direction === 'asc';
-
-      const sortedData = data.sort((a: IProfile, b: IProfile) => {
-        switch (e.active) {
-          case 'name':
-          case 'remark':
-            return compare((a[e.active] ?? ''), (b[e.active] ?? ''), isAsc);
-          case 'extra':
-            return compare(
-              ((a as any)?.classification ?? '') + (a['extra'] ?? ''),
-              ((b as any)?.classification ?? '') + (b['extra'] ?? ''),
-              isAsc
-            );
-          case 'compatibility':
-            return compare(((a as any)?.classification ?? ''), ((b as any)?.classification ?? ''), isAsc);
-          case 'status':
-            const statusA = this.getProcessingStatus(a);
-            const statusB = this.getProcessingStatus(b);
-            const statusPriorityMap: { [key: string]: number } = {
-              'needs_action': 0,
-              'in_progress': 1,
-              'mitigated': 2,
-              'resolved': 3,
-              'completed': 4,
-              'unknown': 5
-            };
-            const priorityA = statusPriorityMap[statusA] ?? 5;
-            const priorityB = statusPriorityMap[statusB] ?? 5;
-            return compare(priorityA, priorityB, isAsc);
-          default:
-            // Dynamische Profilspalten wie "profile-<key>"
-            if (e.active?.startsWith('profile-')) {
-              const key = e.active.substring('profile-'.length);
-              const getTuple = (row: any) => {
-                const p = row?.profiles?.[key];
-                if (!p) return [-1, -1, -1]; // nicht vorhanden -> stabil ganz unten/oben
-                const ms = p.must_support ? 1 : 0;
-                const nMin = Number.isFinite(+p.min) ? +p.min : 0;
-                const nMax =
-                  p.max === '*' || p.max === '∞'
-                    ? Number.POSITIVE_INFINITY
-                    : (Number.isFinite(+p.max) ? +p.max : 0);
-                return [nMin, nMax, ms];
-              };
-              return tupleCompare(getTuple(a), getTuple(b), isAsc);
-            }
-            return 0;
-        }
-      });
-
-      this.dbg('Sort result:', { by: e.active, direction: e.direction, count: sortedData.length });
-      this.filtered = { ...this.filtered, fields: sortedData };
-    };
-
-    const filter = () => {
-      // If a quick filter is active, don't override it with text search
-      if (this.currentQuickFilter) {
-        return;
-      }
-
-      // Eingabetext ermitteln
-      const raw = (e?.target as HTMLInputElement)?.value ?? '';
-      const val = this.norm(raw);
-      const totalBefore = this.original?.fields?.length ?? 0;
-
-      this.dbg('Filter input:', { raw, val, totalBefore });
-
-      // Tree filtering is now handled by the TreeTableComponent
-
-      // Heuristik: Wenn Nutzer „incompatible" (oder Präfixe) tippt,
-      // prüfe zusätzlich field.classification.
-      const wantIncompatible = ['incompatible', 'incompat', 'incomp'].includes(val);
-
-      // Status filtering heuristics
-      const statusKeywords: { [key: string]: string } = {
-        'aktion': 'needs_action',
-        'erforderlich': 'needs_action',
-        'needs': 'needs_action',
-        'gelöst': 'resolved',
-        'resolved': 'resolved',
-        'behandelt': 'mitigated',
-        'mitigated': 'mitigated',
-        'kompatibel': 'completed',
-        'completed': 'completed'
-      };
-
-      let filterByStatus: string | null = null;
-      for (const [keyword, status] of Object.entries(statusKeywords)) {
-        if (val.includes(keyword)) {
-          filterByStatus = status;
-          break;
-        }
-      }
-
-      // Entscheidungslogik je Zeile
-      const filterCond = (record: IProfile) => {
-        const name = this.norm(record?.name);
-        const remark = this.norm(record?.remark);
-        const action = this.norm(record?.action);
-        const extra = this.norm(record?.extra);
-        const classif = this.norm((record as any)?.classification);
-
-        let matches: boolean;
-
-        if (filterByStatus) {
-          // Filter by processing status
-          const fieldStatus = this.getProcessingStatus(record);
-          matches = fieldStatus === filterByStatus;
-        } else if (wantIncompatible) {
-          // Spezielle Debug-Route für "incompatible"
-          matches = classif === 'incompatible';
-        } else {
-          matches =
-            !val ||
-            name.includes(val) ||
-            remark.includes(val) ||
-            action.includes(val) ||
-            extra.includes(val) ||
-            classif.includes(val);
-        }
-
-        // Detailliertes per-Record-Logging (nur bei aktivem Filter & DEBUG)
-        if (this.DEBUG && val) {
-          console.groupCollapsed(`[filter] ${record?.name ?? '(ohne name)'} -> ${matches ? '✔' : '✘'}`);
-          console.log('name:', name);
-          console.log('remark:', remark);
-          console.log('action:', action);
-          console.log('extra:', extra);
-          console.log('classification:', classif);
-          console.log('wantIncompatible:', wantIncompatible);
-          console.groupEnd();
-        }
-
-        return matches;
-      };
-
-      // Filtern
-      const filteredFields = (this.original?.fields ?? []).filter(filterCond);
-      const totalAfter = filteredFields.length;
-      this.dbg('Filter result:', { totalBefore, totalAfter });
-
-      // Ein paar Beispiele tabellarisch anzeigen
-      this.dbgTable('First 10 filtered rows', filteredFields.slice(0, 10));
-
-      // State aktualisieren + Pagination neu anwenden
-      this.mapping = { ...this.mapping, fields: filteredFields };
-      this.totalLength = filteredFields.length;
-      this.pageIndex = 0;
-
-      this.filtered = {
-        ...this.mapping,
-        fields: filteredFields.slice(
-          this.pageSize * this.pageIndex,
-          this.pageSize * (this.pageIndex + 1)
-        ),
-      };
-    };
-
-    return { paginator, sorter, filter };
-  };
-
-  handleEdit = (idx?: number) => {
-    const startHover = () => {
-      if (this.editingIndex === null) {
-        this.hoverIndex = idx;
-      }
-    };
-
-    const stopHover = () => {
-      this.hoverIndex = null;
-    };
-
-    const startEdit = () => {
-      this.editingIndex = idx;
-    };
-
-    const cancelEdit = () => {
-      this.editingIndex = null;
-    };
-
-    return { startHover, stopHover, startEdit, cancelEdit };
-  };
-
-  getClassificationCssClass(action: string): string {
-    const CSS_CLASS: { [key: string]: string } = {
-      use: 'row-use',
-      not_use: 'row-not-use',
-      empty: 'row-empty',
-      extension: 'row-extension',
-      manual: 'row-manual',
-      other: 'row-other',
-      copy_from: 'row-copy-from',
-      copy_to: 'row-copy-to',
-      fixed: 'row-fixed',
-      medication_service: 'row-medication-service',
-    };
-    return CSS_CLASS[action] || '';
+  getRefTooltip(field: any, profileKey: string): string {
+    const fp = field.profiles?.[profileKey];
+    if (!fp?.ref_types?.length) {
+      return 'Keine Referenz-Typen definiert';
+    }
+    return `Referenz-Typen: ${fp.ref_types.join(', ')}`;
   }
 
-  // ToDo: Es ist die Frage, was hier im Body sein muss?! Das ist aktuell das einzige Problem. Die Dokue ist da nicht so aussagekräftig.
-  confirmChanges(field: any) {
-    console.log('Confirming changes for field:', field);
-    let action: string;
-    const updateData: any = {};
-    switch (field.action) {
-      case 'copy_from':
-        action = 'copy_from';
-        updateData.other = field.targetField;
-        break;
-      case 'copy_to':
-        action = 'copy_to';
-        updateData.other = field.targetField;
-        break;
-      case 'fixed':
-        action = 'fixed';
-        updateData.fixed = field.fixedValue;
-        break;
-      case 'not_use':
-        action = 'not_use';
-        break;
-      case 'use':
-        action = 'use';
-        break;
-      case 'empty':
-        action = 'empty';
-        break;
-      case 'manual':
-        action = 'manual';
-        break;
-      default:
-        console.error('Unknown userClassification:', field.use);
-        return;
+  hasRefDifferences(field: any): boolean {
+    const allRefs = this.profileColumns
+      .map(p => field.profiles?.[p.key]?.ref_types || [])
+      .filter(refs => refs.length > 0);
+
+    if (allRefs.length <= 1) return false;
+
+    const firstRefs = allRefs[0].sort().join(',');
+    return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+  }
+
+  // === FILTER & SORT LOGIC ===
+  applyQuickFilter(filterType: string): void {
+    this.currentQuickFilter = filterType;
+    const filteredFields = (this.original?.fields ?? []).filter((field: any) => {
+      const fieldStatus = this.getProcessingStatus(field);
+      return fieldStatus === filterType;
+    });
+
+    this.updateFilteredData(filteredFields);
+    this.clearTextFilter();
+  }
+
+  clearQuickFilter(): void {
+    this.currentQuickFilter = null;
+    this.updateFilteredData(this.original?.fields ?? []);
+    this.clearTextFilter();
+  }
+
+  private updateFilteredData(fields: any[]): void {
+    this.mapping = { ...this.mapping, fields };
+    this.totalLength = fields.length;
+    this.pageIndex = 0;
+
+    this.filtered = {
+      ...this.mapping,
+      fields: fields.slice(0, this.pageSize)
+    };
+
+    this.updateTreeTableConfig();
+  }
+
+  private clearTextFilter(): void {
+    const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
+    if (filterInput) {
+      filterInput.value = '';
+    }
+  }
+
+  handleTable = (e: any) => {
+    return {
+      paginator: () => this.handlePagination(e),
+      sorter: () => this.handleSorting(e),
+      filter: () => this.handleFiltering(e)
+    };
+  };
+
+  private handlePagination(e: any): void {
+    this.pageSize = e.pageSize;
+    this.pageIndex = e.pageIndex;
+    this.filtered = {
+      ...this.mapping,
+      fields: this.mapping.fields.slice(
+        this.pageSize * this.pageIndex,
+        this.pageSize * (this.pageIndex + 1)
+      )
+    };
+  }
+
+  private handleSorting(e: any): void {
+    const data = [...(this.filtered?.fields ?? [])];
+    if (!e.active || e.direction === '') {
+      this.filtered = { ...this.filtered, fields: data };
+      return;
     }
 
-    console.log('Update Data:', updateData);
+    const isAsc = e.direction === 'asc';
+    const sortedData = data.sort((a: IProfile, b: IProfile) => {
+      switch (e.active) {
+        case 'name':
+          return this.compareStrings(a.name ?? '', b.name ?? '', isAsc);
+        case 'compatibility':
+          return this.compareStrings(a.action ?? '', b.action ?? '', isAsc);
+        case 'status':
+          const statusA = this.getProcessingStatus(a);
+          const statusB = this.getProcessingStatus(b);
+          return this.compareStrings(statusA, statusB, isAsc);
+        default:
+          if (e.active.startsWith('profile-')) {
+            const profileKey = e.active.replace('profile-', '');
+            return this.compareProfiles(a, b, profileKey, isAsc);
+          }
+          return 0;
+      }
+    });
 
-    this.mappingsService
-      .updateMappingField(this.projectKey, this.mapping.id, field.name, action, updateData)
-      .subscribe({
-        next: () => {
-          this.loadMapping(this.projectKey, this.mapping.id);
-        },
-        error: (err) => console.error('Failed to update field', err),
-      });
-
-    this.handleEdit().cancelEdit();
+    this.filtered = { ...this.filtered, fields: sortedData };
   }
 
-  /**
-   * Opens the property action edit dialog
-   */
+  private compareStrings(a: string, b: string, isAsc: boolean): number {
+    return (a < b ? -1 : a > b ? 1 : 0) * (isAsc ? 1 : -1);
+  }
+
+  private compareProfiles(a: any, b: any, profileKey: string, isAsc: boolean): number {
+    const profileA = a.profiles?.[profileKey];
+    const profileB = b.profiles?.[profileKey];
+
+    if (!profileA && !profileB) return 0;
+    if (!profileA) return isAsc ? -1 : 1;
+    if (!profileB) return isAsc ? 1 : -1;
+
+    const cardA = [profileA.min ?? 0, profileA.max === '*' ? 999 : (profileA.max ?? 0)];
+    const cardB = [profileB.min ?? 0, profileB.max === '*' ? 999 : (profileB.max ?? 0)];
+
+    return this.tupleCompare(cardA, cardB, isAsc);
+  }
+
+  private tupleCompare(A: Array<number>, B: Array<number>, isAsc: boolean): number {
+    for (let i = 0; i < Math.max(A.length, B.length); i++) {
+      const a = A[i] ?? 0;
+      const b = B[i] ?? 0;
+      if (a < b) return isAsc ? -1 : 1;
+      if (a > b) return isAsc ? 1 : -1;
+    }
+    return 0;
+  }
+
+  private handleFiltering(e: any): void {
+    if (this.currentQuickFilter) return;
+
+    const raw = (e?.target as HTMLInputElement)?.value ?? '';
+    const val = normalizeString(raw);
+
+    if (!val) {
+      this.updateFilteredData(this.original?.fields ?? []);
+      return;
+    }
+
+    const filteredFields = (this.original?.fields ?? []).filter((record: IProfile) => {
+      const name = normalizeString(record.name);
+      const classification = normalizeString(record.action);
+      const remark = normalizeString(record.remark);
+
+      return name.includes(val) || classification.includes(val) || remark.includes(val);
+    });
+
+    this.updateFilteredData(filteredFields);
+  }
+
+  // === EDITING & DIALOG METHODS ===
+  handleEdit = (idx?: number) => ({
+    startHover: () => {
+      if (this.editingIndex === null) {
+        this.hoverIndex = idx ?? null;
+      }
+    },
+    stopHover: () => {
+      this.hoverIndex = null;
+    },
+    startEdit: () => {
+      this.editingIndex = idx ?? null;
+    },
+    cancelEdit: () => {
+      this.editingIndex = null;
+    }
+  });
+
   openEditPropertyActionDialog(field: MappingField, fieldIndex: number): void {
     const dialogData: EditPropertyActionDialogData = {
       field: field,
@@ -1148,97 +593,98 @@ getCardinalityStyle(minVal: any, maxVal: any): {[k: string]: string} {
     });
   }
 
-  // Tree view methods
+  confirmChanges(field: any): void {
+    let action: string = field.action;
+    const updateData: any = {};
 
-  /**
-   * Updates the tree table configuration
-   */
-  updateTreeTableConfig(): void {
-    this.treeTableConfig = {
-      profileColumns: this.profileColumns
-    };
-  }  /**
-   * Toggles between flat and tree view modes
-   */
-  toggleViewMode(): void {
-    this.viewMode = this.viewMode === 'flat' ? 'tree' : 'flat';
-
-    // Clear any active filters when switching modes
-    this.clearQuickFilter();
-  }
-
-  /**
-   * Gets tooltip text for profile references
-   */
-  getRefTooltip(field: any, profileKey: string): string {
-    const fp = field.profiles?.[profileKey];
-    if (!fp?.ref_types?.length) {
-      return 'Keine Referenz-Typen definiert';
+    switch (field.action) {
+      case 'copy_from':
+      case 'copy_to':
+        updateData.targetField = field.targetField;
+        break;
+      case 'fixed':
+        updateData.fixedValue = field.fixedValue;
+        break;
     }
-    return `Referenz-Typen: ${fp.ref_types.join(', ')}`;
+
+    this.mappingsService.updateMappingField(this.projectKey, this.mapping.id, field.name, action, updateData)
+      .subscribe({
+        next: () => this.loadMapping(this.projectKey, this.mapping.id),
+        error: (err) => console.error('Failed to update field', err)
+      });
+
+    this.editingIndex = null;
   }
 
-  /**
-   * Checks if there are reference differences across profiles
-   */
-  hasRefDifferences(field: any): boolean {
-    const allRefs = this.profileColumns
-      .map(p => field.profiles?.[p.key]?.ref_types || [])
-      .filter(refs => refs.length > 0);
-
-    if (allRefs.length <= 1) return false;
-
-    const firstRefs = allRefs[0].sort().join(',');
-    return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
-  }
-
-
-
-  /**
-   * Updates a field's action via the API
-   */
   private updateFieldAction(fieldName: string, updateRequest: MappingFieldUpdateRequest): void {
     this.mappingsService.updateMappingFieldAction(this.projectKey, this.mappingId, fieldName, updateRequest)
-      .pipe(
-        catchError((error) => {
-          console.error('Error updating field action:', error);
-          this.snackBar.open('Fehler beim Speichern der Mapping-Action', 'Schließen', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          });
-          return of(null);
-        })
-      )
-      .subscribe((response) => {
+      .pipe(catchError(error => {
+        console.error('Error updating field action:', error);
+        this.snackBar.open('Fehler beim Speichern der Mapping-Action', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(null);
+      }))
+      .subscribe(response => {
         if (response) {
-          this.snackBar.open('Mapping-Action erfolgreich gespeichert', 'Schließen', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-
-          // Reload mapping data to reflect changes
+          this.snackBar.open('Mapping-Action erfolgreich gespeichert', 'Schließen', { duration: 3000 });
           this.loadMapping(this.projectKey, this.mappingId);
         }
       });
   }
-}
 
-const compare = (a: number | string, b: number | string, isAsc: boolean) => {
-  const A = (a ?? '') as any;
-  const B = (b ?? '') as any;
-  return (A < B ? -1 : A > B ? 1 : 0) * (isAsc ? 1 : -1);
-};
+  // === FILE & TREE OPERATIONS ===
+  getStaticMappings(): void {
+    const filenameBase = this.sanitizeFilename(this.filtered.name);
+    const filename = `${filenameBase}.html`;
 
-
-
-const tupleCompare = (A: Array<number>, B: Array<number>, isAsc: boolean) => {
-  for (let i = 0; i < Math.max(A.length, B.length); i++) {
-    const a = A[i] ?? 0;
-    const b = B[i] ?? 0;
-    if (a < b) return isAsc ? -1 : 1;
-    if (a > b) return isAsc ? 1 : -1;
+    this.mappingsService.getStaticMapping(this.projectKey, this.mappingId, true, true)
+      .pipe(catchError(err => {
+        console.error('Error loading static mappings', err);
+        return of(new Blob());
+      }))
+      .subscribe(data => this.saveFile(data, filename));
   }
-  return 0;
-};
 
+  private saveFile(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
 
+  private sanitizeFilename(name: string): string {
+    return name
+      .replace(/[^a-zA-Z0-9._-]+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  updateTreeTableConfig(): void {
+    this.treeTableConfig = {
+      profileColumns: this.profileColumns
+    };
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'flat' ? 'tree' : 'flat';
+    this.clearQuickFilter();
+  }
+
+  // === DEBUG UTILITIES ===
+  private dbg(...args: any[]): void {
+    if (this.DEBUG) console.log('[MappingDetail]', ...args);
+  }
+
+  private dbgTable(label: string, rows: any[]): void {
+    if (this.DEBUG && console.table) {
+      console.log(`[MappingDetail] ${label}`);
+      console.table(rows);
+    }
+  }
+}
