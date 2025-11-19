@@ -133,10 +133,17 @@ export class MappingTextHelper {
       return null;
     }
 
+    // Priorität 1: user_remark (aus manual_entries.yaml)
+    if (actionInfo.user_remark && actionInfo.user_remark.trim().length > 0) {
+      return actionInfo.user_remark;
+    }
+
+    // Priorität 2: system_remark
     if (actionInfo.system_remark && actionInfo.system_remark.trim().length > 0) {
       return actionInfo.system_remark;
     }
 
+    // Priorität 3: Automatisch generierte Informationen
     if (actionInfo.action === 'fixed') {
       const fixed = MappingTextHelper.formatValue(actionInfo.fixed_value);
       return fixed ? `Festwert: ${fixed}` : null;
