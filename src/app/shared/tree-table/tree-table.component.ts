@@ -401,7 +401,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
   shouldShowRecommendations(field: any): boolean {
     return this.mappingEvaluation?.field_evaluations?.[field.name] != null &&
-           (field.show_mapping_content === false || 
+           (field.show_mapping_content === false ||
             (!this.getConsolidatedMappingText(field) && field.action === 'use'));
   }
 
