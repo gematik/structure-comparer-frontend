@@ -107,6 +107,8 @@ export interface MappingField {
   other?: string;
   // Fixed value for fixed actions
   fixed?: string;
+  // Whether to show mapping content or only recommendations
+  show_mapping_content?: boolean;
 }
 
 /**

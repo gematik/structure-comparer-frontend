@@ -65,6 +65,12 @@ export class StatusHelper {
   static getProcessingStatus(field: any, evaluation?: MappingEvaluation): string {
     const fieldEvaluation = evaluation?.field_evaluations?.[field.name];
 
+    // Priority 1: Use backend processing_status if available
+    if (fieldEvaluation?.processing_status) {
+      return fieldEvaluation.processing_status;
+    }
+
+    // Priority 2: Use enhanced evaluation logic if available
     if (fieldEvaluation) {
       const { original_classification, action } = fieldEvaluation;
 
@@ -77,7 +83,7 @@ export class StatusHelper {
       }
     }
 
-    // Fallback logic
+    // Priority 3: Fallback logic for backward compatibility
     switch (field.classification) {
       case 'compatible':
       case 'warning':
@@ -110,6 +116,12 @@ export class StatusHelper {
 // Mapping text generation
 export class MappingTextHelper {
   static getConsolidatedMappingText(field: any): string {
+    // If show_mapping_content is explicitly false, return empty string
+    // This allows only recommendations to be displayed for needs_action fields
+    if (field.show_mapping_content === false) {
+      return '';
+    }
+
     const parts: string[] = [];
 
     switch (field.action) {

@@ -39,6 +39,7 @@ export interface FieldEvaluation {
   issues: EvaluationIssue[];
   warnings: string[];
   recommendations: string[];
+  processing_status?: string;
 }
 
 export interface MappingEvaluation {
