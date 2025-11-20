@@ -23,25 +23,11 @@
     <!-- Current Action Display -->
     <div class="current-action">
       <strong>Aktuelle Aktion:</strong>
-
-      <!-- Special display for no action selected -->
-      <span *ngIf="data.field.action === null" class="pill pill--no-action">
-        Noch keine Aktion gewählt
-      </span>
-
-      <!-- Display for selected action -->
-      <span *ngIf="data.field.action !== null" [class]="'pill pill--' + data.field.action">
-        {{ getActionDescription(data.field.action) }}
-      </span>
-
-      <span *ngIf="data.field.other && data.field.action !== null" class="current-details">
-        → {{ data.field.other }}
-      </span>
-      <span *ngIf="data.field.fixed && data.field.action !== null" class="current-details">
-        = "{{ data.field.fixed }}"
-      </span>
-      <div *ngIf="data.field.remark && data.field.action !== null" class="current-remark">
-        {{ data.field.remark }}
+      <div class="current-action-wrapper">
+        <app-mapping-action-display 
+          [field]="data.field" 
+          [compact]="false">
+        </app-mapping-action-display>
       </div>
 
       <!-- Helpful message when no action is selected -->
@@ -81,6 +67,24 @@
 
     <!-- Target Field Selection (for copy_from / copy_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
+      <!-- Suffix Filter Chip -->
+      <div *ngIf="suffixFilter" class="suffix-chip-container">
+        <div class="suffix-chip" (click)="toggleSuffixFilter()" 
+             [style.opacity]="suffixFilterActive ? '1' : '0.5'"
+             [matTooltip]="suffixFilterActive ? 'Klicken um Suffix-Filter zu deaktivieren' : 'Klicken um Suffix-Filter zu aktivieren'"
+             matTooltipPosition="above">
+          <span class="suffix-chip-label">
+            <span>Filter:</span>
+            <span class="suffix-chip-text">{{ suffixFilter }}</span>
+          </span>
+          <mat-icon *ngIf="suffixFilterActive">filter_alt</mat-icon>
+          <mat-icon *ngIf="!suffixFilterActive">filter_alt_off</mat-icon>
+        </div>
+        <span style="font-size: 0.85em; color: #666;">
+          {{ suffixFilterActive ? 'Nur Felder die auf "' + suffixFilter + '" enden' : 'Suffix-Filter deaktiviert' }}
+        </span>
+      </div>
+
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>
           <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
@@ -109,7 +113,10 @@
             Keine Felder gefunden
           </mat-option>
         </mat-autocomplete>
-        <mat-hint>Beginnen Sie zu tippen, um Felder zu filtern</mat-hint>
+        <mat-hint>
+          <span *ngIf="suffixFilterActive && suffixFilter">Gefiltert nach Suffix "{{ suffixFilter }}" - </span>
+          Beginnen Sie zu tippen, um weiter zu filtern
+        </mat-hint>
         <mat-error *ngIf="!targetField.trim()">
           Bitte wählen Sie ein Feld aus oder geben Sie einen Namen ein
         </mat-error>

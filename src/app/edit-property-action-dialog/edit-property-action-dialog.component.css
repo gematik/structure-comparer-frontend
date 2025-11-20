@@ -1,7 +1,7 @@
 /* Dialog Styling */
 .dialog-container {
-  min-width: 500px;
-  max-width: 700px;
+  min-width: 1000px;
+  max-width: 1400px;
   margin: 32px; /* Mehr Margin um den gesamten Dialog */
   padding: 24px; /* Zusätzliches Padding im Container */
 }
@@ -43,6 +43,10 @@
   padding: 16px;
   margin-bottom: 24px;
   border-left: 4px solid #2196f3;
+}
+
+.current-action-wrapper {
+  margin-top: 12px;
 }
 
 .no-action-hint {
@@ -386,6 +390,50 @@
   background-color: #fff8e1;
   color: #f57f17;
   border: 1px solid #ffeb3b;
+}
+
+/* Suffix Filter Chip */
+.suffix-chip-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.suffix-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #2196f3;
+  border-radius: 16px;
+  font-size: 0.85em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.suffix-chip:hover {
+  background-color: #bbdefb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.suffix-chip mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.suffix-chip-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.suffix-chip-text {
+  font-weight: 600;
 }
 
 /* Responsive Design */

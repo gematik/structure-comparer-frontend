@@ -378,26 +378,11 @@
             (click)="editingIndex !== i && openEditPropertyActionDialog(field, i)"
           >
             <div *ngIf="editingIndex !== i">
-              <!-- Consolidated Mapping Display -->
-              <div
-                class="mapping-consolidated"
-                [attr.data-action]="field.action"
-              >
-                <div class="mapping-header"></div>
-                <div
-                  *ngIf="getConsolidatedMappingText(field)"
-                  class="mapping-details"
-                  [matTooltip]="getRemarkTooltip(field) || ''"
-                  matTooltipPosition="above"
-                >
-                  {{ getConsolidatedMappingText(field) }}
-                </div>
-                <div *ngIf="getActionSubLabel(field)" class="mapping-sub-text">
-                  {{ getActionSubLabel(field) }}
-                </div>
-              </div>
-
-              <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
+              <!-- Use the shared mapping action display component -->
+              <app-mapping-action-display 
+                [field]="field" 
+                [compact]="true">
+              </app-mapping-action-display>
             </div>
 
             <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">

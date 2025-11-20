@@ -16,8 +16,9 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
-import { ActionOption as ActionOptionModel, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
+import { ActionOption as ActionOptionModel, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
+import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 
 // Imported helpers for cleaner code organization
 import {
@@ -53,7 +54,8 @@ export interface IProfile {
     MatButtonModule,
     MatTooltip,
     MatIcon,
-    TreeTableComponent
+    TreeTableComponent,
+    MappingActionDisplayComponent
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -285,6 +287,44 @@ export class MappingDetailComponent implements OnInit {
     return MappingTextHelper.buildActionSubLabel(field.action_info);
   }
 
+  /**
+   * Gets the icon for an action
+   */
+  getActionIcon(action: MappingAction | null): string {
+    if (!action) return 'help_outline';
+
+    const icons: { [key: string]: string } = {
+      'use': 'check_circle',
+      'not_use': 'cancel',
+      'empty': 'remove_circle_outline',
+      'copy_from': 'arrow_back',
+      'copy_to': 'arrow_forward',
+      'fixed': 'lock',
+      'manual': 'edit',
+      'extension': 'extension'
+    };
+    return icons[action] || 'help_outline';
+  }
+
+  /**
+   * Gets the label for an action button
+   */
+  getActionLabel(action: MappingAction | null): string {
+    if (!action) return 'KEINE AKTION';
+
+    const labels: { [key: string]: string } = {
+      'use': 'USE',
+      'not_use': 'NOT_USE',
+      'empty': 'EMPTY',
+      'copy_from': 'COPY_FROM',
+      'copy_to': 'COPY_TO',
+      'fixed': 'FIXED',
+      'manual': 'MANUAL',
+      'extension': 'EXTENSION'
+    };
+    return labels[action] || action.toUpperCase();
+  }
+
   // === EVALUATION PRESENTATION ===
   // === UTILITY METHODS ===
   getDescriptionForMapping(useValue: string): string | undefined {
@@ -510,8 +550,9 @@ export class MappingDetailComponent implements OnInit {
     };
 
     const dialogRef = this.dialog.open(EditPropertyActionDialogComponent, {
-      width: '600px',
-      maxWidth: '90vw',
+      width: '1200px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
       data: dialogData,
       disableClose: false
     });

@@ -1,0 +1,47 @@
+<div class="mapping-action-display" [class.compact]="compact">
+  <!-- Action Chip with integrated details -->
+  <div class="action-chip-container">
+    <!-- Action Chip -->
+    <div *ngIf="field.action" 
+         [class]="'action-chip action-chip--' + field.action"
+         [matTooltip]="getActionDescription(field.action)"
+         matTooltipPosition="above">
+      <mat-icon>{{ getActionIcon(field.action) }}</mat-icon>
+      <span class="chip-label">{{ getActionLabel(field.action) }}</span>
+    </div>
+    
+    <!-- No Action Chip -->
+    <div *ngIf="!field.action" 
+         class="action-chip action-chip--no-action"
+         matTooltip="Es wurde noch keine Mapping-Aktion festgelegt"
+         matTooltipPosition="above">
+      <mat-icon>help_outline</mat-icon>
+      <span class="chip-label">KEINE AKTION</span>
+    </div>
+    
+    <!-- Detail Badges (same style as action chip) -->
+    <div *ngIf="field.action_info?.other_value && (field.action === 'copy_from' || field.action === 'copy_to')" 
+         [class]="'detail-badge detail-badge--' + field.action">
+      <mat-icon class="detail-icon">{{ field.action === 'copy_from' ? 'input' : 'output' }}</mat-icon>
+      <span class="detail-text">{{ field.action_info!.other_value }}</span>
+    </div>
+    
+    <div *ngIf="field.action_info?.fixed_value && field.action === 'fixed'" 
+         class="detail-badge detail-badge--fixed">
+      <mat-icon class="detail-icon">lock</mat-icon>
+      <span class="detail-text">"{{ field.action_info!.fixed_value }}"</span>
+    </div>
+    
+    <div *ngIf="field.action_info?.user_remark && (field.action === 'manual' || field.action === 'extension')" 
+         [class]="'detail-badge detail-badge--' + field.action">
+      <mat-icon class="detail-icon">comment</mat-icon>
+      <span class="detail-text">{{ field.action_info!.user_remark }}</span>
+    </div>
+    
+    <!-- System Remark Badge -->
+    <div *ngIf="field.action_info?.system_remark" class="detail-badge detail-badge--system">
+      <mat-icon class="detail-icon">info</mat-icon>
+      <span class="detail-text">{{ field.action_info!.system_remark }}</span>
+    </div>
+  </div>
+</div>

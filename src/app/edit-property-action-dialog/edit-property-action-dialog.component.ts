@@ -30,6 +30,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActionOption, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
+import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 
 export interface EditPropertyActionDialogData {
   field: MappingField;
@@ -52,7 +53,8 @@ export interface EditPropertyActionDialogData {
     MatSelectModule,
     MatIconModule,
     MatAutocompleteModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MappingActionDisplayComponent
   ],
   templateUrl: './edit-property-action-dialog.component.html',
   styleUrl: './edit-property-action-dialog.component.css'
@@ -64,6 +66,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
   fixedValue: string = '';
   remarkText: string = '';
   filteredFields: { name: string }[] = [];
+  suffixFilter: string = '';
+  suffixFilterActive: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
@@ -78,7 +82,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Component initialization
+    // Extract suffix from field name for filtering
+    this.extractSuffixFromFieldName();
   }
 
   /**
@@ -92,17 +97,57 @@ export class EditPropertyActionDialogComponent implements OnInit {
     return action?.description || actionValue;
   }
 
-  onFieldInputChange(value: string): void {
-    const query = value.trim().toLowerCase();
-    if (!query) {
-      this.filteredFields = [...this.data.availableFields];
-      return;
+  /**
+   * Extracts the suffix (last segment after last dot) from the field name
+   */
+  extractSuffixFromFieldName(): void {
+    const fieldName = this.data.field.name;
+    const lastDotIndex = fieldName.lastIndexOf('.');
+    if (lastDotIndex !== -1 && lastDotIndex < fieldName.length - 1) {
+      this.suffixFilter = fieldName.substring(lastDotIndex + 1);
+      this.suffixFilterActive = true;
+      // Apply initial filter when suffix is active
+      this.applyFieldFilter('');
     }
+  }
 
+  /**
+   * Toggles the suffix filter on/off
+   */
+  toggleSuffixFilter(): void {
+    this.suffixFilterActive = !this.suffixFilterActive;
+    this.applyFieldFilter(this.targetField);
+  }
+
+  /**
+   * Applies combined filtering: suffix (if active) + user search query
+   */
+  applyFieldFilter(searchQuery: string): void {
+    const query = searchQuery.trim().toLowerCase();
     const available = this.data.availableFields ?? [];
-    this.filteredFields = available.filter(field =>
-      field.name.toLowerCase().includes(query)
-    );
+
+    this.filteredFields = available.filter(field => {
+      const fieldNameLower = field.name.toLowerCase();
+      
+      // First check suffix filter if active
+      if (this.suffixFilterActive && this.suffixFilter) {
+        const suffixLower = this.suffixFilter.toLowerCase();
+        if (!fieldNameLower.endsWith(suffixLower)) {
+          return false;
+        }
+      }
+
+      // Then check search query
+      if (query) {
+        return fieldNameLower.includes(query);
+      }
+
+      return true;
+    });
+  }
+
+  onFieldInputChange(value: string): void {
+    this.applyFieldFilter(value);
   }
 
   /**
@@ -158,6 +203,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
   selectAction(action: MappingAction): void {
     this.selectedAction = action;
     this.onActionChange();
+    
+    // Re-extract suffix when copy_from or copy_to is selected
+    if (this.requiresTargetField()) {
+      this.extractSuffixFromFieldName();
+    }
   }
 
   /**
