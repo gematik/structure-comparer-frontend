@@ -308,7 +308,7 @@
           [ngClass]="getClassificationCssClass(field.action)"
         >
           <!-- Property -->
-          <td class="default-td">
+          <td class="default-td" [matTooltip]="field.name" matTooltipPosition="above">
             {{ field.name }}
             <ng-container *ngIf="field.extension">
               <br /><span class="muted">({{ field.extension }})</span>

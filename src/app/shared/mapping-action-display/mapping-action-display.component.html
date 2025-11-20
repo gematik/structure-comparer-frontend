@@ -33,13 +33,18 @@
     </div>
 
     <div *ngIf="field.action_info?.user_remark && (field.action === 'manual' || field.action === 'extension')"
-         [class]="'detail-badge detail-badge--' + field.action">
+         [class]="'detail-badge detail-badge--' + field.action"
+         [matTooltip]="field.action_info!.user_remark || ''"
+         matTooltipPosition="above">
       <mat-icon class="detail-icon">comment</mat-icon>
       <span class="detail-text">{{ field.action_info!.user_remark }}</span>
     </div>
 
     <!-- System Remark Badge -->
-    <div *ngIf="field.action_info?.system_remark" class="detail-badge detail-badge--system">
+    <div *ngIf="field.action_info?.system_remark"
+         class="detail-badge detail-badge--system"
+         [matTooltip]="field.action_info!.system_remark || ''"
+         matTooltipPosition="above">
       <mat-icon class="detail-icon">info</mat-icon>
       <span class="detail-text">{{ field.action_info!.system_remark }}</span>
     </div>

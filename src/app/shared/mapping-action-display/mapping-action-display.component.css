@@ -49,7 +49,9 @@
   font-size: 0.8em;
   font-weight: 500;
   letter-spacing: 0.3px;
-  white-space: nowrap;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
 }
 
 .detail-badge .detail-icon {

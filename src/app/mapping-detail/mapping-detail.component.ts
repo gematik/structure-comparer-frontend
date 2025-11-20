@@ -83,6 +83,10 @@ export class MappingDetailComponent implements OnInit {
   // Reference to the tree table component
   @ViewChild(TreeTableComponent) treeTableComponent?: TreeTableComponent;
   private savedTreeState: Record<string, boolean> | null = null;
+  private savedQuickFilter: MappingStatus | null = null;
+  private savedTextFilter: string = '';
+  private savedPageIndex: number = 0;
+  private savedPageSize: number = 200;
 
   // Pagination
   totalLength: number = 0;
@@ -148,6 +152,13 @@ export class MappingDetailComponent implements OnInit {
           this.treeTableComponent.restoreExpansionState(this.savedTreeState!);
           this.savedTreeState = null;
         }
+      }, 0);
+    }
+
+    // Restore filter state if we saved it before reloading
+    if (this.savedQuickFilter !== null || this.savedTextFilter || this.savedPageIndex > 0 || this.savedPageSize !== 200) {
+      setTimeout(() => {
+        this.restoreFilterState();
       }, 0);
     }
   }
@@ -381,6 +392,47 @@ export class MappingDetailComponent implements OnInit {
     this.clearTextFilter();
   }
 
+  private restoreFilterState(): void {
+    // Restore page size first
+    if (this.savedPageSize && this.savedPageSize !== this.pageSize) {
+      this.pageSize = this.savedPageSize;
+    }
+
+    // Restore quick filter
+    if (this.savedQuickFilter !== null) {
+      this.applyQuickFilter(this.savedQuickFilter);
+    }
+
+    // Restore text filter
+    if (this.savedTextFilter) {
+      const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
+      if (filterInput) {
+        filterInput.value = this.savedTextFilter;
+        this.textFilterValue = this.savedTextFilter;
+        // Apply text filter
+        this.handleFiltering({ target: filterInput });
+      }
+    }
+
+    // Restore page index
+    if (this.savedPageIndex > 0) {
+      this.pageIndex = this.savedPageIndex;
+      this.filtered = {
+        ...this.mapping,
+        fields: this.mapping.fields.slice(
+          this.pageSize * this.pageIndex,
+          this.pageSize * (this.pageIndex + 1)
+        )
+      };
+    }
+
+    // Clear saved state
+    this.savedQuickFilter = null;
+    this.savedTextFilter = '';
+    this.savedPageIndex = 0;
+    this.savedPageSize = 200;
+  }
+
   private updateFilteredData(fields: any[]): void {
     const baseMapping = this.mapping ?? this.original ?? {};
     this.mapping = { ...baseMapping, fields };
@@ -541,6 +593,12 @@ export class MappingDetailComponent implements OnInit {
   });
 
   openEditPropertyActionDialog(field: MappingField, fieldIndex: number): void {
+    // Save current filter state before opening dialog
+    this.savedQuickFilter = this.currentQuickFilter;
+    this.savedTextFilter = this.textFilterValue;
+    this.savedPageIndex = this.pageIndex;
+    this.savedPageSize = this.pageSize;
+
     const dialogData: EditPropertyActionDialogData = {
       field: field,
       availableActions: this.classifications,

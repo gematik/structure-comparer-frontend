@@ -54,7 +54,7 @@
       [ngClass]="getClassificationCssClass(row.field?.action)"
     >
       <!-- Property Column with Tree Structure -->
-      <td class="default-td">
+      <td class="default-td" [matTooltip]="row.field?.name || row.node.label" matTooltipPosition="above">
         <div class="tree-cell">
           <!-- Depth indicator bars -->
           <div class="tree-depth">
