@@ -237,7 +237,7 @@ export class MappingsService {
    * @param mappingId The unique identifier of the mapping
    * @returns Observable containing the FSH file as a blob
    */
-  downloadStructureMapFsh(projectKey: string, mappingId: string): Observable<Blob> {
+  downloadStructureMap(projectKey: string, mappingId: string): Observable<Blob> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/structuremap.fsh`, { responseType: 'blob' })

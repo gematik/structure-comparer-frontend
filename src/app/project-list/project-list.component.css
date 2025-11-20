@@ -244,23 +244,6 @@ mat-form-field {
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.progress-segment {
-  transition: all 0.3s ease;
-  cursor: help;
-}
-
-.progress-segment.completed {
-  background: linear-gradient(90deg, #28a745, #20c997);
-}
-
-.progress-segment.resolved {
-  background: linear-gradient(90deg, #17a2b8, #20c997);
-}
-
-.progress-segment.needs-action {
-  background: linear-gradient(90deg, #dc3545, #e74c3c);
-}
-
 /* Statistics Grid */
 .stats-grid {
   display: grid;
@@ -282,30 +265,36 @@ mat-form-field {
 
 .stat-value {
   font-weight: 600;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border-radius: 8px;
   min-width: 24px;
   text-align: center;
+  font-size: 12px;
 }
 
 .stat-value.total {
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: #6c757d;
+  color: white;
 }
 
 .stat-value.compatible {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #E3FCEF;
+  color: #1e4620;
 }
 
-.stat-value.resolved {
+.stat-value.solved {
   background-color: #d1ecf1;
   color: #0c5460;
 }
 
-.stat-value.needs-action {
-  background-color: #f8d7da;
-  color: #721c24;
+.stat-value.warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.stat-value.incompatible {
+  background-color: #fdecea;
+  color: #7a1f1f;
 }
 
 /* No Data Styling */

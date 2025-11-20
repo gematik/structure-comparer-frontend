@@ -35,6 +35,177 @@ body {
 }
 
 
+/* Status Pills */
+.pill--total {
+  background-color: #6c757d;
+  color: white;
+}
+
+.pill--compatible {
+  background-color: #E3FCEF;
+  color: #1e4620;
+}
+
+.pill--resolved,
+.pill--solved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--needs-action {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.pill--warning {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.pill--incompatible {
+  background-color: #fdecea;
+  color: #7a1f1f;
+}
+
+/* Overview Cards */
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.overview-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.overview-card .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.overview-card .card-title {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.overview-card .card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.overview-card .card-subtitle {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Card Types */
+.total-card {
+  border-color: #6c757d;
+}
+
+.total-card .card-value {
+  color: #495057;
+}
+
+.success-card {
+  border-color: #28a745;
+}
+
+.success-card .card-value {
+  color: #28a745;
+}
+
+.resolved-card {
+  border-color: #17a2b8;
+}
+
+.resolved-card .card-value {
+  color: #17a2b8;
+}
+
+.attention-card {
+  border-color: #ffc107;
+}
+
+.attention-card .card-value {
+  color: #e0a800;
+}
+
+.danger-card {
+  border-color: #dc3545;
+}
+
+.danger-card .card-value {
+  color: #dc3545;
+}
+
+/* Progress Bar */
+.progress-section {
+  margin-bottom: 25px;
+}
+
+.progress-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-segment {
+  transition: all 0.3s ease;
+  cursor: help;
+}
+
+.progress-segment.compatible {
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.progress-segment.solved {
+  background: linear-gradient(90deg, #17a2b8, #20c997);
+}
+
+.progress-segment.warning {
+  background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.progress-segment.incompatible {
+  background: linear-gradient(90deg, #dc3545, #e74c3c);
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
 /* Modernes Tabellen-Design mit vertikalen Trennlinien */
 .modern-table {
     width: 100%;

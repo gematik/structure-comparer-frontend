@@ -582,14 +582,14 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => this.saveFile(data, filename));
   }
 
-  downloadStructureMapFsh(): void {
+  downloadStructureMap(): void {
     const filenameBase = this.sanitizeFilename(this.filtered?.name || this.mappingId);
-    const filename = `${filenameBase}_structuremap.fsh`;
+    const filename = `${filenameBase}_structuremap.json`;
 
-    this.mappingsService.downloadStructureMapFsh(this.projectKey, this.mappingId)
+    this.mappingsService.downloadStructureMap(this.projectKey, this.mappingId)
       .pipe(catchError(err => {
-        console.error('Error downloading FSH export', err);
-        this.snackBar.open('Fehler beim Herunterladen der FSH-Datei', 'Schließen', {
+        console.error('Error downloading StructureMap export', err);
+        this.snackBar.open('Fehler beim Herunterladen der StructureMap-Datei', 'Schließen', {
           duration: 5000,
           panelClass: ['error-snackbar']
         });
@@ -598,7 +598,7 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => {
         if (data.size > 0) {
           this.saveFile(data, filename);
-          this.snackBar.open('FSH-Datei erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
+          this.snackBar.open('StructureMap-Datei erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
         }
       });
   }
