@@ -16,6 +16,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
+import { EditMappingDialogComponent, EditMappingDialogData, EditMappingDialogResult } from '../edit-mapping-dialog/edit-mapping-dialog.component';
 import { ActionOption as ActionOptionModel, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
@@ -651,6 +652,59 @@ export class MappingDetailComponent implements OnInit {
         this.updateFieldAction(field.name, result);
       }
     });
+  }
+
+  openEditMappingDialog(): void {
+    const dialogData: EditMappingDialogData = {
+      name: this.filtered.name,
+      status: this.filtered.status,
+      version: this.filtered.version,
+      sources: this.filtered.sources.map((source: any) => ({
+        name: source.name,
+        url: source.url || null,
+        version: source.version,
+        webUrl: source.webUrl || null,
+        package: source.package || null
+      })),
+      target: {
+        name: this.filtered.target.name,
+        url: this.filtered.target.url || null,
+        version: this.filtered.target.version,
+        webUrl: this.filtered.target.webUrl || null,
+        package: this.filtered.target.package || null
+      }
+    };
+
+    const dialogRef = this.dialog.open(EditMappingDialogComponent, {
+      width: '700px',
+      maxWidth: '90vw',
+      data: dialogData,
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result: EditMappingDialogResult) => {
+      if (result) {
+        this.updateMappingMetadata(result);
+      }
+    });
+  }
+
+  private updateMappingMetadata(updateData: EditMappingDialogResult): void {
+    this.mappingsService.updateMappingMetadata(this.projectKey, this.mappingId, updateData)
+      .pipe(catchError(error => {
+        console.error('Error updating mapping metadata:', error);
+        this.snackBar.open('Fehler beim Speichern der Mapping-Eigenschaften', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(null);
+      }))
+      .subscribe(response => {
+        if (response) {
+          this.snackBar.open('Mapping-Eigenschaften erfolgreich gespeichert', 'Schließen', { duration: 3000 });
+          this.loadMapping(this.projectKey, this.mappingId);
+        }
+      });
   }
 
   confirmChanges(field: any): void {

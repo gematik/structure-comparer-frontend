@@ -189,6 +189,20 @@ export class MappingsService {
   }
 
   /**
+   * Updates mapping metadata (status, version)
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping to update
+   * @param updateData Object containing status and/or version to update
+   * @returns Observable containing the updated mapping details
+   */
+  updateMappingMetadata(projectKey: string, mappingId: string, updateData: { status?: string; version?: string }): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.patch(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}`, updateData)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Deletes a mapping
    * @param mappingId The unique identifier of the mapping to delete
    * @returns Observable containing the deletion response

@@ -35,4 +35,6 @@ export interface Profile {
   url: string;
   // Version number of the profile
   version: string;
+  // Optional web URL for documentation/Simplifier
+  webUrl?: string;
 }

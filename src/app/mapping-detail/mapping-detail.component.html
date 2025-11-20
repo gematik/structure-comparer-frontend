@@ -22,7 +22,17 @@
 
   <!-- Unified Mapping Status Overview -->
   <div class="mapping-overview">
-    <h3>Mapping: {{ filtered.name }}</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3>Mapping: {{ filtered.name }}</h3>
+      <button
+        mat-icon-button
+        (click)="openEditMappingDialog()"
+        aria-label="Mapping-Eigenschaften bearbeiten"
+        matTooltip="Mapping-Eigenschaften bearbeiten"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
 
     <!-- General Mapping Information -->
     <div class="mapping-info-section">
@@ -35,13 +45,13 @@
           >
             <div class="multiple-sources">
               <span *ngFor="let profile of filtered.sources; let last = last">
-                <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
+                <a [href]="profile.webUrl || profile.url" target="_blank">{{ profile.name }}</a>
                 <span *ngIf="!last">, </span>
               </span>
             </div>
           </ng-container>
           <ng-template #singleSourceInfo>
-            <a [href]="filtered.sources[0].url" target="_blank">{{
+            <a [href]="filtered.sources[0].webUrl || filtered.sources[0].url" target="_blank">{{
               filtered.sources[0].name
             }}</a>
           </ng-template>
@@ -49,7 +59,7 @@
 
         <div class="info-item">
           <span class="info-label">Target Profile:</span>
-          <a [href]="filtered.target.url" target="_blank">{{
+          <a [href]="filtered.target.webUrl || filtered.target.url" target="_blank">{{
             filtered.target.name
           }}</a>
 
