@@ -73,6 +73,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   @Input() classifications: any[] = [];
   @Input() editingIndex: number | null = null;
   @Input() hoverIndex: number | null = null;
+  @Input() textFilter: string = '';
 
   @Output() editField = new EventEmitter<EditFieldEvent>();
   @Output() confirmChanges = new EventEmitter<any>();
@@ -89,7 +90,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['fields'] || changes['currentQuickFilter']) {
+    if (changes['fields'] || changes['currentQuickFilter'] || changes['textFilter']) {
       this.buildTree();
       this.applyFilter();
     }
@@ -116,16 +117,31 @@ export class TreeTableComponent implements OnInit, OnChanges {
    * Apply current filter to the tree
    */
   applyFilter(): void {
-    if (!this.currentQuickFilter) {
-      this.filteredTree = [...this.propertyTree];
-      return;
+    let filteredFields = [...this.fields];
+
+    // Apply quick filter if active
+    if (this.currentQuickFilter) {
+      filteredFields = filteredFields.filter(field => {
+        const fieldStatus = this.getFieldStatus(field);
+        return fieldStatus === this.currentQuickFilter;
+      });
     }
 
-    // Filter the original fields first based on status
-    const filteredFields = this.fields.filter(field => {
-      const fieldStatus = this.getFieldStatus(field);
-      return fieldStatus === this.currentQuickFilter;
-    });
+    // Apply text filter if present
+    if (this.textFilter && this.textFilter.trim()) {
+      const normalizedFilter = this.normalizeString(this.textFilter);
+      filteredFields = filteredFields.filter(field => {
+        const name = this.normalizeString(field.name || '');
+        const action = this.normalizeString(field.action || '');
+        const remark = this.normalizeString(field.remark || '');
+        const status = this.normalizeString(this.getStatusLabel(this.getFieldStatus(field)));
+
+        return name.includes(normalizedFilter) || 
+               action.includes(normalizedFilter) || 
+               remark.includes(normalizedFilter) || 
+               status.includes(normalizedFilter);
+      });
+    }
 
     // Rebuild tree with filtered fields
     if (filteredFields.length > 0) {
@@ -135,6 +151,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
     } else {
       this.filteredTree = [];
     }
+  }
+
+  /**
+   * Normalizes a string for filtering
+   */
+  private normalizeString(str: string): string {
+    return str.toLowerCase().trim();
   }
 
   /**

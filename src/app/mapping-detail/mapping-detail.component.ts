@@ -71,6 +71,7 @@ export class MappingDetailComponent implements OnInit {
   filtered: any;
   currentQuickFilter: MappingStatus | null = null;
   filteredFields: MappingField[] = [];
+  textFilterValue: string = '';
 
   // Profile columns and view settings
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
@@ -316,6 +317,7 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private clearTextFilter(): void {
+    this.textFilterValue = '';
     const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
     if (filterInput) {
       filterInput.value = '';
@@ -404,17 +406,30 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private handleFiltering(e: any): void {
-    if (this.currentQuickFilter) return;
-
     const raw = (e?.target as HTMLInputElement)?.value ?? '';
     const val = normalizeString(raw);
+    
+    // Store the filter value for tree view
+    this.textFilterValue = raw;
 
+    // Start with original fields or quick-filtered fields
+    let sourceFields = this.original?.fields ?? [];
+    
+    // Apply quick filter first if active
+    if (this.currentQuickFilter) {
+      sourceFields = sourceFields.filter((field: MappingField) => {
+        const fieldStatus = this.getFieldStatus(field);
+        return fieldStatus === this.currentQuickFilter;
+      });
+    }
+
+    // If no text filter, use the source fields (original or quick-filtered)
     if (!val) {
-      this.updateFilteredData(this.original?.fields ?? []);
+      this.updateFilteredData(sourceFields);
       return;
     }
 
-    const sourceFields = this.original?.fields ?? [];
+    // Apply text filter on top of quick filter
     const filteredFields = sourceFields.filter((record: IProfile & MappingField) => {
       const name = normalizeString(record.name);
       const classification = normalizeString(record.action);
