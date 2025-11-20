@@ -24,8 +24,8 @@
     <div class="current-action">
       <strong>Aktuelle Aktion:</strong>
       <div class="current-action-wrapper">
-        <app-mapping-action-display 
-          [field]="data.field" 
+        <app-mapping-action-display
+          [field]="data.field"
           [compact]="false">
         </app-mapping-action-display>
       </div>
@@ -69,7 +69,7 @@
     <div *ngIf="requiresTargetField()" class="conditional-field">
       <!-- Suffix Filter Chip -->
       <div *ngIf="suffixFilter" class="suffix-chip-container">
-        <div class="suffix-chip" (click)="toggleSuffixFilter()" 
+        <div class="suffix-chip" (click)="toggleSuffixFilter()"
              [style.opacity]="suffixFilterActive ? '1' : '0.5'"
              [matTooltip]="suffixFilterActive ? 'Klicken um Suffix-Filter zu deaktivieren' : 'Klicken um Suffix-Filter zu aktivieren'"
              matTooltipPosition="above">

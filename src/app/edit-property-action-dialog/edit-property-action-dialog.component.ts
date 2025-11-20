@@ -128,7 +128,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
     this.filteredFields = available.filter(field => {
       const fieldNameLower = field.name.toLowerCase();
-      
+
       // First check suffix filter if active
       if (this.suffixFilterActive && this.suffixFilter) {
         const suffixLower = this.suffixFilter.toLowerCase();
@@ -203,7 +203,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
   selectAction(action: MappingAction): void {
     this.selectedAction = action;
     this.onActionChange();
-    
+
     // Re-extract suffix when copy_from or copy_to is selected
     if (this.requiresTargetField()) {
       this.extractSuffixFromFieldName();

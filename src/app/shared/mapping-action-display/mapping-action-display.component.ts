@@ -99,8 +99,8 @@ export class MappingActionDisplayComponent {
    * Check if action requires additional details to be shown
    */
   hasAdditionalDetails(): boolean {
-    return !!(this.field.action_info?.other_value || 
-              this.field.action_info?.fixed_value || 
+    return !!(this.field.action_info?.other_value ||
+              this.field.action_info?.fixed_value ||
               this.field.action_info?.user_remark ||
               this.field.action_info?.system_remark);
   }
