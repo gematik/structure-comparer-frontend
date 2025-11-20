@@ -32,7 +32,7 @@
       <th class="stats-column">Statistiken</th>
       <th class="actions-column">Actions</th>
     </tr>
-    <tr *ngFor="let project of projectsWithProgress.length > 0 ? projectsWithProgress : projects.projects" class="project-row">
+    <tr *ngFor="let project of projectsWithProgress.length > 0 ? projectsWithProgress : projects.projects" class="project-row clickable-row" (click)="loadProject(project.url)">
       <td class="project-items">
         <div class="project-name">{{ project.name }}</div>
         <div *ngIf="project.progressSummary" class="project-status" [ngClass]="getProjectProgressClass(project.progressSummary)">
@@ -116,10 +116,7 @@
       </ng-template>
 
       <!-- Actions Column -->
-      <td class="actions-column">
-        <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm">
-          <mat-icon>remove_red_eye</mat-icon>
-        </button>
+      <td class="actions-column" (click)="$event.stopPropagation()">
         <button mat-icon-button (click)="deleteProject(project)" class="mat-icon-button-sm" color="warn">
           <mat-icon>delete</mat-icon>
         </button>

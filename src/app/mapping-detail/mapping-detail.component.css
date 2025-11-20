@@ -534,6 +534,20 @@ tr:hover {
   color: #ad1457;
 }
 
+/* Clickable mapping cell */
+.clickable-mapping-cell {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-mapping-cell:hover {
+  background-color: #f5f5f5;
+}
+
+.clickable-mapping-cell:active {
+  background-color: #e8e8e8;
+}
+
 /* Enhanced Evaluation Styles */
 .evaluation-summary {
   margin: 20px 0;

@@ -29,12 +29,17 @@
   background-color: #f8f9fa;
 }
 
-.clickable-cell {
+.clickable-row {
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.clickable-cell:hover {
-  text-decoration: underline;
+.clickable-row:hover {
+  background-color: #f5f5f5;
+}
+
+.clickable-row:active {
+  background-color: #e8e8e8;
 }
 
 .col-wide {

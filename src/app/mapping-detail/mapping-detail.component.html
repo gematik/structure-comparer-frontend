@@ -374,9 +374,8 @@
 
           <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
           <td
-            class="default-td"
-            (mouseenter)="handleEdit(i).startHover()"
-            (mouseleave)="handleEdit().stopHover()"
+            class="default-td clickable-mapping-cell"
+            (click)="editingIndex !== i && openEditPropertyActionDialog(field, i)"
           >
             <div *ngIf="editingIndex !== i">
               <!-- Consolidated Mapping Display -->
@@ -401,16 +400,7 @@
               <!-- Recommendations anzeigen, wenn keine Behandlung erfolgt ist -->
             </div>
 
-            <button
-              mat-button
-              *ngIf="hoverIndex === i && editingIndex !== i"
-              (click)="openEditPropertyActionDialog(field, i)"
-              color="primary"
-            >
-              Bearbeiten
-            </button>
-
-            <div *ngIf="editingIndex === i">
+            <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">
               <div>
                 Aktueller Stand: {{ getDescriptionForMapping(field.action) }}
               </div>

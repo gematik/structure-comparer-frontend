@@ -85,8 +85,8 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
         </th>
       </tr>
 
-      <tr *ngFor="let mapping of mappings" class="hover-highlight">
-        <td class="clickable-cell" (click)="viewMapping(mapping.id)">
+      <tr *ngFor="let mapping of mappings" class="hover-highlight clickable-row" (click)="viewMapping(mapping.id)">
+        <td>
           {{ mapping.name }}
         </td>
         <td>
@@ -104,15 +104,7 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
         <td>
           <span class="pill pill--incompatible">{{ mapping.incompatible ?? 0 }}</span>
         </td>
-        <td>
-          <button
-            mat-icon-button
-            (click)="viewMapping(mapping.id)"
-            class="mat-icon-button-sm"
-            title="Edit mapping"
-          >
-            <mat-icon>remove_red_eye</mat-icon>
-          </button>
+        <td (click)="$event.stopPropagation()">
           <button
             mat-icon-button
             (click)="deleteMapping(mapping.id, mapping.name)"
