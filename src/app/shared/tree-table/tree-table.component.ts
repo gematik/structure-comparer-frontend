@@ -136,9 +136,9 @@ export class TreeTableComponent implements OnInit, OnChanges {
         const remark = this.normalizeString(field.remark || '');
         const status = this.normalizeString(this.getStatusLabel(this.getFieldStatus(field)));
 
-        return name.includes(normalizedFilter) || 
-               action.includes(normalizedFilter) || 
-               remark.includes(normalizedFilter) || 
+        return name.includes(normalizedFilter) ||
+               action.includes(normalizedFilter) ||
+               remark.includes(normalizedFilter) ||
                status.includes(normalizedFilter);
       });
     }

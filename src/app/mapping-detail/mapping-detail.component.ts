@@ -408,13 +408,13 @@ export class MappingDetailComponent implements OnInit {
   private handleFiltering(e: any): void {
     const raw = (e?.target as HTMLInputElement)?.value ?? '';
     const val = normalizeString(raw);
-    
+
     // Store the filter value for tree view
     this.textFilterValue = raw;
 
     // Start with original fields or quick-filtered fields
     let sourceFields = this.original?.fields ?? [];
-    
+
     // Apply quick filter first if active
     if (this.currentQuickFilter) {
       sourceFields = sourceFields.filter((field: MappingField) => {
