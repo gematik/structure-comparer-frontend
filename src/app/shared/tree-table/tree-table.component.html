@@ -160,24 +160,11 @@
       >
         <ng-container *ngIf="row.field">
         <div *ngIf="editingIndex !== i">
-          <!-- Consolidated Mapping Display -->
-          <div
-            class="mapping-consolidated"
-            [attr.data-action]="row.field.action"
-          >
-            <div class="mapping-header"></div>
-            <div
-              *ngIf="getConsolidatedMappingText(row.field)"
-              class="mapping-details"
-              [matTooltip]="getRemarkTooltip(row.field) || ''"
-              matTooltipPosition="above"
-            >
-              {{ getConsolidatedMappingText(row.field) }}
-            </div>
-            <div *ngIf="getActionSubLabel(row.field)" class="mapping-sub-text">
-              {{ getActionSubLabel(row.field) }}
-            </div>
-          </div>
+          <!-- Use the shared mapping action display component -->
+          <app-mapping-action-display
+            [field]="row.field"
+            [compact]="true">
+          </app-mapping-action-display>
         </div>
 
         <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">

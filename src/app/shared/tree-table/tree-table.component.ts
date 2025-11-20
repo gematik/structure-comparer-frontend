@@ -33,6 +33,7 @@ import {
   ACTION_CSS,
 } from '../../mapping-detail/mapping-detail-helpers';
 import { MappingStatus } from '../../models/mapping-evaluation.model';
+import { MappingActionDisplayComponent } from '../mapping-action-display/mapping-action-display.component';
 
 export interface DisplayRow {
   node: PropertyTreeNode;
@@ -60,7 +61,8 @@ export interface EditFieldEvent {
     MatButtonModule,
 
     MatTooltip,
-    MatSortModule
+    MatSortModule,
+    MappingActionDisplayComponent
   ],
   templateUrl: './tree-table.component.html',
   styleUrls: ['./tree-table.component.css']
