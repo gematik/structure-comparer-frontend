@@ -57,7 +57,6 @@ export type MappingAction =
   | 'fixed'
   | 'manual'
   | 'extension'
-  | 'medication_service'
   | null;
 
 /**

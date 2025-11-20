@@ -45,7 +45,6 @@ export const ACTION_CSS: Record<string, string> = {
   copy_from: 'row-copy-from',
   copy_to: 'row-copy-to',
   fixed: 'row-fixed',
-  medication_service: 'row-medication-service',
   // Special styling for fields with no action selected
   'no-action': 'row-no-action',
 };

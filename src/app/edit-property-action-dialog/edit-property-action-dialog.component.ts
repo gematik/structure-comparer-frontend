@@ -190,8 +190,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'extension': 'extension',
-      'medication_service': 'medical_services'
+      'extension': 'extension'
     };
     return icons[action] || 'help_outline';
   }
@@ -210,8 +209,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'extension': 'EXTENSION',
-      'medication_service': 'MEDICATION_SERVICE'
+      'extension': 'EXTENSION'
     };
     return labels[action] || action.toUpperCase();
   }

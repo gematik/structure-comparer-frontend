@@ -353,8 +353,7 @@ button.cancel:hover {
   color: #f57c00;
 }
 
-.mapping-consolidated[data-action="other"] .mapping-details,
-.mapping-consolidated[data-action="medication_service"] .mapping-details {
+.mapping-consolidated[data-action="other"] .mapping-details {
   background-color: #fce4ec;
   border-left-color: #e91e63;
   color: #ad1457;

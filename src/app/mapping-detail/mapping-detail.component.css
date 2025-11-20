@@ -148,10 +148,6 @@ tr:hover {
   background-color: #FCF3CF;
 }
 
-.pill--medication_service {
-  background-color: #FADBD8;
-}
-
 .evaluation-reasons {
   margin-top: 6px;
   display: grid;
@@ -527,8 +523,7 @@ tr:hover {
   color: #f57c00;
 }
 
-.mapping-consolidated[data-action="other"] .mapping-details,
-.mapping-consolidated[data-action="medication_service"] .mapping-details {
+.mapping-consolidated[data-action="other"] .mapping-details {
   background-color: #fce4ec;
   border-left-color: #e91e63;
   color: #ad1457;
