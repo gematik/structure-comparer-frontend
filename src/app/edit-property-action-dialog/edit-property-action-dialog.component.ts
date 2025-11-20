@@ -181,7 +181,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   getActionIcon(action: MappingAction): string {
     if (!action) return '';
-    
+
     const icons: { [key: string]: string } = {
       'use': 'check_circle',
       'not_use': 'cancel',
@@ -201,7 +201,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   getActionLabel(action: MappingAction): string {
     if (!action) return '';
-    
+
     const labels: { [key: string]: string } = {
       'use': 'USE',
       'not_use': 'NOT_USE',
