@@ -215,7 +215,7 @@ body {
     overflow: hidden;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   }
-  
+
   /* Kopfzeile */
   .modern-table th {
     text-align: left;
@@ -227,12 +227,12 @@ body {
     border-right: 1px solid #e5e7eb;
     table-layout: fixed;
   }
-  
+
   /* Letzte Kopf-Zelle ohne rechte Grenze */
   .modern-table th:last-child {
     border-right: none;
   }
-  
+
   /* Datenzellen */
   .modern-table td {
     padding: 12px 16px;
@@ -240,13 +240,13 @@ body {
     border-right: 1px solid #e5e7eb;
     vertical-align: middle;
   }
-  
+
   /* Letzte Zelle ohne rechte Grenze */
   .modern-table td:last-child {
     border-right: none;
   }
-  
-  
+
+
   /* Icons Styling */
   .icon {
     margin-right: 10px;
@@ -254,19 +254,19 @@ body {
     color: #4b5563;
     transition: color 0.2s;
   }
-  
+
   .icon:hover {
     color: #1f2937;
   }
-  
-  
+
+
 .m-20 {
     margin: 20px;
 }
 
 .section-heading {
   padding-top: 20px;
-  
+
 }
 
 html, body { height: 100%; }
@@ -368,7 +368,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .expanded-detail {
   background-color: #f5f7fa;
- 
+
   padding: 16px;
   margin: 4px 0;
   border-radius: 4px;
