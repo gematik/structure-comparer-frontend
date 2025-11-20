@@ -232,10 +232,10 @@ export class MappingsService {
   }
 
   /**
-   * Downloads a FHIR StructureMap in FSH format for a mapping
+   * Downloads a FHIR StructureMap for a mapping
    * @param projectKey The unique identifier of the project
    * @param mappingId The unique identifier of the mapping
-   * @returns Observable containing the FSH file as a blob
+   * @returns Observable containing the StructureMap file as a blob
    */
   downloadStructureMap(projectKey: string, mappingId: string): Observable<Blob> {
     const encodedProjectKey = encodeURIComponent(projectKey);
