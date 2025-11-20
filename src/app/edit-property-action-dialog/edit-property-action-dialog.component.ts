@@ -95,7 +95,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
   private isFieldInSourceProfile(): boolean {
     const fieldProfiles = this.data.field.profiles || {};
     const sourceProfileNames = this.data.sources.map(s => s.name);
-    
+
     // Check if field exists in any source profile
     return sourceProfileNames.some(sourceName => fieldProfiles[sourceName]);
   }
@@ -106,7 +106,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
   private isFieldInTargetProfile(): boolean {
     const fieldProfiles = this.data.field.profiles || {};
     const targetProfileName = this.data.target.name;
-    
+
     return !!fieldProfiles[targetProfileName];
   }
 
@@ -175,12 +175,12 @@ export class EditPropertyActionDialogComponent implements OnInit {
         // Check if this field exists in any of the relevant profiles
         // The field object should already have profiles information
         const fieldProfiles = (field as any).profiles;
-        
+
         if (fieldProfiles) {
           const existsInRelevantProfile = relevantProfileNames.some(
             profileName => fieldProfiles[profileName]
           );
-          
+
           // Only include fields that exist in the relevant profiles (source or target)
           if (!existsInRelevantProfile) {
             return false;

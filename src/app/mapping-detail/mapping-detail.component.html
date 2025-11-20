@@ -12,12 +12,26 @@
       mat-raised-button
       color="accent"
       (click)="downloadStructureMap()"
+      [disabled]="!isStructureMapDownloadAllowed()"
       aria-label="Download StructureMap"
-      matTooltip="Export als FHIR StructureMap"
+      [matTooltip]="isStructureMapDownloadAllowed() ? 'Export als FHIR StructureMap' : 'StructureMap kann nur heruntergeladen werden, wenn alle inkompatiblen Mappings gelöst sind'"
     >
       <mat-icon>file_download</mat-icon>
       StructureMap
     </button>
+  </div>
+
+  <!-- Warning message when StructureMap download is not allowed -->
+  <div
+    *ngIf="!isStructureMapDownloadAllowed()"
+    class="structuremap-warning"
+    style="background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px; padding: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;"
+  >
+    <mat-icon style="color: #ff9800;">warning</mat-icon>
+    <span style="color: #856404;">
+      <strong>StructureMap-Export nicht möglich:</strong>
+      Es gibt noch {{ getStatusSummary()?.incompatible || 0 }} inkompatible(s) Mapping(s), die gelöst werden müssen.
+    </span>
   </div>
 
   <!-- Unified Mapping Status Overview -->

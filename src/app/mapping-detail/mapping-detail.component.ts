@@ -768,15 +768,57 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => this.saveFile(data, filename));
   }
 
+  /**
+   * Checks if the StructureMap download is allowed.
+   * Only allowed when there are no incompatible mappings left.
+   */
+  isStructureMapDownloadAllowed(): boolean {
+    const summary = this.getStatusSummary();
+    if (!summary) {
+      return false;
+    }
+    // Allow download only when there are no incompatible mappings
+    return summary.incompatible === 0;
+  }
+
   downloadStructureMap(): void {
+    if (!this.isStructureMapDownloadAllowed()) {
+      const incompatibleCount = this.getStatusSummary()?.incompatible || 0;
+      this.snackBar.open(
+        `StructureMap kann nur heruntergeladen werden, wenn alle ${incompatibleCount} inkompatiblen Mappings gelöst sind`,
+        'Schließen',
+        {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        }
+      );
+      return;
+    }
+
     const filenameBase = this.sanitizeFilename(this.filtered?.name || this.mappingId);
     const filename = `${filenameBase}_structuremap.json`;
 
     this.mappingsService.downloadStructureMap(this.projectKey, this.mappingId)
       .pipe(catchError(err => {
         console.error('Error downloading StructureMap export', err);
-        this.snackBar.open('Fehler beim Herunterladen der StructureMap-Datei', 'Schließen', {
-          duration: 5000,
+
+        // Check if backend returned a specific error message
+        let errorMessage = 'Fehler beim Herunterladen der StructureMap-Datei';
+        if (err.error && typeof err.error === 'string') {
+          try {
+            const errorObj = JSON.parse(err.error);
+            if (errorObj.error) {
+              errorMessage = errorObj.error;
+            }
+          } catch {
+            // If parsing fails, use default message
+          }
+        } else if (err.error?.error) {
+          errorMessage = err.error.error;
+        }
+
+        this.snackBar.open(errorMessage, 'Schließen', {
+          duration: 7000,
           panelClass: ['error-snackbar']
         });
         return of(new Blob());
