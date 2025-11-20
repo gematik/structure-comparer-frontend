@@ -39,31 +39,40 @@
         <div class="card-subtitle">Felder in {{ getProjectOverallSummary().totalMappings }} Mappings</div>
       </div>
 
-      <!-- Completed Card -->
+      <!-- Compatible Card -->
       <div class="project-overview-card success-card">
         <div class="card-header">
           <span class="card-title">Kompatibel</span>
         </div>
-        <div class="card-value">{{ getProjectOverallSummary().completed }}</div>
+        <div class="card-value">{{ getProjectOverallSummary().compatible }}</div>
         <div class="card-subtitle">Keine Probleme</div>
       </div>
 
-      <!-- Resolved Card -->
+      <!-- Solved Card -->
       <div class="project-overview-card resolved-card">
         <div class="card-header">
           <span class="card-title">Gelöst</span>
         </div>
-        <div class="card-value">{{ getProjectOverallSummary().resolved }}</div>
+        <div class="card-value">{{ getProjectOverallSummary().solved }}</div>
         <div class="card-subtitle">Durch Aktionen behoben</div>
       </div>
 
-      <!-- Needs Action Card -->
+      <!-- Warning Card -->
       <div class="project-overview-card attention-card">
         <div class="card-header">
-          <span class="card-title">Aktion erforderlich</span>
+          <span class="card-title">Warnung</span>
         </div>
-        <div class="card-value">{{ getProjectOverallSummary().needs_action }}</div>
-        <div class="card-subtitle">Müssen bearbeitet werden</div>
+        <div class="card-value">{{ getProjectOverallSummary().warning }}</div>
+        <div class="card-subtitle">Überprüfung empfohlen</div>
+      </div>
+
+      <!-- Incompatible Card -->
+      <div class="project-overview-card danger-card">
+        <div class="card-header">
+          <span class="card-title">Inkompatibel</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().incompatible }}</div>
+        <div class="card-subtitle">Aktion erforderlich</div>
       </div>
     </div>
 
@@ -72,19 +81,24 @@
       <div class="progress-label">Gesamtfortschritt über alle Mappings</div>
       <div class="progress-bar">
         <div
-          class="progress-segment completed"
-          [style.width.%]="getProjectProgressPercentage('completed')"
-          [matTooltip]="getProjectOverallSummary().completed + ' kompatible Felder'"
+          class="progress-segment compatible"
+          [style.width.%]="getProjectProgressPercentage('compatible')"
+          [matTooltip]="getProjectOverallSummary().compatible + ' kompatibel'"
         ></div>
         <div
-          class="progress-segment resolved"
-          [style.width.%]="getProjectProgressPercentage('resolved')"
-          [matTooltip]="getProjectOverallSummary().resolved + ' gelöste Felder'"
+          class="progress-segment solved"
+          [style.width.%]="getProjectProgressPercentage('solved')"
+          [matTooltip]="getProjectOverallSummary().solved + ' gelöst'"
         ></div>
         <div
-          class="progress-segment needs-action"
-          [style.width.%]="getProjectProgressPercentage('needs_action')"
-          [matTooltip]="getProjectOverallSummary().needs_action + ' Felder benötigen Aktion'"
+          class="progress-segment warning"
+          [style.width.%]="getProjectProgressPercentage('warning')"
+          [matTooltip]="getProjectOverallSummary().warning + ' Warnung'"
+        ></div>
+        <div
+          class="progress-segment incompatible"
+          [style.width.%]="getProjectProgressPercentage('incompatible')"
+          [matTooltip]="getProjectOverallSummary().incompatible + ' inkompatibel'"
         ></div>
       </div>
       <div class="progress-text">

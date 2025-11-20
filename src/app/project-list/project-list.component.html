@@ -49,19 +49,24 @@
           <div class="progress-bar-container">
             <div class="mini-progress-bar">
               <div
-                class="progress-segment completed"
-                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'completed')"
-                [matTooltip]="project.progressSummary.completed + ' kompatible Felder'"
+                class="progress-segment compatible"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'compatible')"
+                [matTooltip]="project.progressSummary.compatible + ' kompatibel'"
               ></div>
               <div
-                class="progress-segment resolved"
-                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'resolved')"
-                [matTooltip]="project.progressSummary.resolved + ' gelöste Felder'"
+                class="progress-segment solved"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'solved')"
+                [matTooltip]="project.progressSummary.solved + ' gelöst'"
               ></div>
               <div
-                class="progress-segment needs-action"
-                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'needs_action')"
-                [matTooltip]="project.progressSummary.needs_action + ' Felder benötigen Aktion'"
+                class="progress-segment warning"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'warning')"
+                [matTooltip]="project.progressSummary.warning + ' Warnung'"
+              ></div>
+              <div
+                class="progress-segment incompatible"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'incompatible')"
+                [matTooltip]="project.progressSummary.incompatible + ' inkompatibel'"
               ></div>
             </div>
           </div>
@@ -77,15 +82,19 @@
           </div>
           <div class="stat-item">
             <span class="stat-label">Kompatibel:</span>
-            <span class="stat-value compatible">{{ project.progressSummary.completed || 0 }}</span>
+            <span class="stat-value compatible">{{ project.progressSummary.compatible || 0 }}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Gelöst:</span>
-            <span class="stat-value resolved">{{ project.progressSummary.resolved || 0 }}</span>
+            <span class="stat-value resolved">{{ project.progressSummary.solved || 0 }}</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">Aktion:</span>
-            <span class="stat-value needs-action">{{ project.progressSummary.needs_action || 0 }}</span>
+            <span class="stat-label">Warnung:</span>
+            <span class="stat-value warning">{{ project.progressSummary.warning || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Inkompatibel:</span>
+            <span class="stat-value incompatible">{{ project.progressSummary.incompatible || 0 }}</span>
           </div>
         </div>
 

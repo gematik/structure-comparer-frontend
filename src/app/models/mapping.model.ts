@@ -158,20 +158,12 @@ export interface Mapping {
   target: TargetProfile;
   // Version of the mapping definition
   version: string;
-  // Optional counts of warning results
-  warningCount?: number;
-  // Optional counts of incompatible results
-  incompatibleCount?: number;
-  // Optional counts of compatible results
-  compatibleCount?: number;
-  // Optional counts of resolved results
-  resolvedCount?: number;
-  // Optional counts of mitigated results
-  mitigatedCount?: number;
-  // Optional counts of fields needing action
-  needsActionCount?: number;
-  // Optional total count of fields
-  totalCount?: number;
+  // Status counts calculated by backend (matching frontend MappingStatus)
+  total?: number;
+  incompatible?: number;
+  warning?: number;
+  solved?: number;
+  compatible?: number;
   // Fields in the mapping
   fields?: MappingField[];
 }

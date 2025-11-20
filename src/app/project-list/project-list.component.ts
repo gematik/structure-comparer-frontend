@@ -183,9 +183,10 @@ export class ProjectListComponent implements OnInit {
               ...project,
               progressSummary: {
                 total: 0,
-                completed: 0,
-                resolved: 0,
-                needs_action: 0,
+                compatible: 0,
+                solved: 0,
+                warning: 0,
+                incompatible: 0,
                 completionPercentage: 0,
                 totalMappings: 0
               },
@@ -197,37 +198,25 @@ export class ProjectListComponent implements OnInit {
           const mappingRequests = projectData.mappings.map((mapping: any) => {
             return this.mappingsService.getMapping(projectKey, mapping.id).pipe(
               map((mappingDetail: any) => {
-                // Check if the mapping has pre-calculated counts (from hydrateCounts in EditProjectComponent)
-                if (mappingDetail.totalCount || mappingDetail.compatibleCount || mappingDetail.resolvedCount) {
-                  return {
-                    ...mapping,
-                    totalCount: mappingDetail.totalCount || 0,
-                    compatibleCount: mappingDetail.compatibleCount || 0,
-                    resolvedCount: mappingDetail.resolvedCount || 0,
-                    needsActionCount: mappingDetail.needsActionCount || 0,
-                    fields: mappingDetail.fields || []
-                  };
-                } else {
-                  // Calculate counts from fields if not pre-calculated
-                  const counts = mappingDetail.fields ? this.calculateCountsFromFields(mappingDetail.fields) :
-                    { total: 0, completed: 0, resolved: 0, needs_action: 0 };
-                  return {
-                    ...mapping,
-                    totalCount: counts.total,
-                    compatibleCount: counts.completed,
-                    resolvedCount: counts.resolved,
-                    needsActionCount: counts.needs_action,
-                    fields: mappingDetail.fields || []
-                  };
-                }
+                // Use backend-provided counts directly
+                return {
+                  ...mapping,
+                  total: mappingDetail.total || 0,
+                  compatible: mappingDetail.compatible || 0,
+                  solved: mappingDetail.solved || 0,
+                  warning: mappingDetail.warning || 0,
+                  incompatible: mappingDetail.incompatible || 0,
+                  fields: mappingDetail.fields || []
+                };
               }),
               catchError((error) => {
                 return of({
                   ...mapping,
-                  totalCount: 0,
-                  compatibleCount: 0,
-                  resolvedCount: 0,
-                  needsActionCount: 0,
+                  total: 0,
+                  compatible: 0,
+                  solved: 0,
+                  warning: 0,
+                  incompatible: 0,
                   fields: []
                 });
               })
@@ -256,9 +245,10 @@ export class ProjectListComponent implements OnInit {
             ...project,
             progressSummary: {
               total: 0,
-              completed: 0,
-              resolved: 0,
-              needs_action: 0,
+              compatible: 0,
+              solved: 0,
+              warning: 0,
+              incompatible: 0,
               completionPercentage: 0,
               totalMappings: 0
             },
@@ -289,14 +279,16 @@ export class ProjectListComponent implements OnInit {
 
   /**
    * Calculates progress summary for a project by aggregating all mapping statistics
+   * Uses the same 4 categories as detail page: compatible, solved, warning, incompatible
    */
   private calculateProjectProgress(projectData: any): any {
     if (!projectData?.mappings?.length) {
       return {
         total: 0,
-        completed: 0,
-        resolved: 0,
-        needs_action: 0,
+        compatible: 0,
+        solved: 0,
+        warning: 0,
+        incompatible: 0,
         completionPercentage: 0,
         totalMappings: 0
       };
@@ -304,36 +296,24 @@ export class ProjectListComponent implements OnInit {
 
     const summary = {
       total: 0,
-      completed: 0,
-      resolved: 0,
-      needs_action: 0,
+      compatible: 0,
+      solved: 0,
+      warning: 0,
+      incompatible: 0,
       totalMappings: projectData.mappings.length
     };
 
-    projectData.mappings.forEach((mapping: any, index: number) => {
-      // Check different possible field names and structures
-      const totalCount = mapping.totalCount || mapping.total_count || 0;
-      const compatibleCount = mapping.compatibleCount || mapping.compatible_count || 0;
-      const resolvedCount = mapping.resolvedCount || mapping.resolved_count || 0;
-      const needsActionCount = mapping.needsActionCount || mapping.needs_action_count || 0;
-
-      // If counts are not available, try to calculate from fields
-      if (totalCount === 0 && mapping.fields && Array.isArray(mapping.fields)) {
-        const counts = this.calculateCountsFromFields(mapping.fields);
-        summary.total += counts.total;
-        summary.completed += counts.completed;
-        summary.resolved += counts.resolved;
-        summary.needs_action += counts.needs_action;
-      } else {
-        summary.total += totalCount;
-        summary.completed += compatibleCount;
-        summary.resolved += resolvedCount;
-        summary.needs_action += needsActionCount;
-      }
+    projectData.mappings.forEach((mapping: any) => {
+      // Use backend-provided counts (new 4-category system)
+      summary.total += mapping.total || 0;
+      summary.compatible += mapping.compatible || 0;
+      summary.solved += mapping.solved || 0;
+      summary.warning += mapping.warning || 0;
+      summary.incompatible += mapping.incompatible || 0;
     });
 
     const completionPercentage = summary.total > 0
-      ? Math.round(((summary.completed + summary.resolved) / summary.total) * 100)
+      ? Math.round(((summary.compatible + summary.solved) / summary.total) * 100)
       : 0;
 
     return {
@@ -344,26 +324,30 @@ export class ProjectListComponent implements OnInit {
 
   /**
    * Calculates counts from mapping fields if counts are not pre-calculated
+   * Fallback method using basic classification logic
    */
   private calculateCountsFromFields(fields: any[]): any {
     const counts = {
       total: fields.length,
-      completed: 0,
-      resolved: 0,
-      needs_action: 0
+      compatible: 0,
+      solved: 0,
+      warning: 0,
+      incompatible: 0
     };
 
     fields.forEach(field => {
       const classification = (field.classification || '').toString().toLowerCase();
-      const action = (field.action || 'use').toString().toLowerCase();
 
-      // Use the same logic as in EditProjectComponent
-      if (classification === 'compatible' || classification === 'warning') {
-        counts.completed++;
-      } else if (classification === 'incompatible' && action !== 'use') {
-        counts.resolved++;
-      } else if (classification === 'incompatible' && action === 'use') {
-        counts.needs_action++;
+      switch (classification) {
+        case 'compatible':
+          counts.compatible++;
+          break;
+        case 'warning':
+          counts.warning++;
+          break;
+        case 'incompatible':
+          counts.incompatible++;
+          break;
       }
     });
 

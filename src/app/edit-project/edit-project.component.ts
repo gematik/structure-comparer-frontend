@@ -426,20 +426,16 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Maps backend evaluation summary to frontend mapping counts
-   * Uses simplified categories calculated by backend
+   * Uses new 4-category status system from backend
    */
   private mapEvaluationSummaryToCounts(summary: any) {
     return {
-      // Simplified categories from backend
-      compatible: summary.simplified_compatible || 0,
-      resolved: summary.simplified_resolved || 0,
-      needs_action: summary.simplified_needs_action || 0,
-      total: summary.total_fields || 0,
-
-      // Legacy fields for compatibility (can be removed later)
-      warning: summary.warnings || 0,
-      incompatible: summary.incompatible || 0,
-      mitigated: summary.action_mitigated || 0
+      // New 4-category status counts from backend
+      total: summary.total || 0,
+      compatible: summary.compatible || 0,
+      solved: summary.solved || 0,
+      warning: summary.warning || 0,
+      incompatible: summary.incompatible || 0
     };
   }
 
@@ -474,13 +470,11 @@ export class EditProjectComponent implements OnInit {
               map(detail => ({ id: m.id, ...this.countFieldsByBasicClassification(detail?.fields ?? []) })),
               catchError(() => of({
                 id: m.id,
-                warning: 0,
-                incompatible: 0,
+                total: 0,
                 compatible: 0,
-                resolved: 0,
-                mitigated: 0,
-                needs_action: 0,
-                total: 0
+                solved: 0,
+                warning: 0,
+                incompatible: 0
               }))
             );
           })
@@ -492,16 +486,12 @@ export class EditProjectComponent implements OnInit {
           const r = byId.get(m.id);
           return {
             ...m,
-            // Simplified categories from backend
-            compatibleCount: r?.compatible ?? 0,
-            resolvedCount: r?.resolved ?? 0,
-            needsActionCount: r?.needs_action ?? 0,
-            totalCount: r?.total ?? 0,
-
-            // Legacy fields for compatibility (can be removed later)
-            warningCount: r?.warning ?? 0,
-            incompatibleCount: r?.incompatible ?? 0,
-            mitigatedCount: r?.mitigated ?? 0
+            // New 4-category status counts from backend
+            total: r?.total ?? 0,
+            compatible: r?.compatible ?? 0,
+            solved: r?.solved ?? 0,
+            warning: r?.warning ?? 0,
+            incompatible: r?.incompatible ?? 0
           };
         });
       });
@@ -531,45 +521,46 @@ export class EditProjectComponent implements OnInit {
     }
 
     return {
-      warning,
-      incompatible,
+      total: fields?.length ?? 0,
       compatible,
-      resolved: 0, // Backend evaluation required for these
-      mitigated: 0,
-      needs_action: 0,
-      total: fields?.length ?? 0
+      solved: 0, // Backend evaluation required for this
+      warning,
+      incompatible
     };
   }
 
   /**
    * Calculates overall project progress by aggregating all mapping statistics
-   * Returns consolidated statistics across all mappings in the project
+   * Uses the same 4 categories as the detail page: compatible, solved, warning, incompatible
    */
   getProjectOverallSummary(): any {
     if (!this.mappings || this.mappings.length === 0) {
       return {
         total: 0,
-        completed: 0,
-        resolved: 0,
-        needs_action: 0,
+        compatible: 0,
+        solved: 0,
+        warning: 0,
+        incompatible: 0,
         totalMappings: 0
       };
     }
 
     const summary = {
       total: 0,
-      completed: 0,
-      resolved: 0,
-      needs_action: 0,
+      compatible: 0,
+      solved: 0,
+      warning: 0,
+      incompatible: 0,
       totalMappings: this.mappings.length
     };
 
     this.mappings.forEach(mapping => {
-      // Use the enhanced evaluation counts if available, fallback to legacy counts
-      summary.total += mapping.totalCount || 0;
-      summary.completed += mapping.compatibleCount || 0;
-      summary.resolved += mapping.resolvedCount || 0;
-      summary.needs_action += mapping.needsActionCount || 0;
+      // Use the backend-calculated status counts (same 4 categories as detail page)
+      summary.total += mapping.total || 0;
+      summary.compatible += mapping.compatible || 0;
+      summary.solved += mapping.solved || 0;
+      summary.warning += mapping.warning || 0;
+      summary.incompatible += mapping.incompatible || 0;
     });
 
     return summary;
@@ -577,7 +568,7 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Calculates the overall project completion percentage
-   * Considers both compatible and resolved fields as "completed"
+   * Considers compatible and solved fields as "completed"
    */
   getProjectCompletionPercentage(): number {
     const summary = this.getProjectOverallSummary();
@@ -585,7 +576,7 @@ export class EditProjectComponent implements OnInit {
       return 0;
     }
 
-    const completed = summary.completed + summary.resolved;
+    const completed = summary.compatible + summary.solved;
     return Math.round((completed / summary.total) * 100);
   }
 

@@ -305,7 +305,13 @@ export class StatusHelper {
 
 // Summary calculation utilities
 export class SummaryHelper {
-  static calculateStatusSummary(fields: MappingField[]): StatusSummary {
+  static calculateStatusSummary(fields: MappingField[], backendSummary?: StatusSummary | null): StatusSummary {
+    // If backend provided pre-calculated summary, use it
+    if (backendSummary && backendSummary.total > 0) {
+      return backendSummary;
+    }
+
+    // Fallback: Calculate on frontend (for backwards compatibility)
     const summary: StatusSummary = {
       total: fields.length,
       incompatible: 0,

@@ -42,27 +42,33 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
             {{ sortState.dir === "asc" ? "▲" : "▼" }}
           </span>
         </th>
-        <th class="col-narrow clickable" (click)="sortMappings('totalCount')">
+        <th class="col-narrow clickable" (click)="sortMappings('total')">
           Gesamt
-          <span *ngIf="sortState.col === 'totalCount'">
+          <span *ngIf="sortState.col === 'total'">
             {{ sortState.dir === "asc" ? "▲" : "▼" }}
           </span>
         </th>
-        <th class="col-narrow clickable" (click)="sortMappings('compatibleCount')">
+        <th class="col-narrow clickable" (click)="sortMappings('compatible')">
           Kompatibel
-          <span *ngIf="sortState.col === 'compatibleCount'">
+          <span *ngIf="sortState.col === 'compatible'">
             {{ sortState.dir === "asc" ? "▲" : "▼" }}
           </span>
         </th>
-        <th class="col-narrow clickable" (click)="sortMappings('resolvedCount')">
+        <th class="col-narrow clickable" (click)="sortMappings('solved')">
           Gelöst
-          <span *ngIf="sortState.col === 'resolvedCount'">
+          <span *ngIf="sortState.col === 'solved'">
             {{ sortState.dir === "asc" ? "▲" : "▼" }}
           </span>
         </th>
-        <th class="col-narrow clickable" (click)="sortMappings('needsActionCount')">
-          Aktion erforderlich
-          <span *ngIf="sortState.col === 'needsActionCount'">
+        <th class="col-narrow clickable" (click)="sortMappings('warning')">
+          Warnung
+          <span *ngIf="sortState.col === 'warning'">
+            {{ sortState.dir === "asc" ? "▲" : "▼" }}
+          </span>
+        </th>
+        <th class="col-narrow clickable" (click)="sortMappings('incompatible')">
+          Inkompatibel
+          <span *ngIf="sortState.col === 'incompatible'">
             {{ sortState.dir === "asc" ? "▲" : "▼" }}
           </span>
         </th>
@@ -84,16 +90,19 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
           {{ mapping.name }}
         </td>
         <td>
-          <span class="pill pill--total">{{ mapping.totalCount ?? 0 }}</span>
+          <span class="pill pill--total">{{ mapping.total ?? 0 }}</span>
         </td>
         <td>
-          <span class="pill pill--compatible">{{ mapping.compatibleCount ?? 0 }}</span>
+          <span class="pill pill--compatible">{{ mapping.compatible ?? 0 }}</span>
         </td>
         <td>
-          <span class="pill pill--resolved">{{ mapping.resolvedCount ?? 0 }}</span>
+          <span class="pill pill--resolved">{{ mapping.solved ?? 0 }}</span>
         </td>
         <td>
-          <span class="pill pill--needs-action">{{ mapping.needsActionCount ?? 0 }}</span>
+          <span class="pill pill--warning">{{ mapping.warning ?? 0 }}</span>
+        </td>
+        <td>
+          <span class="pill pill--incompatible">{{ mapping.incompatible ?? 0 }}</span>
         </td>
         <td>
           <button
@@ -130,7 +139,7 @@ export class MappingListComponent {
 
   constructor(private dialog: MatDialog) {}
 
-  sortMappings(column: 'name' | 'totalCount' | 'compatibleCount' | 'resolvedCount' | 'needsActionCount'): void {
+  sortMappings(column: 'name' | 'total' | 'compatible' | 'solved' | 'warning' | 'incompatible'): void {
     this.sortState = {
       col: column,
       dir: (this.sortState.col === column && this.sortState.dir === 'asc') ? 'desc' : 'asc'
@@ -155,14 +164,16 @@ export class MappingListComponent {
     switch (column) {
       case 'name':
         return mapping.name || '';
-      case 'totalCount':
-        return mapping.totalCount ?? 0;
-      case 'compatibleCount':
-        return mapping.compatibleCount ?? 0;
-      case 'resolvedCount':
-        return mapping.resolvedCount ?? 0;
-      case 'needsActionCount':
-        return mapping.needsActionCount ?? 0;
+      case 'total':
+        return mapping.total ?? 0;
+      case 'compatible':
+        return mapping.compatible ?? 0;
+      case 'solved':
+        return mapping.solved ?? 0;
+      case 'warning':
+        return mapping.warning ?? 0;
+      case 'incompatible':
+        return mapping.incompatible ?? 0;
       default:
         return '';
     }

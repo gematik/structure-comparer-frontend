@@ -192,7 +192,13 @@ export class MappingDetailComponent implements OnInit {
 
   // === SUMMARY & STATUS METHODS (delegated to helpers) ===
   getStatusSummary(): StatusSummary | null {
-    return this.original?.fields ? SummaryHelper.calculateStatusSummary(this.original.fields) : null;
+    if (!this.original?.fields) {
+      return null;
+    }
+
+    // Try to use backend-provided counts first
+    const backendSummary = this.extractBackendSummary(this.original);
+    return SummaryHelper.calculateStatusSummary(this.original.fields, backendSummary);
   }
 
   getTotalStatusSummary(): StatusSummary | null {
@@ -200,7 +206,26 @@ export class MappingDetailComponent implements OnInit {
   }
 
   getFilteredStatusSummary(): StatusSummary | null {
-    return this.filteredFields.length ? SummaryHelper.calculateStatusSummary(this.filteredFields) : null;
+    // For filtered views, always recalculate (backend doesn't know about filters)
+    return this.filteredFields.length ? SummaryHelper.calculateStatusSummary(this.filteredFields, null) : null;
+  }
+
+  private extractBackendSummary(mapping: any): StatusSummary | null {
+    // Check if backend provided pre-calculated counts
+    if (mapping.total !== undefined &&
+        mapping.incompatible !== undefined &&
+        mapping.warning !== undefined &&
+        mapping.solved !== undefined &&
+        mapping.compatible !== undefined) {
+      return {
+        total: mapping.total,
+        incompatible: mapping.incompatible,
+        warning: mapping.warning,
+        solved: mapping.solved,
+        compatible: mapping.compatible,
+      };
+    }
+    return null;
   }
 
   getFilteredFieldCount(): number {
