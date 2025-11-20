@@ -1,0 +1,43 @@
+<div class="action-statistics-container">
+  <div class="action-badges-container" *ngIf="actionStatistics.length > 0">
+    <div
+      *ngFor="let stat of actionStatistics"
+      class="action-badge clickable"
+      [class]="stat.cssClass"
+      [class.active]="isActive(stat.action)"
+      [matTooltip]="getActionTooltip(stat)"
+      matTooltipPosition="above"
+      (click)="onActionClick(stat.action)"
+    >
+      <mat-icon class="badge-icon">{{ stat.icon }}</mat-icon>
+      <span class="badge-label">{{ stat.label }}</span>
+      <span class="badge-count">{{ stat.count }}</span>
+    </div>
+
+    <!-- Clear Filter Button -->
+    <button
+      *ngIf="selectedActions.length > 0"
+      class="clear-filter-btn"
+      mat-stroked-button
+      color="warn"
+      (click)="clearFilter()"
+      matTooltip="Alle Filter zurücksetzen"
+    >
+      <mat-icon>clear</mat-icon>
+      Löschen ({{ selectedActions.length }})
+    </button>
+  </div>
+
+  <!-- Text Filter Input -->
+  <mat-form-field class="filter-input" appearance="outline">
+    <mat-label>Filter</mat-label>
+    <input
+      matInput
+      type="text"
+      [value]="textFilterValue"
+      (input)="onTextFilterInput($event)"
+      placeholder="Suchen..."
+    />
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+</div>

@@ -19,6 +19,7 @@ import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from 
 import { ActionOption as ActionOptionModel, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
+import { MappingActionStatisticsComponent } from '../shared/mapping-action-statistics/mapping-action-statistics.component';
 
 // Imported helpers for cleaner code organization
 import {
@@ -55,7 +56,8 @@ export interface IProfile {
     MatTooltip,
     MatIcon,
     TreeTableComponent,
-    MappingActionDisplayComponent
+    MappingActionDisplayComponent,
+    MappingActionStatisticsComponent
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -72,6 +74,7 @@ export class MappingDetailComponent implements OnInit {
   hoverIndex: number | null = null;
   filtered: any;
   currentQuickFilter: MappingStatus | null = null;
+  currentActionFilter: MappingAction[] = [];
   filteredFields: MappingField[] = [];
   textFilterValue: string = '';
 
@@ -377,19 +380,41 @@ export class MappingDetailComponent implements OnInit {
   // === FILTER & SORT LOGIC ===
   applyQuickFilter(filterType: MappingStatus): void {
     this.currentQuickFilter = filterType;
-    const filteredFields = (this.original?.fields ?? []).filter((field: MappingField) => {
-      const fieldStatus = this.getFieldStatus(field);
-      return fieldStatus === filterType;
-    });
-
-    this.updateFilteredData(filteredFields);
+    this.applyAllFilters();
     this.clearTextFilter();
   }
 
   clearQuickFilter(): void {
     this.currentQuickFilter = null;
-    this.updateFilteredData(this.original?.fields ?? []);
+    this.applyAllFilters();
     this.clearTextFilter();
+  }
+
+  applyActionFilter(actions: MappingAction[]): void {
+    this.currentActionFilter = actions;
+    this.applyAllFilters();
+    this.clearTextFilter();
+  }
+
+  private applyAllFilters(): void {
+    let filteredFields = this.original?.fields ?? [];
+
+    // Apply status filter
+    if (this.currentQuickFilter) {
+      filteredFields = filteredFields.filter((field: MappingField) => {
+        const fieldStatus = this.getFieldStatus(field);
+        return fieldStatus === this.currentQuickFilter;
+      });
+    }
+
+    // Apply action filter - support multiple actions
+    if (this.currentActionFilter.length > 0) {
+      filteredFields = filteredFields.filter((field: MappingField) => {
+        return field.action && this.currentActionFilter.includes(field.action);
+      });
+    }
+
+    this.updateFilteredData(filteredFields);
   }
 
   private restoreFilterState(): void {
@@ -572,6 +597,12 @@ export class MappingDetailComponent implements OnInit {
     });
 
     this.updateFilteredData(filteredFields);
+  }
+
+  onTextFilterChanged(filterText: string): void {
+    this.textFilterValue = filterText;
+    const event = { target: { value: filterText } };
+    this.handleFiltering(event);
   }
 
   // === EDITING & DIALOG METHODS ===

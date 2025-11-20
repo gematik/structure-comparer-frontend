@@ -25,7 +25,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatSortModule } from '@angular/material/sort';
 import { PropertyTreeNode } from '../../models/property-tree-node.model';
 import { buildPropertyTree } from '../mapping-tree.util';
-import { MappingField } from '../../models/mapping.model';
+import { MappingField, MappingAction } from '../../models/mapping.model';
 import {
   MappingTextHelper,
   StatusHelper,
@@ -71,6 +71,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   @Input() fields: MappingField[] = [];
   @Input() config: TreeTableConfig = { profileColumns: [] };
   @Input() currentQuickFilter: MappingStatus | null = null;
+  @Input() currentActionFilter: MappingAction[] = [];
   @Input() availableFields: any[] = [];
   @Input() classifications: any[] = [];
   @Input() editingIndex: number | null = null;
@@ -92,7 +93,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['fields'] || changes['currentQuickFilter'] || changes['textFilter']) {
+    if (changes['fields'] || changes['currentQuickFilter'] || changes['currentActionFilter'] || changes['textFilter']) {
       this.buildTree();
       this.applyFilter();
     }
@@ -126,6 +127,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
       filteredFields = filteredFields.filter(field => {
         const fieldStatus = this.getFieldStatus(field);
         return fieldStatus === this.currentQuickFilter;
+      });
+    }
+
+    // Apply action filter if active
+    if (this.currentActionFilter.length > 0) {
+      filteredFields = filteredFields.filter(field => {
+        return field.action && this.currentActionFilter.includes(field.action);
       });
     }
 

@@ -228,12 +228,14 @@
     </div>
   </div>
 
+  <!-- View Mode and Filter Controls -->
   <div
     style="
-      flex: 1;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-top: 20px;
+      gap: 16px;
     "
   >
     <div style="display: flex; gap: 10px; align-items: center">
@@ -262,14 +264,14 @@
       <!-- Tree Controls werden jetzt in der TreeTableComponent behandelt -->
     </div>
 
-    <mat-form-field fxFlex="40%">
-      <input
-        matInput
-        type="text"
-        (input)="handleTable($event).filter()"
-        placeholder="Filter"
-      />
-    </mat-form-field>
+    <!-- Mapping Action Statistics with Filter -->
+    <app-mapping-action-statistics
+      [fields]="original?.fields || []"
+      [selectedActions]="currentActionFilter"
+      [textFilterValue]="textFilterValue"
+      (actionsSelected)="applyActionFilter($event)"
+      (textFilterChanged)="onTextFilterChanged($event)"
+    ></app-mapping-action-statistics>
   </div>
   <div style="overflow: auto">
     <!-- Flat Table View -->
@@ -461,6 +463,7 @@
       [config]="treeTableConfig"
       [fields]="filteredFields"
       [currentQuickFilter]="currentQuickFilter"
+      [currentActionFilter]="currentActionFilter"
       [textFilter]="textFilterValue"
       [availableFields]="availableFields"
       [classifications]="classifications"
