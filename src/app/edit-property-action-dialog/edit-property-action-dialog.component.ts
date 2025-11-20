@@ -38,6 +38,8 @@ export interface EditPropertyActionDialogData {
   availableFields: { name: string }[];
   projectKey: string;
   mappingId: string;
+  sources: { name: string }[];
+  target: { name: string };
 }
 
 @Component({
@@ -87,6 +89,44 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
+   * Determines if the current field belongs to source profiles
+   * A field belongs to source if it exists in any source profile but not exclusively in target
+   */
+  private isFieldInSourceProfile(): boolean {
+    const fieldProfiles = this.data.field.profiles || {};
+    const sourceProfileNames = this.data.sources.map(s => s.name);
+    
+    // Check if field exists in any source profile
+    return sourceProfileNames.some(sourceName => fieldProfiles[sourceName]);
+  }
+
+  /**
+   * Determines if the current field belongs to target profile
+   */
+  private isFieldInTargetProfile(): boolean {
+    const fieldProfiles = this.data.field.profiles || {};
+    const targetProfileName = this.data.target.name;
+    
+    return !!fieldProfiles[targetProfileName];
+  }
+
+  /**
+   * Gets the list of profile names that should be used for filtering available fields
+   * For copy_from: if current field is in target, show fields from source profiles
+   * For copy_to: if current field is in source, show fields from target profile
+   */
+  private getRelevantProfileNames(): string[] {
+    if (this.selectedAction === 'copy_from') {
+      // Current field is in target, so we want to copy FROM source fields
+      return this.data.sources.map(s => (s as any).key || s.name);
+    } else if (this.selectedAction === 'copy_to') {
+      // Current field is in source, so we want to copy TO target fields
+      return [(this.data.target as any).key || this.data.target.name];
+    }
+    return [];
+  }
+
+  /**
    * Gets the human-readable description for an action value
    */
   getActionDescription(actionValue: MappingAction | null): string {
@@ -120,14 +160,36 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
-   * Applies combined filtering: suffix (if active) + user search query
+   * Applies combined filtering: suffix (if active) + user search query + profile-based filtering
    */
   applyFieldFilter(searchQuery: string): void {
     const query = searchQuery.trim().toLowerCase();
     const available = this.data.availableFields ?? [];
+    const relevantProfileNames = this.getRelevantProfileNames();
 
     this.filteredFields = available.filter(field => {
       const fieldNameLower = field.name.toLowerCase();
+
+      // Profile-based filtering for copy_from/copy_to actions
+      if (this.requiresTargetField() && relevantProfileNames.length > 0) {
+        // Check if this field exists in any of the relevant profiles
+        // The field object should already have profiles information
+        const fieldProfiles = (field as any).profiles;
+        
+        if (fieldProfiles) {
+          const existsInRelevantProfile = relevantProfileNames.some(
+            profileName => fieldProfiles[profileName]
+          );
+          
+          // Only include fields that exist in the relevant profiles (source or target)
+          if (!existsInRelevantProfile) {
+            return false;
+          }
+        } else {
+          // If field doesn't have profiles info, exclude it from copy operations
+          return false;
+        }
+      }
 
       // First check suffix filter if active
       if (this.suffixFilterActive && this.suffixFilter) {
@@ -308,5 +370,27 @@ export class EditPropertyActionDialogComponent implements OnInit {
   getActionInstruction(): string {
     const action = this.data.availableActions.find(a => a.value === this.selectedAction);
     return action?.instruction || '';
+  }
+
+  /**
+   * Gets a hint text explaining which profile's fields are shown
+   */
+  getProfileFilterHint(): string {
+    if (!this.requiresTargetField()) {
+      return '';
+    }
+
+    const relevantProfileNames = this.getRelevantProfileNames();
+    if (relevantProfileNames.length === 0) {
+      return '';
+    }
+
+    if (this.selectedAction === 'copy_from') {
+      return `Nur Felder aus Source-Profil(en): ${relevantProfileNames.join(', ')}`;
+    } else if (this.selectedAction === 'copy_to') {
+      return `Nur Felder aus Target-Profil: ${relevantProfileNames.join(', ')}`;
+    }
+
+    return '';
   }
 }

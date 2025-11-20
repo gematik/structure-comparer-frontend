@@ -114,6 +114,10 @@
           </mat-option>
         </mat-autocomplete>
         <mat-hint>
+          <span *ngIf="getProfileFilterHint()" class="profile-filter-hint">
+            {{ getProfileFilterHint() }}
+            <span *ngIf="suffixFilterActive && suffixFilter"> - </span>
+          </span>
           <span *ngIf="suffixFilterActive && suffixFilter">Gefiltert nach Suffix "{{ suffixFilter }}" - </span>
           Beginnen Sie zu tippen, um weiter zu filtern
         </mat-hint>

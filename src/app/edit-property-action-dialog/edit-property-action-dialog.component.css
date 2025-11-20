@@ -436,6 +436,16 @@
   font-weight: 600;
 }
 
+/* Profile Filter Hint */
+.profile-filter-hint {
+  color: #1565c0;
+  font-weight: 500;
+  background-color: #e3f2fd;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #2196f3;
+}
+
 /* Responsive Design */
 @media (max-width: 600px) {
   .dialog-container {

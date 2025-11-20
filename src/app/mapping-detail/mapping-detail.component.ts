@@ -636,7 +636,9 @@ export class MappingDetailComponent implements OnInit {
       availableActions: this.classifications,
       availableFields: this.availableFields,
       projectKey: this.projectKey,
-      mappingId: this.mappingId
+      mappingId: this.mappingId,
+      sources: this.filtered.sources,
+      target: this.filtered.target
     };
 
     const dialogRef = this.dialog.open(EditPropertyActionDialogComponent, {
