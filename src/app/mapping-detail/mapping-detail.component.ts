@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -78,6 +78,10 @@ export class MappingDetailComponent implements OnInit {
   viewMode: 'flat' | 'tree' = 'flat';
   treeTableConfig: TreeTableConfig = { profileColumns: [] };
 
+  // Reference to the tree table component
+  @ViewChild(TreeTableComponent) treeTableComponent?: TreeTableComponent;
+  private savedTreeState: Record<string, boolean> | null = null;
+
   // Pagination
   totalLength: number = 0;
   pageSize: number = 200;
@@ -133,6 +137,17 @@ export class MappingDetailComponent implements OnInit {
     this.setupProfileColumns(processedMapping);
     this.initializeMappingData(processedMapping, sortedFields);
     this.updateTreeTableConfig();
+
+    // Restore tree expansion state if we saved it before reloading
+    if (this.savedTreeState && this.viewMode === 'tree') {
+      // Use setTimeout to ensure the tree table component is ready
+      setTimeout(() => {
+        if (this.treeTableComponent) {
+          this.treeTableComponent.restoreExpansionState(this.savedTreeState!);
+          this.savedTreeState = null;
+        }
+      }, 0);
+    }
   }
 
   private sortFieldsByClassification(fields: any[]): any[] {
@@ -507,6 +522,11 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private updateFieldAction(fieldName: string, updateRequest: MappingFieldUpdateRequest): void {
+    // Save tree expansion state before reloading
+    if (this.viewMode === 'tree' && this.treeTableComponent) {
+      this.savedTreeState = this.treeTableComponent.saveExpansionState();
+    }
+
     this.mappingsService.updateMappingFieldAction(this.projectKey, this.mappingId, fieldName, updateRequest)
       .pipe(catchError(error => {
         console.error('Error updating field action:', error);

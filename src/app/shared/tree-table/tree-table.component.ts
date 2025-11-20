@@ -268,6 +268,20 @@ export class TreeTableComponent implements OnInit, OnChanges {
     });
   }
 
+  /**
+   * Saves the current expansion state
+   */
+  saveExpansionState(): Record<string, boolean> {
+    return { ...this.isExpandedById };
+  }
+
+  /**
+   * Restores a previously saved expansion state
+   */
+  restoreExpansionState(savedState: Record<string, boolean>): void {
+    this.isExpandedById = { ...savedState };
+  }
+
   // Helper methods - these should match the parent component's implementation
 
   getFieldStatus(field: MappingField): MappingStatus {
