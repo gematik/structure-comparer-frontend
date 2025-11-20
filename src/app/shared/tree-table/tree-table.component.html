@@ -154,22 +154,20 @@
       </td>
 
       <!-- Mapping-Aktion -->
-      <td class="default-td">
+      <td
+        class="default-td clickable-mapping-cell"
+        (click)="editingIndex !== i && onEditPropertyAction(row.field, i)"
+      >
         <ng-container *ngIf="row.field">
-        <div
-          *ngIf="editingIndex !== i"
-          class="mapping-content-container"
-          (mouseenter)="onStartHover(i)"
-          (mouseleave)="onStopHover()"
-        >
+        <div *ngIf="editingIndex !== i">
           <!-- Consolidated Mapping Display -->
           <div
-            *ngIf="getConsolidatedMappingText(row.field)"
             class="mapping-consolidated"
             [attr.data-action]="row.field.action"
           >
             <div class="mapping-header"></div>
             <div
+              *ngIf="getConsolidatedMappingText(row.field)"
               class="mapping-details"
               [matTooltip]="getRemarkTooltip(row.field) || ''"
               matTooltipPosition="above"
@@ -182,16 +180,7 @@
           </div>
         </div>
 
-        <button
-          mat-button
-          *ngIf="localHoverIndex === i && editingIndex !== i"
-          (click)="onEditPropertyAction(row.field, i)"
-          color="primary"
-        >
-          Bearbeiten
-        </button>
-
-        <div *ngIf="editingIndex === i">
+        <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">
           <div>
             Aktueller Stand: {{ getDescriptionForMapping(row.field.action) }}
           </div>
