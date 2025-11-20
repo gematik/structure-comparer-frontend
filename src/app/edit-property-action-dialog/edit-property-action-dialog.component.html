@@ -23,17 +23,17 @@
     <!-- Current Action Display -->
     <div class="current-action">
       <strong>Aktuelle Aktion:</strong>
-      
+
       <!-- Special display for no action selected -->
       <span *ngIf="data.field.action === null" class="pill pill--no-action">
         Noch keine Aktion gewählt
       </span>
-      
+
       <!-- Display for selected action -->
       <span *ngIf="data.field.action !== null" [class]="'pill pill--' + data.field.action">
         {{ getActionDescription(data.field.action) }}
       </span>
-      
+
       <span *ngIf="data.field.other && data.field.action !== null" class="current-details">
         → {{ data.field.other }}
       </span>
@@ -43,7 +43,7 @@
       <div *ngIf="data.field.remark && data.field.action !== null" class="current-remark">
         {{ data.field.remark }}
       </div>
-      
+
       <!-- Helpful message when no action is selected -->
       <div *ngIf="data.field.action === null" class="no-action-hint">
         <mat-icon>info</mat-icon>

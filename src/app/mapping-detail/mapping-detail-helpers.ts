@@ -212,12 +212,12 @@ export class MappingTextHelper {
 
   static resolveRowClass(field: MappingField): string {
     const action = field.action_info?.action ?? (field.action as string);
-    
+
     // Handle null action (no action selected yet)
     if (action === null || action === undefined) {
       return ACTION_CSS['no-action'] ?? 'row-no-action';
     }
-    
+
     return ACTION_CSS[action] ?? 'row-unknown';
   }
 
