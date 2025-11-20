@@ -55,7 +55,7 @@ export interface EditPropertyActionDialogData {
 })
 export class EditPropertyActionDialogComponent implements OnInit {
 
-  selectedAction: MappingAction;
+  selectedAction: MappingAction | null;
   targetField: string = '';
   fixedValue: string = '';
   remarkText: string = '';
@@ -66,8 +66,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: EditPropertyActionDialogData
   ) {
-    // Initialize with current values
-    this.selectedAction = data.field.action;
+    // Initialize with current values (may be null if no action selected yet)
+    this.selectedAction = data.field.action ?? null;
     this.targetField = data.field.other || '';
     this.fixedValue = data.field.fixed || '';
     this.remarkText = data.field.remark || '';
@@ -81,7 +81,10 @@ export class EditPropertyActionDialogComponent implements OnInit {
   /**
    * Gets the human-readable description for an action value
    */
-  getActionDescription(actionValue: MappingAction): string {
+  getActionDescription(actionValue: MappingAction | null): string {
+    if (actionValue === null) {
+      return 'Noch keine Aktion gewählt';
+    }
     const action = this.data.availableActions.find(a => a.value === actionValue);
     return action?.description || actionValue;
   }
@@ -134,6 +137,10 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Validates the current form state
    */
   isValid(): boolean {
+    // Must select an action (cannot save with null)
+    if (this.selectedAction === null) {
+      return false;
+    }
     if (this.requiresTargetField() && !this.targetField.trim()) {
       return false;
     }
@@ -164,6 +171,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   onSave(): void {
     if (!this.isValid()) {
+      return;
+    }
+
+    // Ensure an action is selected (TypeScript narrowing)
+    if (this.selectedAction === null) {
       return;
     }
 

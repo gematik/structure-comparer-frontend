@@ -42,11 +42,12 @@ export const ACTION_CSS: Record<string, string> = {
   empty: 'row-empty',
   extension: 'row-extension',
   manual: 'row-manual',
-  other: 'row-other',
   copy_from: 'row-copy-from',
   copy_to: 'row-copy-to',
   fixed: 'row-fixed',
   medication_service: 'row-medication-service',
+  // Special styling for fields with no action selected
+  'no-action': 'row-no-action',
 };
 
 const FALLBACK_STATUS: MappingStatus = 'incompatible';
@@ -96,14 +97,21 @@ const ACTION_LABELS: Record<ActionType, string> = {
   copy_from: 'Aus anderem Feld kopieren',
   copy_to: 'In anderes Feld kopieren',
   fixed: 'Fester Wert',
-  other: 'Andere Aktion',
+  manual: 'Manuelle Anweisung',
+  // Note: 'manual' action means user has provided free-text implementation instructions in remark field
+  // null action means no action selected yet - user must decide
 };
 
 // Mapping text generation
 export class MappingTextHelper {
-  static buildActionLabel(actionInfo?: ActionInfo | null, fallback?: string): string {
+  static buildActionLabel(actionInfo?: ActionInfo | null, fallback?: string | null): string {
     if (!actionInfo) {
       return fallback ?? 'Keine Aktion definiert';
+    }
+
+    // No action selected yet - user must decide
+    if (actionInfo.action === null || actionInfo.action === undefined) {
+      return 'Aktion erforderlich';
     }
 
     const base = ACTION_LABELS[actionInfo.action] ?? 'Unbekannte Aktion';
@@ -131,6 +139,11 @@ export class MappingTextHelper {
   static buildActionSubLabel(actionInfo?: ActionInfo | null): string | null {
     if (!actionInfo) {
       return null;
+    }
+
+    // No action selected yet - provide clear instruction
+    if (actionInfo.action === null || actionInfo.action === undefined) {
+      return 'Bitte Mapping-Aktion wählen, um das Problem zu lösen';
     }
 
     // Priorität 1: user_remark (aus manual_entries.yaml)
@@ -199,6 +212,12 @@ export class MappingTextHelper {
 
   static resolveRowClass(field: MappingField): string {
     const action = field.action_info?.action ?? (field.action as string);
+    
+    // Handle null action (no action selected yet)
+    if (action === null || action === undefined) {
+      return ACTION_CSS['no-action'] ?? 'row-no-action';
+    }
+    
     return ACTION_CSS[action] ?? 'row-unknown';
   }
 

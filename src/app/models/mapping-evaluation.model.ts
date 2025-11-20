@@ -28,7 +28,8 @@ export type ActionType =
   | 'copy_from'
   | 'copy_to'
   | 'fixed'
-  | 'other';
+  | 'manual';
+// Note: null action value indicates no action has been selected yet (user must decide).
 
 export type ActionSource = 'manual' | 'inherited' | 'system_default';
 
@@ -49,7 +50,7 @@ export type MappingStatus =
   | 'compatible';
 
 export interface ActionInfo {
-  action: ActionType;
+  action: ActionType | null;  // null = no action selected yet, user must decide
   source: ActionSource;
 
   inherited_from?: string | null;

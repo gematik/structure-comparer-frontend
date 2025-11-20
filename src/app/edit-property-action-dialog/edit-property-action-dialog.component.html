@@ -23,30 +23,48 @@
     <!-- Current Action Display -->
     <div class="current-action">
       <strong>Aktuelle Aktion:</strong>
-      <span [class]="'pill pill--' + data.field.action">
+      
+      <!-- Special display for no action selected -->
+      <span *ngIf="data.field.action === null" class="pill pill--no-action">
+        Noch keine Aktion gewählt
+      </span>
+      
+      <!-- Display for selected action -->
+      <span *ngIf="data.field.action !== null" [class]="'pill pill--' + data.field.action">
         {{ getActionDescription(data.field.action) }}
       </span>
-      <span *ngIf="data.field.other" class="current-details">
+      
+      <span *ngIf="data.field.other && data.field.action !== null" class="current-details">
         → {{ data.field.other }}
       </span>
-      <span *ngIf="data.field.fixed" class="current-details">
+      <span *ngIf="data.field.fixed && data.field.action !== null" class="current-details">
         = "{{ data.field.fixed }}"
       </span>
-      <div *ngIf="data.field.remark" class="current-remark">
+      <div *ngIf="data.field.remark && data.field.action !== null" class="current-remark">
         {{ data.field.remark }}
+      </div>
+      
+      <!-- Helpful message when no action is selected -->
+      <div *ngIf="data.field.action === null" class="no-action-hint">
+        <mat-icon>info</mat-icon>
+        <span>Bitte wählen Sie unten eine Mapping-Aktion aus, um dieses Feld zu behandeln.</span>
       </div>
     </div>
 
     <!-- Action Selection -->
     <div class="action-selection">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Neue Mapping-Action</mat-label>
-        <mat-select [(value)]="selectedAction" (selectionChange)="onActionChange()">
+        <mat-label>Mapping-Action wählen</mat-label>
+        <mat-select [(value)]="selectedAction" (selectionChange)="onActionChange()" required>
+          <mat-option [value]="null" disabled>-- Bitte wählen Sie eine Aktion --</mat-option>
           <mat-option *ngFor="let action of getFilteredActions()" [value]="action.value">
             {{ action.description }}
           </mat-option>
         </mat-select>
         <mat-hint *ngIf="getActionInstruction()">{{ getActionInstruction() }}</mat-hint>
+        <mat-error *ngIf="selectedAction === null">
+          Sie müssen eine Aktion auswählen
+        </mat-error>
       </mat-form-field>
     </div>
 

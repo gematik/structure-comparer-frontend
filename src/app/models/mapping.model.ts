@@ -46,6 +46,7 @@ export interface TargetProfile {
 
 /**
  * Available actions for mapping fields
+ * null indicates no action has been selected yet (user must decide)
  */
 export type MappingAction =
   | 'use'
@@ -56,8 +57,8 @@ export type MappingAction =
   | 'fixed'
   | 'manual'
   | 'extension'
-  | 'other'
-  | 'medication_service';
+  | 'medication_service'
+  | null;
 
 /**
  * Interface representing an action option with metadata
@@ -91,8 +92,8 @@ export interface FieldProfile {
 export interface MappingField {
   // Field name/path
   name: string;
-  // Current action set for this field
-  action: MappingAction;
+  // Current action set for this field (null = no action selected yet)
+  action: MappingAction | null;
   // Available actions for this field
   actions_allowed: MappingAction[];
   // Classification of field compatibility
@@ -123,9 +124,11 @@ export interface MappingField {
 
 /**
  * Request payload for updating a mapping field
+ * Note: action must be set when updating (cannot be null)
+ * Users must explicitly select an action before saving
  */
 export interface MappingFieldUpdateRequest {
-  // The action to set
+  // The action to set (required, cannot be null when updating)
   action: MappingAction;
   // Target field for copy actions
   other?: string;
