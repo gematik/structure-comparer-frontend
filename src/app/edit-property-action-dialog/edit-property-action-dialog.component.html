@@ -53,19 +53,28 @@
 
     <!-- Action Selection -->
     <div class="action-selection">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Mapping-Action wählen</mat-label>
-        <mat-select [(value)]="selectedAction" (selectionChange)="onActionChange()" required>
-          <mat-option [value]="null" disabled>-- Bitte wählen Sie eine Aktion --</mat-option>
-          <mat-option *ngFor="let action of getFilteredActions()" [value]="action.value">
-            {{ action.description }}
-          </mat-option>
-        </mat-select>
-        <mat-hint *ngIf="getActionInstruction()">{{ getActionInstruction() }}</mat-hint>
-        <mat-error *ngIf="selectedAction === null">
-          Sie müssen eine Aktion auswählen
-        </mat-error>
-      </mat-form-field>
+      <h4 class="action-selection-title">Mapping-Action wählen:</h4>
+      <div class="action-buttons">
+        <button *ngFor="let action of getFilteredActions()"
+                type="button"
+                class="action-button"
+                [class.selected]="selectedAction === action.value"
+                [attr.data-action]="action.value"
+                (click)="selectAction(action.value)"
+                [matTooltip]="action.instruction || action.description"
+                matTooltipPosition="above">
+          <mat-icon *ngIf="getActionIcon(action.value)">{{ getActionIcon(action.value) }}</mat-icon>
+          <span class="action-label">{{ getActionLabel(action.value) }}</span>
+        </button>
+      </div>
+      <p *ngIf="selectedAction === null" class="action-hint">
+        <mat-icon>info</mat-icon>
+        Bitte wählen Sie eine Aktion aus
+      </p>
+      <p *ngIf="selectedAction !== null && getActionInstruction()" class="action-instruction">
+        <mat-icon>lightbulb</mat-icon>
+        {{ getActionInstruction() }}
+      </p>
     </div>
 
     <!-- Conditional Fields -->
@@ -73,38 +82,36 @@
     <!-- Target Field Selection (for copy_from / copy_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Feldersuche</mat-label>
-        <input matInput
-               type="search"
-               placeholder="Feldname suchen..."
-               [(ngModel)]="fieldSearchText"
-               (ngModelChange)="onFieldSearchChange($event)">
-        <button mat-icon-button
-                matSuffix
-                aria-label="Suchfeld leeren"
-                *ngIf="fieldSearchText"
-                (click)="onFieldSearchChange('')"
-                type="button">
-          <mat-icon>close</mat-icon>
-        </button>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="full-width">
         <mat-label>
           <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
           <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
         </mat-label>
-        <mat-select [(value)]="targetField" required>
-          <mat-option value="">-- Feld auswählen --</mat-option>
+        <input matInput
+               type="text"
+               placeholder="Feldname eingeben oder auswählen..."
+               [(ngModel)]="targetField"
+               (ngModelChange)="onFieldInputChange($event)"
+               [matAutocomplete]="auto"
+               required>
+        <button mat-icon-button
+                matSuffix
+                aria-label="Feldauswahl leeren"
+                *ngIf="targetField"
+                (click)="targetField = ''; onFieldInputChange('')"
+                type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete #auto="matAutocomplete">
           <mat-option *ngFor="let field of filteredFields" [value]="field.name">
             {{ field.name }}
           </mat-option>
-        </mat-select>
-        <mat-hint *ngIf="filteredFields.length === 0">
-          Keine Felder gefunden
-        </mat-hint>
+          <mat-option *ngIf="filteredFields.length === 0" disabled>
+            Keine Felder gefunden
+          </mat-option>
+        </mat-autocomplete>
+        <mat-hint>Beginnen Sie zu tippen, um Felder zu filtern</mat-hint>
         <mat-error *ngIf="!targetField.trim()">
-          Bitte wählen Sie ein Feld aus
+          Bitte wählen Sie ein Feld aus oder geben Sie einen Namen ein
         </mat-error>
       </mat-form-field>
 

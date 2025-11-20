@@ -27,6 +27,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActionOption, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 
 export interface EditPropertyActionDialogData {
@@ -48,7 +50,9 @@ export interface EditPropertyActionDialogData {
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatIconModule
+    MatIconModule,
+    MatAutocompleteModule,
+    MatTooltipModule
   ],
   templateUrl: './edit-property-action-dialog.component.html',
   styleUrl: './edit-property-action-dialog.component.css'
@@ -59,7 +63,6 @@ export class EditPropertyActionDialogComponent implements OnInit {
   targetField: string = '';
   fixedValue: string = '';
   remarkText: string = '';
-  fieldSearchText: string = '';
   filteredFields: { name: string }[] = [];
 
   constructor(
@@ -89,8 +92,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
     return action?.description || actionValue;
   }
 
-  onFieldSearchChange(value: string): void {
-    this.fieldSearchText = value;
+  onFieldInputChange(value: string): void {
     const query = value.trim().toLowerCase();
     if (!query) {
       this.filteredFields = [...this.data.availableFields];
@@ -151,6 +153,14 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
+   * Handles action selection from buttons
+   */
+  selectAction(action: MappingAction): void {
+    this.selectedAction = action;
+    this.onActionChange();
+  }
+
+  /**
    * Handles action selection change
    */
   onActionChange(): void {
@@ -164,6 +174,46 @@ export class EditPropertyActionDialogComponent implements OnInit {
     if (!this.allowsRemark()) {
       this.remarkText = '';
     }
+  }
+
+  /**
+   * Gets the icon for an action
+   */
+  getActionIcon(action: MappingAction): string {
+    if (!action) return '';
+    
+    const icons: { [key: string]: string } = {
+      'use': 'check_circle',
+      'not_use': 'cancel',
+      'empty': 'remove_circle_outline',
+      'copy_from': 'arrow_back',
+      'copy_to': 'arrow_forward',
+      'fixed': 'lock',
+      'manual': 'edit',
+      'extension': 'extension',
+      'medication_service': 'medical_services'
+    };
+    return icons[action] || 'help_outline';
+  }
+
+  /**
+   * Gets the label for an action button
+   */
+  getActionLabel(action: MappingAction): string {
+    if (!action) return '';
+    
+    const labels: { [key: string]: string } = {
+      'use': 'USE',
+      'not_use': 'NOT_USE',
+      'empty': 'EMPTY',
+      'copy_from': 'COPY_FROM',
+      'copy_to': 'COPY_TO',
+      'fixed': 'FIXED',
+      'manual': 'MANUAL',
+      'extension': 'EXTENSION',
+      'medication_service': 'MEDICATION_SERVICE'
+    };
+    return labels[action] || action.toUpperCase();
   }
 
   /**
