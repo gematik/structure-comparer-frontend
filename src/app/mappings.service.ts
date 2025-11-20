@@ -240,7 +240,7 @@ export class MappingsService {
   downloadStructureMap(projectKey: string, mappingId: string): Observable<Blob> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
-    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/structuremap.fsh`, { responseType: 'blob' })
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/structuremap`, { responseType: 'blob' })
       .pipe(catchError(this.handleError));
   }
 
