@@ -246,9 +246,9 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Validates the current form state
    */
   isValid(): boolean {
-    // Must select an action (cannot save with null)
+    // Allow saving with null (removes action)
     if (this.selectedAction === null) {
-      return false;
+      return true;
     }
     if (this.requiresTargetField() && !this.targetField.trim()) {
       return false;
@@ -334,24 +334,21 @@ export class EditPropertyActionDialogComponent implements OnInit {
       return;
     }
 
-    // Ensure an action is selected (TypeScript narrowing)
-    if (this.selectedAction === null) {
-      return;
-    }
-
     const updateRequest: MappingFieldUpdateRequest = {
       action: this.selectedAction
     };
 
-    // Add conditional fields based on action
-    if (this.requiresTargetField()) {
-      updateRequest.other = this.targetField.trim();
-    }
-    if (this.requiresFixedValue()) {
-      updateRequest.fixed = this.fixedValue.trim();
-    }
-    if (this.allowsRemark() && this.remarkText.trim()) {
-      updateRequest.remark = this.remarkText.trim();
+    // Add conditional fields based on action (only if action is not null)
+    if (this.selectedAction !== null) {
+      if (this.requiresTargetField()) {
+        updateRequest.other = this.targetField.trim();
+      }
+      if (this.requiresFixedValue()) {
+        updateRequest.fixed = this.fixedValue.trim();
+      }
+      if (this.allowsRemark() && this.remarkText.trim()) {
+        updateRequest.remark = this.remarkText.trim();
+      }
     }
 
     this.dialogRef.close(updateRequest);
@@ -362,6 +359,14 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   onCancel(): void {
     this.dialogRef.close();
+  }
+
+  /**
+   * Removes the current action (sets to null)
+   */
+  removeAction(): void {
+    this.selectedAction = null;
+    this.onActionChange();
   }
 
   /**

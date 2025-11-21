@@ -53,6 +53,19 @@
           <span class="action-label">{{ getActionLabel(action.value) }}</span>
         </button>
       </div>
+      
+      <!-- Remove Action Button -->
+      <div *ngIf="data.field.action !== null" class="remove-action-section">
+        <button type="button"
+                class="remove-action-button"
+                (click)="removeAction()"
+                matTooltip="Aktion entfernen und Feld als 'Keine Aktion' markieren"
+                matTooltipPosition="above">
+          <mat-icon>delete_outline</mat-icon>
+          <span>Aktion entfernen</span>
+        </button>
+      </div>
+      
       <p *ngIf="selectedAction === null" class="action-hint">
         <mat-icon>info</mat-icon>
         Bitte wählen Sie eine Aktion aus
