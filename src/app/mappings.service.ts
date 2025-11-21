@@ -125,15 +125,19 @@ export class MappingsService {
    * @param projectKey The unique identifier of the project
    * @param mappingId The unique identifier of the mapping
    * @param fieldName The name of the field with the recommendation
+   * @param index Optional index of the recommendation to apply (default: 0)
    * @returns Observable containing the updated field data
    */
-  applyRecommendation(projectKey: string, mappingId: string, fieldName: string): Observable<any> {
+  applyRecommendation(projectKey: string, mappingId: string, fieldName: string, index: number = 0): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
     const encodedFieldName = encodeURIComponent(fieldName);
     const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}/apply-recommendation`;
 
-    return this.http.post(requestUrl, {})
+    // Add index as query parameter
+    const params = new HttpParams().set('index', index.toString());
+
+    return this.http.post(requestUrl, {}, { params })
       .pipe(catchError(this.handleError));
   }
 

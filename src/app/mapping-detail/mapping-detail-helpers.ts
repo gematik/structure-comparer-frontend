@@ -233,14 +233,31 @@ export class MappingTextHelper {
 // Recommendation utilities
 export class RecommendationHelper {
   /**
-   * Check if a field has a recommendation
+   * Check if a field has recommendations
    */
   static hasRecommendation(field: MappingField): boolean {
-    return !!(field.recommendation && field.recommendation.action);
+    return !!(field.recommendations && field.recommendations.length > 0);
   }
 
   /**
-   * Build label for recommendation
+   * Get all recommendations for a field
+   * Returns an empty array if no recommendations exist
+   */
+  static getRecommendations(field: MappingField): ActionInfo[] {
+    return field.recommendations || [];
+  }
+
+  /**
+   * Get the first recommendation (for backwards compatibility)
+   * Returns undefined if no recommendations exist
+   */
+  static getFirstRecommendation(field: MappingField): ActionInfo | undefined {
+    const recommendations = this.getRecommendations(field);
+    return recommendations.length > 0 ? recommendations[0] : undefined;
+  }
+
+  /**
+   * Build label for a recommendation
    * Returns the action name in uppercase, same format as active actions
    */
   static buildRecommendationLabel(recommendation: ActionInfo): string {
@@ -260,7 +277,7 @@ export class RecommendationHelper {
   }
 
   /**
-   * Build tooltip for recommendation
+   * Build tooltip for a recommendation
    */
   static buildRecommendationTooltip(recommendation: ActionInfo): string {
     if (!recommendation) {

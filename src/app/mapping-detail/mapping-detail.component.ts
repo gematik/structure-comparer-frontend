@@ -765,43 +765,93 @@ export class MappingDetailComponent implements OnInit {
   }
 
   /**
-   * Get label for recommendation
+   * Get the number of recommendations for a field
+   */
+  getRecommendationCount(field: MappingField): number {
+    return RecommendationHelper.getRecommendations(field).length;
+  }
+
+  /**
+   * Get all recommendations for a field
+   */
+  getRecommendations(field: MappingField): any[] {
+    return RecommendationHelper.getRecommendations(field);
+  }
+
+  /**
+   * Get label for the first recommendation
    */
   getRecommendationLabel(field: MappingField): string {
-    if (!field.recommendation) {
+    const recommendation = RecommendationHelper.getFirstRecommendation(field);
+    if (!recommendation) {
       return '';
     }
-    return RecommendationHelper.buildRecommendationLabel(field.recommendation);
+    return RecommendationHelper.buildRecommendationLabel(recommendation);
   }
 
   /**
-   * Get tooltip for recommendation
+   * Get tooltip for the first recommendation
    */
   getRecommendationTooltip(field: MappingField): string {
-    if (!field.recommendation) {
+    const recommendation = RecommendationHelper.getFirstRecommendation(field);
+    if (!recommendation) {
       return '';
     }
-    return RecommendationHelper.buildRecommendationTooltip(field.recommendation);
+    return RecommendationHelper.buildRecommendationTooltip(recommendation);
   }
 
   /**
-   * Get recommendation action type for CSS class binding
+   * Get recommendation action type for CSS class binding (first recommendation)
    */
   getRecommendationAction(field: MappingField): string | null {
-    if (!field.recommendation) {
+    const recommendation = RecommendationHelper.getFirstRecommendation(field);
+    if (!recommendation) {
       return null;
     }
-    return RecommendationHelper.getRecommendationAction(field.recommendation);
+    return RecommendationHelper.getRecommendationAction(recommendation);
   }
 
   /**
    * Apply a recommendation to convert it into an active action
+   * @param field The field with the recommendation
+   * @param index The index of the recommendation to apply (default: 0)
+   * @param event Optional event to prevent bubbling
    */
-  applyRecommendation(field: MappingField, event?: Event): void {
+  applyRecommendation(field: MappingField, indexOrEvent?: number | Event, event?: Event): void {
+    // Handle flexible parameters: (field, event) or (field, index, event)
+    let index = 0;
+    let actualEvent: Event | undefined;
+
+    if (typeof indexOrEvent === 'number') {
+      index = indexOrEvent;
+      actualEvent = event;
+    } else {
+      actualEvent = indexOrEvent;
+    }
+
     // Prevent event bubbling to parent click handlers
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
+    if (actualEvent) {
+      actualEvent.stopPropagation();
+      actualEvent.preventDefault();
+    }
+
+    // Validate that the field has recommendations
+    const recommendations = RecommendationHelper.getRecommendations(field);
+    if (recommendations.length === 0) {
+      this.snackBar.open('Keine Empfehlung vorhanden', 'Schließen', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    // Validate index
+    if (index < 0 || index >= recommendations.length) {
+      this.snackBar.open(`Ungültiger Index ${index}. Feld hat ${recommendations.length} Empfehlung(en).`, 'Schließen', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
     }
 
     // Save tree expansion state before reloading
@@ -815,7 +865,7 @@ export class MappingDetailComponent implements OnInit {
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
 
-    this.mappingsService.applyRecommendation(this.projectKey, this.mappingId, field.name)
+    this.mappingsService.applyRecommendation(this.projectKey, this.mappingId, field.name, index)
       .pipe(catchError(error => {
         console.error('Error applying recommendation:', error);
         this.snackBar.open('Fehler beim Anwenden der Empfehlung', 'Schließen', {

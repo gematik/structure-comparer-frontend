@@ -402,14 +402,7 @@
                     {{ getRecommendationLabel(field) }}
                   </span>
                 </div>
-                <button mat-icon-button
-                        class="apply-recommendation-btn"
-                        [matTooltip]="'Anwenden'"
-                        matTooltipPosition="above"
-                        (click)="applyRecommendation(field, $event)"
-                        aria-label="Empfehlung anwenden">
-                  <mat-icon>check_circle</mat-icon>
-                </button>
+
               </div>
               <!-- Show normal action display otherwise -->
               <app-mapping-action-display *ngIf="!hasRecommendation(field) || field.action"
