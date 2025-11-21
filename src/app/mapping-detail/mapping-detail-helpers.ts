@@ -242,9 +242,26 @@ export class RecommendationHelper {
   /**
    * Get all recommendations for a field
    * Returns an empty array if no recommendations exist
+   * Filters out recommendations whose action is not in the field's actions_allowed list
    */
   static getRecommendations(field: MappingField): ActionInfo[] {
-    return field.recommendations || [];
+    const allRecommendations = field.recommendations || [];
+    
+    // If there are no allowed actions defined, show all recommendations (backwards compatibility)
+    if (!field.actions_allowed || field.actions_allowed.length === 0) {
+      return allRecommendations;
+    }
+    
+    // Filter recommendations to only include those with allowed actions
+    return allRecommendations.filter(rec => {
+      // If recommendation has no action, exclude it
+      if (!rec.action) {
+        return false;
+      }
+      
+      // Check if the recommendation's action is in the allowed actions list
+      return field.actions_allowed.includes(rec.action);
+    });
   }
 
   /**

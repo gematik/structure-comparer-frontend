@@ -876,6 +876,23 @@ export class MappingDetailComponent implements OnInit {
       return;
     }
 
+    const recommendation = recommendations[index];
+
+    // Validate that the recommended action is allowed for this field
+    if (recommendation.action && field.actions_allowed && field.actions_allowed.length > 0) {
+      if (!field.actions_allowed.includes(recommendation.action)) {
+        this.snackBar.open(
+          `Die empfohlene Aktion '${recommendation.action}' ist für dieses Feld nicht erlaubt.`,
+          'Schließen',
+          {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          }
+        );
+        return;
+      }
+    }
+
     // Save tree expansion state before reloading
     if (this.viewMode === 'tree' && this.treeTableComponent) {
       this.savedTreeState = this.treeTableComponent.saveExpansionState();
