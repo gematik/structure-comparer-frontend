@@ -239,7 +239,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Checks if the current action allows remarks
    */
   allowsRemark(): boolean {
-    return this.selectedAction === 'manual' || this.selectedAction === 'extension';
+    return this.selectedAction === 'manual';
   }
 
   /**
@@ -301,8 +301,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
       'copy_from': 'arrow_back',
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
-      'manual': 'edit',
-      'extension': 'extension'
+      'manual': 'edit'
     };
     return icons[action] || 'help_outline';
   }
@@ -320,8 +319,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
       'copy_from': 'COPY_FROM',
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
-      'manual': 'MANUAL',
-      'extension': 'EXTENSION'
+      'manual': 'MANUAL'
     };
     return labels[action] || action.toUpperCase();
   }

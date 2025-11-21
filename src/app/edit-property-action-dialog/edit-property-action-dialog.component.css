@@ -26,12 +26,6 @@
   color: #333;
 }
 
-.field-extension {
-  color: #666;
-  font-size: 0.9em;
-  margin: 4px 0;
-}
-
 .field-classification {
   margin: 8px 0 0 0;
 }
@@ -205,15 +199,7 @@
   background-color: #fff9c4;
 }
 
-.action-button[data-action="extension"] {
-  background-color: #f1f8e9;
-  color: #33691e;
-}
 
-.action-button[data-action="extension"].selected {
-  border-color: #8bc34a;
-  background-color: #dcedc8;
-}
 
 .action-button[data-action="medication_service"] {
   background-color: #ffebee;
@@ -352,12 +338,6 @@
   background-color: #fff8e1;
   color: #f57f17;
   border: 1px solid #ffeb3b;
-}
-
-.pill--extension {
-  background-color: #f1f8e9;
-  color: #33691e;
-  border: 1px solid #8bc34a;
 }
 
 .pill--other,

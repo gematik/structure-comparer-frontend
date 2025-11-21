@@ -24,7 +24,6 @@ export type ActionType =
   | 'use'
   | 'not_use'
   | 'empty'
-  | 'extension'
   | 'copy_from'
   | 'copy_to'
   | 'fixed'

@@ -32,7 +32,7 @@
       <span class="detail-text">"{{ field.action_info!.fixed_value }}"</span>
     </div>
 
-    <div *ngIf="field.action_info?.user_remark && (field.action === 'manual' || field.action === 'extension')"
+    <div *ngIf="field.action_info?.user_remark && field.action === 'manual'"
          [class]="'detail-badge detail-badge--' + field.action"
          [matTooltip]="field.action_info!.user_remark || ''"
          matTooltipPosition="above">

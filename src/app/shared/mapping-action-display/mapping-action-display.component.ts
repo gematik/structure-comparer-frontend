@@ -49,7 +49,6 @@ export class MappingActionDisplayComponent {
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'extension': 'extension',
       'medication_service': 'local_pharmacy'
     };
     return icons[action] || 'help_outline';
@@ -69,7 +68,6 @@ export class MappingActionDisplayComponent {
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'extension': 'EXTENSION',
       'medication_service': 'MEDICATION_SERVICE'
     };
     return labels[action] || action.toUpperCase();
@@ -89,7 +87,6 @@ export class MappingActionDisplayComponent {
       'copy_to': 'Wert wird in anderes Feld kopiert',
       'fixed': 'Fester Wert wird gesetzt',
       'manual': 'Manuelle Bearbeitung erforderlich',
-      'extension': 'Als Extension behandeln',
       'medication_service': 'Medication Service Mapping'
     };
     return descriptions[action] || action;

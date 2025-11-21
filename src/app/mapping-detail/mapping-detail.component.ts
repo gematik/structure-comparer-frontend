@@ -315,8 +315,7 @@ export class MappingDetailComponent implements OnInit {
       'copy_from': 'arrow_back',
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
-      'manual': 'edit',
-      'extension': 'extension'
+      'manual': 'edit'
     };
     return icons[action] || 'help_outline';
   }
@@ -334,8 +333,7 @@ export class MappingDetailComponent implements OnInit {
       'copy_from': 'COPY_FROM',
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
-      'manual': 'MANUAL',
-      'extension': 'EXTENSION'
+      'manual': 'MANUAL'
     };
     return labels[action] || action.toUpperCase();
   }

@@ -119,9 +119,6 @@ tr:hover {
   background-color: #FFEBE6;
 }
 
-.pill--extension {
-  background-color: #FFFAE6;
-}
 
 .pill--manual {
   background-color: #B3F5FF;
@@ -394,11 +391,6 @@ tr:hover {
 }
 
 .mapping-result:has(.mapping-result-content:contains("Manuell")),
-.mapping-result:has(.mapping-result-content:contains("Extension")) {
-  background-color: #fff8e1;
-  border-color: #ffc107;
-  border-left-color: #ffc107;
-}
 
 /* Fallback styles using different approach */
 .mapping-result[data-action="copy_from"],
@@ -424,10 +416,6 @@ tr:hover {
 }
 
 .mapping-result[data-action="manual"],
-.mapping-result[data-action="extension"] {
-  background-color: #fff8e1;
-  border-left-color: #ffc107;
-}
 
 /* Different styles for different mapping types */
 .mapping-result .copy-from {
@@ -516,11 +504,7 @@ tr:hover {
 }
 
 .mapping-consolidated[data-action="manual"] .mapping-details,
-.mapping-consolidated[data-action="extension"] .mapping-details {
-  background-color: #fff8e1;
-  border-left-color: #ffc107;
-  color: #f57c00;
-}
+
 
 .mapping-consolidated[data-action="other"] .mapping-details {
   background-color: #fce4ec;
@@ -1389,13 +1373,6 @@ tr:hover {
   color: #495057;
 }
 
-/* Extension info styling */
-.tree-extension {
-  color: #6c757d;
-  font-weight: 400;
-  font-size: 0.85rem;
-  font-style: italic;
-}
 
 /* Hover effects */
 .tree-property-column:hover .tree-toggle-btn {

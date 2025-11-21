@@ -89,7 +89,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
 
     // Create statistics array
     this.actionStatistics = [];
-    const actionsToDisplay: MappingAction[] = ['use', 'not_use', 'empty', 'copy_from', 'copy_to', 'fixed', 'manual', 'extension'];
+    const actionsToDisplay: MappingAction[] = ['use', 'not_use', 'empty', 'copy_from', 'copy_to', 'fixed', 'manual'];
 
     actionsToDisplay.forEach(action => {
       const count = actionCounts.get(action) || 0;
@@ -120,7 +120,6 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'extension': 'extension',
       'medication_service': 'local_pharmacy'
     };
     return icons[action!] || 'help_outline';
@@ -138,7 +137,6 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'extension': 'EXTENSION',
       'medication_service': 'MEDICATION_SERVICE'
     };
     return labels[action!] || action!.toUpperCase();
