@@ -259,13 +259,14 @@ export class RecommendationHelper {
   /**
    * Build label for a recommendation
    * Returns the action name in uppercase, same format as active actions
+   * Note: Does NOT include other_value - that's shown in separate detail badge
    */
   static buildRecommendationLabel(recommendation: ActionInfo): string {
     if (!recommendation || !recommendation.action) {
       return 'KEINE EMPFEHLUNG';
     }
 
-    // Use the same labels as active actions
+    // Use the same labels as active actions (without other_value)
     return ACTION_LABELS[recommendation.action] ?? 'UNBEKANNT';
   }
 
@@ -288,6 +289,20 @@ export class RecommendationHelper {
 
     if (recommendation.system_remark) {
       lines.push(recommendation.system_remark);
+    }
+
+    // Add other_value information for copy actions
+    if (recommendation.other_value && typeof recommendation.other_value === 'string') {
+      if (recommendation.action === 'copy_from') {
+        lines.push(`Quelle: ${recommendation.other_value}`);
+      } else if (recommendation.action === 'copy_to') {
+        lines.push(`Ziel: ${recommendation.other_value}`);
+      }
+    }
+
+    // Add fixed_value information for fixed actions
+    if (recommendation.fixed_value && recommendation.action === 'fixed') {
+      lines.push(`Fester Wert: ${recommendation.fixed_value}`);
     }
 
     return lines.join('\n');

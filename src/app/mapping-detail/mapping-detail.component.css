@@ -1517,6 +1517,49 @@ tr:hover {
   background-color: rgba(76, 175, 80, 0.2);
 }
 
+/* Recommendation Detail Badges - same style as active detail badges but dashed */
+.recommendation-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
+  opacity: 0.7; /* Faded appearance for recommendations */
+}
+
+.recommendation-detail-badge .detail-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.recommendation-detail-badge .detail-text {
+  font-weight: 500;
+}
+
+/* Color variations for detail badges - matching active badges */
+.recommendation-detail-badge--copy_from,
+.recommendation-detail-badge--copy_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.recommendation-detail-badge--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .overview-cards {

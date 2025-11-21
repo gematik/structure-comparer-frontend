@@ -812,6 +812,28 @@ export class MappingDetailComponent implements OnInit {
   }
 
   /**
+   * Get the other_value from the first recommendation (for copy_from/copy_to)
+   */
+  getRecommendationOtherValue(field: MappingField): string | null {
+    const recommendation = RecommendationHelper.getFirstRecommendation(field);
+    if (!recommendation) {
+      return null;
+    }
+
+    // Only show for copy_from/copy_to actions
+    if (recommendation.action !== 'copy_from' && recommendation.action !== 'copy_to') {
+      return null;
+    }
+
+    // Return other_value if it's a string
+    if (recommendation.other_value && typeof recommendation.other_value === 'string') {
+      return recommendation.other_value;
+    }
+
+    return null;
+  }
+
+  /**
    * Apply a recommendation to convert it into an active action
    * @param field The field with the recommendation
    * @param index The index of the recommendation to apply (default: 0)

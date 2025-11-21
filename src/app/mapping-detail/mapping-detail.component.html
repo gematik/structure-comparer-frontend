@@ -403,6 +403,13 @@
                   </span>
                 </div>
 
+                <!-- Detail Badge for copy_from/copy_to recommendations -->
+                <div *ngIf="getRecommendationOtherValue(field)"
+                     [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction(field)">
+                  <mat-icon class="detail-icon">{{ getRecommendationAction(field) === 'copy_from' ? 'input' : 'output' }}</mat-icon>
+                  <span class="detail-text">{{ getRecommendationOtherValue(field) }}</span>
+                </div>
+
               </div>
               <!-- Show normal action display otherwise -->
               <app-mapping-action-display *ngIf="!hasRecommendation(field) || field.action"
