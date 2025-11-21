@@ -1388,12 +1388,133 @@ tr:hover {
   transition: transform 0.2s ease;
 }
 
+
 .tree-toggle-btn[aria-expanded="true"] mat-icon {
   transform: rotate(90deg);
 }
 
 .tree-toggle-btn[aria-expanded="false"] mat-icon {
   transform: rotate(0deg);
+}
+
+/* ===== Recommendation Styles ===== */
+.has-recommendation {
+  background-color: #fffef7 !important; /* Subtle yellow tint */
+}
+
+.recommendation-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+}
+
+/* Base recommendation chip style - matches action chips but with dashed border */
+.recommendation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  opacity: 0.7; /* Faded appearance for recommendations */
+  transition: opacity 0.2s ease;
+}
+
+.recommendation-chip:hover {
+  opacity: 0.9; /* Slightly less faded on hover */
+}
+
+.recommendation-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.recommendation-chip .chip-label {
+  font-weight: 600;
+}
+
+/* Action-specific recommendation colors (same as actions but faded with dashed border) */
+.recommendation-chip--use {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.recommendation-chip--use_recursive {
+  background-color: #81c784;
+  color: #1b5e20;
+  border-color: #388e3c;
+}
+
+.recommendation-chip--not_use {
+  background-color: #f8bbd0;
+  color: #c2185b;
+  border-color: #e91e63;
+}
+
+.recommendation-chip--empty {
+  background-color: #e1bee7;
+  color: #7b1fa2;
+  border-color: #9c27b0;
+}
+
+.recommendation-chip--copy_from,
+.recommendation-chip--copy_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.recommendation-chip--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
+.recommendation-chip--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffeb3b;
+}
+
+.recommendation-chip--medication_service {
+  background-color: #ffcdd2;
+  color: #d32f2f;
+  border-color: #f44336;
+}
+
+.apply-recommendation-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  margin: 0;
+  color: #388e3c; /* Green check color */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.apply-recommendation-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.apply-recommendation-btn:hover {
+  background-color: rgba(76, 175, 80, 0.1); /* Light green background on hover */
+  color: #2e7d32; /* Darker green on hover */
+}
+
+.apply-recommendation-btn:active {
+  background-color: rgba(76, 175, 80, 0.2);
 }
 
 /* Responsive Design */
@@ -1436,4 +1557,28 @@ tr:hover {
   .tree-mapping-cell {
     min-width: auto;
   }
+
+  /* Compact recommendation display on mobile */
+  .recommendation-chip {
+    padding: 6px 12px;
+    font-size: 0.75em;
+  }
+
+  .recommendation-chip mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .apply-recommendation-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .apply-recommendation-btn mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
 }
+

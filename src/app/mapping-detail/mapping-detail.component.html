@@ -385,11 +385,34 @@
           <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
           <td
             class="default-td clickable-mapping-cell"
+            [class.has-recommendation]="hasRecommendation(field) && !field.action"
             (click)="editingIndex !== i && openEditPropertyActionDialog(field, i)"
           >
             <div *ngIf="editingIndex !== i">
-              <!-- Use the shared mapping action display component -->
-              <app-mapping-action-display
+              <!-- Show Recommendation if exists and no active action -->
+              <div *ngIf="hasRecommendation(field) && !field.action"
+                   class="recommendation-container">
+                <div class="recommendation-chip"
+                     [class]="'recommendation-chip--' + getRecommendationAction(field)"
+                     [matTooltip]="getRecommendationTooltip(field)"
+                     matTooltipPosition="above"
+                     (click)="applyRecommendation(field, $event)">
+                  <mat-icon>lightbulb_outline</mat-icon>
+                  <span class="chip-label">
+                    {{ getRecommendationLabel(field) }}
+                  </span>
+                </div>
+                <button mat-icon-button
+                        class="apply-recommendation-btn"
+                        [matTooltip]="'Anwenden'"
+                        matTooltipPosition="above"
+                        (click)="applyRecommendation(field, $event)"
+                        aria-label="Empfehlung anwenden">
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+              </div>
+              <!-- Show normal action display otherwise -->
+              <app-mapping-action-display *ngIf="!hasRecommendation(field) || field.action"
                 [field]="field"
                 [compact]="true">
               </app-mapping-action-display>

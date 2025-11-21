@@ -121,6 +121,23 @@ export class MappingsService {
   }
 
   /**
+   * Applies a recommendation to convert it into an active action
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param fieldName The name of the field with the recommendation
+   * @returns Observable containing the updated field data
+   */
+  applyRecommendation(projectKey: string, mappingId: string, fieldName: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}/apply-recommendation`;
+
+    return this.http.post(requestUrl, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Retrieves a list of all projects
    * @returns Observable containing the list of projects
    */

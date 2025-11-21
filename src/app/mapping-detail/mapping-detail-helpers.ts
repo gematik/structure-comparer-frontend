@@ -88,14 +88,14 @@ export class CardinalityHelper {
 }
 
 const ACTION_LABELS: Record<ActionType, string> = {
-  use: 'Wird verwendet',
-  use_recursive: 'Wird verwendet (inkl. Kindelemente)',
-  not_use: 'Wird nicht verwendet',
-  empty: 'Bleibt leer',
-  copy_from: 'Aus anderem Feld kopieren',
-  copy_to: 'In anderes Feld kopieren',
-  fixed: 'Fester Wert',
-  manual: 'Manuelle Anweisung',
+  use: 'use',
+  use_recursive: 'use_recursive',
+  not_use: 'not_use',
+  empty: 'empty',
+  copy_from: 'copy_from',
+  copy_to: 'copy_to',
+  fixed: 'fixed',
+  manual: 'manual',
   // Note: 'manual' action means user has provided free-text implementation instructions in remark field
   // null action means no action selected yet - user must decide
 };
@@ -219,7 +219,7 @@ export class MappingTextHelper {
     return ACTION_CSS[action] ?? 'row-unknown';
   }
 
-  private static formatValue(value: unknown): string | null {
+  static formatValue(value: unknown): string | null {
     if (value === undefined || value === null) {
       return null;
     }
@@ -227,6 +227,53 @@ export class MappingTextHelper {
       return value.trim() || null;
     }
     return JSON.stringify(value);
+  }
+}
+
+// Recommendation utilities
+export class RecommendationHelper {
+  /**
+   * Check if a field has a recommendation
+   */
+  static hasRecommendation(field: MappingField): boolean {
+    return !!(field.recommendation && field.recommendation.action);
+  }
+
+  /**
+   * Build label for recommendation
+   * Returns the action name in uppercase, same format as active actions
+   */
+  static buildRecommendationLabel(recommendation: ActionInfo): string {
+    if (!recommendation || !recommendation.action) {
+      return 'KEINE EMPFEHLUNG';
+    }
+
+    // Use the same labels as active actions
+    return ACTION_LABELS[recommendation.action] ?? 'UNBEKANNT';
+  }
+
+  /**
+   * Get the action type from recommendation for CSS class generation
+   */
+  static getRecommendationAction(recommendation: ActionInfo): string | null {
+    return recommendation?.action ?? null;
+  }
+
+  /**
+   * Build tooltip for recommendation
+   */
+  static buildRecommendationTooltip(recommendation: ActionInfo): string {
+    if (!recommendation) {
+      return '';
+    }
+
+    const lines: string[] = ['Empfohlene Aktion (noch nicht angewendet)'];
+
+    if (recommendation.system_remark) {
+      lines.push(recommendation.system_remark);
+    }
+
+    return lines.join('\n');
   }
 }
 

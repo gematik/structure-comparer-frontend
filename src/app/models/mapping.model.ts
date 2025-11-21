@@ -119,6 +119,8 @@ export interface MappingField {
   action_info?: ActionInfo | null;
   // Evaluation result supplied by the backend
   evaluation?: EvaluationResult | null;
+  // Recommended action that has NOT been applied yet (does not influence status)
+  recommendation?: ActionInfo | null;
 }
 
 /**

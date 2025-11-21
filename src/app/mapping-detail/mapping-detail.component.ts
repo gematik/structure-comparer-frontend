@@ -27,6 +27,7 @@ import {
   CardinalityHelper,
   StatusHelper,
   MappingTextHelper,
+  RecommendationHelper,
   SummaryHelper,
   normalizeString,
   ACTION_CSS,
@@ -750,6 +751,82 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(response => {
         if (response) {
           this.snackBar.open('Mapping-Action erfolgreich gespeichert', 'Schließen', { duration: 3000 });
+          this.loadMapping(this.projectKey, this.mappingId);
+        }
+      });
+  }
+
+  // === RECOMMENDATION METHODS ===
+  /**
+   * Check if field has a recommendation
+   */
+  hasRecommendation(field: MappingField): boolean {
+    return RecommendationHelper.hasRecommendation(field);
+  }
+
+  /**
+   * Get label for recommendation
+   */
+  getRecommendationLabel(field: MappingField): string {
+    if (!field.recommendation) {
+      return '';
+    }
+    return RecommendationHelper.buildRecommendationLabel(field.recommendation);
+  }
+
+  /**
+   * Get tooltip for recommendation
+   */
+  getRecommendationTooltip(field: MappingField): string {
+    if (!field.recommendation) {
+      return '';
+    }
+    return RecommendationHelper.buildRecommendationTooltip(field.recommendation);
+  }
+
+  /**
+   * Get recommendation action type for CSS class binding
+   */
+  getRecommendationAction(field: MappingField): string | null {
+    if (!field.recommendation) {
+      return null;
+    }
+    return RecommendationHelper.getRecommendationAction(field.recommendation);
+  }
+
+  /**
+   * Apply a recommendation to convert it into an active action
+   */
+  applyRecommendation(field: MappingField, event?: Event): void {
+    // Prevent event bubbling to parent click handlers
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    // Save tree expansion state before reloading
+    if (this.viewMode === 'tree' && this.treeTableComponent) {
+      this.savedTreeState = this.treeTableComponent.saveExpansionState();
+    }
+
+    // Save filter state
+    this.savedQuickFilter = this.currentQuickFilter;
+    this.savedTextFilter = this.textFilterValue;
+    this.savedPageIndex = this.pageIndex;
+    this.savedPageSize = this.pageSize;
+
+    this.mappingsService.applyRecommendation(this.projectKey, this.mappingId, field.name)
+      .pipe(catchError(error => {
+        console.error('Error applying recommendation:', error);
+        this.snackBar.open('Fehler beim Anwenden der Empfehlung', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(null);
+      }))
+      .subscribe(response => {
+        if (response) {
+          this.snackBar.open('Empfehlung erfolgreich angewendet', 'Schließen', { duration: 3000 });
           this.loadMapping(this.projectKey, this.mappingId);
         }
       });
