@@ -784,14 +784,7 @@ export class MappingDetailComponent implements OnInit {
       .subscribe(data => {
         if (data.size > 0) {
           this.saveFile(data, filename);
-          
-          const incompatibleCount = this.getStatusSummary()?.incompatible || 0;
-          let message = 'StructureMap-Datei erfolgreich heruntergeladen';
-          if (incompatibleCount > 0) {
-            message += ` (${incompatibleCount} inkompatible(s) Feld(er) wurden ignoriert)`;
-          }
-          
-          this.snackBar.open(message, 'Schließen', { duration: 4000 });
+          this.snackBar.open('StructureMap-Datei erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
         }
       });
   }  private saveFile(blob: Blob, filename: string): void {
