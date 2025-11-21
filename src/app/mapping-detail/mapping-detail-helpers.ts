@@ -89,6 +89,7 @@ export class CardinalityHelper {
 
 const ACTION_LABELS: Record<ActionType, string> = {
   use: 'Wird verwendet',
+  use_recursive: 'Wird verwendet (inkl. Kindelemente)',
   not_use: 'Wird nicht verwendet',
   empty: 'Bleibt leer',
   copy_from: 'Aus anderem Feld kopieren',

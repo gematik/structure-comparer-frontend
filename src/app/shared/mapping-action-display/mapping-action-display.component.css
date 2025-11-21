@@ -123,6 +123,12 @@
   border-color: #4caf50;
 }
 
+.action-chip--use_recursive {
+  background-color: #81c784;
+  color: #1b5e20;
+  border-color: #388e3c;
+}
+
 .action-chip--not_use {
   background-color: #f8bbd0;
   color: #c2185b;

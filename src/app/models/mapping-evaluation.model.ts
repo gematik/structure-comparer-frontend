@@ -22,6 +22,7 @@
 /** Action and evaluation domain models mirrored from backend Step 3. */
 export type ActionType =
   | 'use'
+  | 'use_recursive'
   | 'not_use'
   | 'empty'
   | 'copy_from'

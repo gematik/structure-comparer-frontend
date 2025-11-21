@@ -147,6 +147,16 @@
   background-color: #c8e6c9;
 }
 
+.action-button[data-action="use_recursive"] {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+}
+
+.action-button[data-action="use_recursive"].selected {
+  border-color: #388e3c;
+  background-color: #81c784;
+}
+
 .action-button[data-action="not_use"] {
   background-color: #fce4ec;
   color: #c2185b;

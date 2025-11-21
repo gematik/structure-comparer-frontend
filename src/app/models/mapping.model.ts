@@ -50,6 +50,7 @@ export interface TargetProfile {
  */
 export type MappingAction =
   | 'use'
+  | 'use_recursive'
   | 'not_use'
   | 'empty'
   | 'copy_from'

@@ -89,7 +89,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
 
     // Create statistics array
     this.actionStatistics = [];
-    const actionsToDisplay: MappingAction[] = ['use', 'not_use', 'empty', 'copy_from', 'copy_to', 'fixed', 'manual'];
+    const actionsToDisplay: MappingAction[] = ['use', 'use_recursive', 'not_use', 'empty', 'copy_from', 'copy_to', 'fixed', 'manual'];
 
     actionsToDisplay.forEach(action => {
       const count = actionCounts.get(action) || 0;
@@ -114,6 +114,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
   private getActionIcon(action: MappingAction): string {
     const icons: { [key: string]: string } = {
       'use': 'check_circle',
+      'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
       'copy_from': 'arrow_back',
@@ -131,6 +132,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
   getActionLabel(action: MappingAction): string {
     const labels: { [key: string]: string } = {
       'use': 'USE',
+      'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
       'copy_from': 'COPY_FROM',

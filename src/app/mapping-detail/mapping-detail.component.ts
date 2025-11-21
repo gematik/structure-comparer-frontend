@@ -310,6 +310,7 @@ export class MappingDetailComponent implements OnInit {
 
     const icons: { [key: string]: string } = {
       'use': 'check_circle',
+      'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
       'copy_from': 'arrow_back',
@@ -328,6 +329,7 @@ export class MappingDetailComponent implements OnInit {
 
     const labels: { [key: string]: string } = {
       'use': 'USE',
+      'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
       'copy_from': 'COPY_FROM',

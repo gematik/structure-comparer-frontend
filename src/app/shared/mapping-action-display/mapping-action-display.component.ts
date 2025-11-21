@@ -43,6 +43,7 @@ export class MappingActionDisplayComponent {
 
     const icons: { [key: string]: string } = {
       'use': 'check_circle',
+      'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
       'copy_from': 'arrow_back',
@@ -62,6 +63,7 @@ export class MappingActionDisplayComponent {
 
     const labels: { [key: string]: string } = {
       'use': 'USE',
+      'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
       'copy_from': 'COPY_FROM',
@@ -81,6 +83,7 @@ export class MappingActionDisplayComponent {
 
     const descriptions: { [key: string]: string } = {
       'use': 'Feld wird direkt verwendet',
+      'use_recursive': 'Feld und alle Kindelemente werden verwendet',
       'not_use': 'Feld wird nicht verwendet',
       'empty': 'Feld wird geleert',
       'copy_from': 'Wert wird aus anderem Feld kopiert',
