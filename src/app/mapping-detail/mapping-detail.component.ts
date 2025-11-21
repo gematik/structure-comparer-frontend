@@ -326,7 +326,7 @@ export class MappingDetailComponent implements OnInit {
    * Gets the label for an action button
    */
   getActionLabel(action: MappingAction | null): string {
-    if (!action) return 'KEINE AKTION';
+    if (!action) return 'CHOOSE_ACTION';
 
     const labels: { [key: string]: string } = {
       'use': 'USE',

@@ -233,10 +233,10 @@ export class MappingTextHelper {
 // Recommendation utilities
 export class RecommendationHelper {
   /**
-   * Check if a field has recommendations
+   * Check if a field has recommendations (after filtering by allowed actions)
    */
   static hasRecommendation(field: MappingField): boolean {
-    return !!(field.recommendations && field.recommendations.length > 0);
+    return this.getRecommendations(field).length > 0;
   }
 
   /**
@@ -246,19 +246,19 @@ export class RecommendationHelper {
    */
   static getRecommendations(field: MappingField): ActionInfo[] {
     const allRecommendations = field.recommendations || [];
-    
+
     // If there are no allowed actions defined, show all recommendations (backwards compatibility)
     if (!field.actions_allowed || field.actions_allowed.length === 0) {
       return allRecommendations;
     }
-    
+
     // Filter recommendations to only include those with allowed actions
     return allRecommendations.filter(rec => {
       // If recommendation has no action, exclude it
       if (!rec.action) {
         return false;
       }
-      
+
       // Check if the recommendation's action is in the allowed actions list
       return field.actions_allowed.includes(rec.action);
     });
