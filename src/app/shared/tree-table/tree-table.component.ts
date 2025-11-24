@@ -60,11 +60,9 @@ export interface EditFieldEvent {
     CommonModule,
     FormsModule,
     MatButtonModule,
-
     MatTooltip,
     MatSortModule,
-    MappingActionDisplayComponent,
-    FilterSettingsComponent
+    MappingActionDisplayComponent
   ],
   templateUrl: './tree-table.component.html',
   styleUrls: ['./tree-table.component.css']
@@ -72,6 +70,7 @@ export interface EditFieldEvent {
 export class TreeTableComponent implements OnInit, OnChanges {
   @Input() fields: MappingField[] = [];
   @Input() config: TreeTableConfig = { profileColumns: [] };
+  @Input() filterSettings: FilterSettings = { showParentNodes: true };
   @Input() currentQuickFilter: MappingStatus | null = null;
   @Input() currentActionFilter: MappingAction[] = [];
   @Input() availableFields: any[] = [];
@@ -92,17 +91,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
   isExpandedById: Record<string, boolean> = {};
   visibleRows: DisplayRow[] = [];
 
-  filterSettings: FilterSettings = {
-    showParentNodes: true
-  };
-
   ngOnInit(): void {
     this.buildTree();
     this.updateVisibleRows();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['fields'] || changes['currentQuickFilter'] || changes['currentActionFilter'] || changes['textFilter']) {
+    if (changes['fields'] || changes['currentQuickFilter'] || changes['currentActionFilter'] || changes['textFilter'] || changes['filterSettings']) {
       this.buildTree();
       this.applyFilter();
     }
@@ -481,14 +476,6 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   onApplyRecommendation(event: { field: any; index: number; event: Event }): void {
     this.applyRecommendation.emit(event);
-  }
-
-  /**
-   * Handles changes to filter settings
-   */
-  onFilterSettingsChanged(settings: FilterSettings): void {
-    this.filterSettings = settings;
-    this.applyFilter();
   }
 
   /**
