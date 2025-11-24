@@ -1,6 +1,37 @@
 <div class="mapping-action-display" [class.compact]="compact">
-  <!-- Action Chip with integrated details -->
-  <div class="action-chip-container">
+  <!-- Show Recommendation if exists and no active action -->
+  <div *ngIf="hasRecommendation() && !field.action" class="recommendation-container">
+    <!-- Chip and detail badge in horizontal row -->
+    <div class="recommendation-row">
+      <div class="recommendation-chip"
+           [class]="'recommendation-chip--' + getRecommendationAction()"
+           [matTooltip]="getRecommendationTooltip()"
+           matTooltipPosition="above"
+           (click)="onApplyRecommendation($event)">
+        <mat-icon>lightbulb_outline</mat-icon>
+        <span class="chip-label">
+          {{ getRecommendationLabel() }}
+        </span>
+      </div>
+
+      <!-- Detail Badge for copy_from/copy_to recommendations -->
+      <div *ngIf="getRecommendationOtherValue()"
+           [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction()">
+        <mat-icon class="detail-icon">{{ getRecommendationAction() === 'copy_from' ? 'input' : 'output' }}</mat-icon>
+        <span class="detail-text">{{ getRecommendationOtherValue() }}</span>
+      </div>
+    </div>
+
+    <!-- System Remarks below in their own rows -->
+    <div *ngFor="let remark of getRecommendationSystemRemarks()"
+         class="recommendation-system-remark">
+      <mat-icon class="remark-icon">info</mat-icon>
+      <span class="remark-text">{{ remark }}</span>
+    </div>
+  </div>
+
+  <!-- Show normal action display if no recommendation or action exists -->
+  <div *ngIf="!hasRecommendation() || field.action" class="action-chip-container">
     <!-- Action Chip -->
     <div *ngIf="field.action"
          [class]="'action-chip action-chip--' + field.action"

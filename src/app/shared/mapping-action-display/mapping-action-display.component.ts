@@ -18,11 +18,12 @@
  *
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MappingAction, MappingField } from '../../models/mapping.model';
+import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helpers';
 
 @Component({
   selector: 'app-mapping-action-display',
@@ -34,6 +35,7 @@ import { MappingAction, MappingField } from '../../models/mapping.model';
 export class MappingActionDisplayComponent {
   @Input() field!: MappingField;
   @Input() compact: boolean = false; // Für kompakte Darstellung in der Tabelle
+  @Output() applyRecommendation = new EventEmitter<{ field: MappingField; index: number; event: Event }>();
 
   /**
    * Gets the icon for an action
@@ -103,5 +105,102 @@ export class MappingActionDisplayComponent {
               this.field.action_info?.fixed_value ||
               this.field.action_info?.user_remark ||
               this.field.action_info?.system_remark);
+  }
+
+  // === RECOMMENDATION METHODS ===
+  
+  /**
+   * Check if field has a recommendation
+   */
+  hasRecommendation(): boolean {
+    return RecommendationHelper.hasRecommendation(this.field);
+  }
+
+  /**
+   * Get label for the first recommendation
+   */
+  getRecommendationLabel(): string {
+    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
+    if (!recommendation) {
+      return '';
+    }
+    return RecommendationHelper.buildRecommendationLabel(recommendation);
+  }
+
+  /**
+   * Get tooltip for the first recommendation
+   */
+  getRecommendationTooltip(): string {
+    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
+    if (!recommendation) {
+      return '';
+    }
+    return RecommendationHelper.buildRecommendationTooltip(recommendation);
+  }
+
+  /**
+   * Get recommendation action type for CSS class binding (first recommendation)
+   */
+  getRecommendationAction(): string | null {
+    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
+    if (!recommendation) {
+      return null;
+    }
+    return RecommendationHelper.getRecommendationAction(recommendation);
+  }
+
+  /**
+   * Get the other_value from the first recommendation (for copy_from/copy_to)
+   */
+  getRecommendationOtherValue(): string | null {
+    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
+    if (!recommendation) {
+      return null;
+    }
+
+    // Only show for copy_from/copy_to actions
+    if (recommendation.action !== 'copy_from' && recommendation.action !== 'copy_to') {
+      return null;
+    }
+
+    // Return other_value if it's a string
+    if (recommendation.other_value && typeof recommendation.other_value === 'string') {
+      return recommendation.other_value;
+    }
+
+    return null;
+  }
+
+  /**
+   * Get all system remarks from recommendations
+   */
+  getRecommendationSystemRemarks(): string[] {
+    if (!this.field.recommendations || this.field.recommendations.length === 0) {
+      return [];
+    }
+
+    const remarks: string[] = [];
+
+    for (const rec of this.field.recommendations) {
+      // Prefer system_remarks array if available
+      if (rec.system_remarks && Array.isArray(rec.system_remarks)) {
+        remarks.push(...rec.system_remarks.filter(r => r && r.trim().length > 0));
+      }
+      // Fallback to single system_remark for backwards compatibility
+      else if (rec.system_remark && rec.system_remark.trim().length > 0) {
+        remarks.push(rec.system_remark);
+      }
+    }
+
+    return remarks;
+  }
+
+  /**
+   * Handle recommendation click to apply it
+   */
+  onApplyRecommendation(event: Event, index: number = 0): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.applyRecommendation.emit({ field: this.field, index, event });
   }
 }

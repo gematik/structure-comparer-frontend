@@ -165,10 +165,11 @@
       >
         <ng-container *ngIf="row.field">
         <div *ngIf="editingIndex !== i">
-          <!-- Use the shared mapping action display component -->
+          <!-- Use the shared mapping action display component with recommendation support -->
           <app-mapping-action-display
             [field]="row.field"
-            [compact]="true">
+            [compact]="true"
+            (applyRecommendation)="onApplyRecommendation($event)">
           </app-mapping-action-display>
         </div>
 

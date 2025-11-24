@@ -83,6 +83,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   @Output() startHover = new EventEmitter<number>();
   @Output() stopHover = new EventEmitter<void>();
   @Output() sortChange = new EventEmitter<any>();
+  @Output() applyRecommendation = new EventEmitter<{ field: any; index: number; event: Event }>();
 
   propertyTree: PropertyTreeNode[] = [];
   filteredTree: PropertyTreeNode[] = [];
@@ -423,6 +424,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
   onSortChange(event: any): void {
     this.sortChange.emit(event);
+  }
+
+  /**
+   * Handle apply recommendation event from child component
+   */
+  onApplyRecommendation(event: { field: any; index: number; event: Event }): void {
+    this.applyRecommendation.emit(event);
   }
 
   /**
