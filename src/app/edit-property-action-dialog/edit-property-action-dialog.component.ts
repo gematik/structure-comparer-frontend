@@ -31,6 +31,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActionOption, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
+import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
 
 export interface EditPropertyActionDialogData {
   field: MappingField;
@@ -56,7 +57,8 @@ export interface EditPropertyActionDialogData {
     MatIconModule,
     MatAutocompleteModule,
     MatTooltipModule,
-    MappingActionDisplayComponent
+    MappingActionDisplayComponent,
+    MappingStatusDisplayComponent
   ],
   templateUrl: './edit-property-action-dialog.component.html',
   styleUrl: './edit-property-action-dialog.component.css'
@@ -70,6 +72,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
   filteredFields: { name: string }[] = [];
   suffixFilter: string = '';
   suffixFilterActive: boolean = false;
+
+  // Info panel toggles
+  showClassificationInfo: boolean = false;
+  showStatusInfo: boolean = false;
+  showActionInfo: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
@@ -135,6 +142,54 @@ export class EditPropertyActionDialogComponent implements OnInit {
     }
     const action = this.data.availableActions.find(a => a.value === actionValue);
     return action?.description || actionValue;
+  }
+
+  /**
+   * Gets tooltip text for classification
+   */
+  getClassificationTooltip(): string {
+    const classification = this.data.field.classification;
+    switch (classification) {
+      case 'compatible':
+        return 'Classification: Compatible - Die Felder passen direkt zusammen und benötigen keine spezielle Behandlung';
+      case 'incompatible':
+        return 'Classification: Incompatible - Die Felder sind nicht kompatibel, eine Mapping-Aktion ist erforderlich';
+      case 'warning':
+        return 'Classification: Warning - Es gibt kleinere Probleme, eine Aktion wird empfohlen';
+      case 'unknown':
+        return 'Classification: Unknown - Die Kompatibilität konnte nicht bestimmt werden';
+      default:
+        return `Classification: ${classification}`;
+    }
+  }
+
+  /**
+   * Gets tooltip text for mapping status
+   */
+  getMappingStatusTooltip(): string {
+    if (!this.data.field.evaluation) {
+      return '';
+    }
+    const status = this.data.field.evaluation.mapping_status;
+    switch (status) {
+      case 'compatible':
+        return 'Mapping Status: Compatible - Keine Probleme, das Feld ist fertig bearbeitet';
+      case 'warning':
+        return 'Mapping Status: Warning - Eine Warnung ist vorhanden, aber keine Aktion wurde ausgewählt';
+      case 'incompatible':
+        return 'Mapping Status: Incompatible - Ein Problem besteht, eine Aktion ist erforderlich';
+      case 'solved':
+        return 'Mapping Status: Solved - Das Problem wurde durch eine manuelle/geerbte Aktion gelöst';
+      default:
+        return `Mapping Status: ${status}`;
+    }
+  }
+
+  /**
+   * Checks if the field has recommendations
+   */
+  hasRecommendations(): boolean {
+    return !!(this.data.field.recommendations && this.data.field.recommendations.length > 0);
   }
 
   /**

@@ -136,14 +136,10 @@
       <!-- Status Column -->
       <td class="default-td">
         <ng-container *ngIf="row.field">
-          <span
-            class="status-pill"
-            [ngClass]="getFieldStatusCssClass(row.field)"
-            [matTooltip]="getStatusTooltip(row.field)"
-            matTooltipPosition="above"
-          >
-            {{ getFieldStatusLabel(row.field) }}
-          </span>
+          <app-mapping-status-display
+            [field]="row.field"
+            [showTooltip]="true">
+          </app-mapping-status-display>
 
           <div
             *ngIf="row.field.evaluation?.reasons?.length"

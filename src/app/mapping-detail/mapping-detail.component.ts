@@ -21,6 +21,7 @@ import { ActionOption as ActionOptionModel, MappingAction, MappingField, Mapping
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 import { MappingActionStatisticsComponent } from '../shared/mapping-action-statistics/mapping-action-statistics.component';
+import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
 import { FilterSettingsComponent, FilterSettings } from '../shared/filter-settings/filter-settings.component';
 
 // Imported helpers for cleaner code organization
@@ -61,6 +62,7 @@ export interface IProfile {
     TreeTableComponent,
     MappingActionDisplayComponent,
     MappingActionStatisticsComponent,
+    MappingStatusDisplayComponent,
     FilterSettingsComponent
   ],
   templateUrl: './mapping-detail.component.html',

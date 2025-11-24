@@ -12,34 +12,151 @@
       <p *ngIf="data.field.extension" class="field-extension">
         Extension: {{ data.field.extension }}
       </p>
-      <p class="field-classification">
-        Kompatibilität:
-        <span [class]="'pill pill--' + data.field.classification">
-          {{ data.field.classification }}
-        </span>
-      </p>
+
+      <!-- Classification Explanation -->
+      <div class="field-classification-section">
+        <h4 class="info-section-title">
+          <mat-icon class="info-icon">analytics</mat-icon>
+          Kompatibilitäts-Bewertung
+          <button mat-icon-button
+                  class="info-toggle-btn"
+                  (click)="showClassificationInfo = !showClassificationInfo"
+                  [matTooltip]="showClassificationInfo ? 'Info ausblenden' : 'Info einblenden'"
+                  type="button">
+            <mat-icon>{{ showClassificationInfo ? 'expand_less' : 'info' }}</mat-icon>
+          </button>
+        </h4>
+        <div class="collapsible-info" *ngIf="showClassificationInfo">
+          <p class="info-explanation">
+            Diese Bewertung zeigt, wie gut Source- und Target-Profil zusammenpassen:
+          </p>
+        </div>
+        <div class="classification-display">
+          <span [class]="'pill pill--' + data.field.classification"
+                [matTooltip]="getClassificationTooltip()"
+                matTooltipPosition="above">
+            {{ data.field.classification }}
+          </span>
+          <span class="classification-meaning">
+            <span *ngIf="data.field.classification === 'compatible'">✓ Felder passen direkt zusammen</span>
+            <span *ngIf="data.field.classification === 'incompatible'">✗ Felder sind nicht kompatibel - Aktion erforderlich</span>
+            <span *ngIf="data.field.classification === 'warning'">⚠ Kleinere Probleme - Aktion empfohlen</span>
+            <span *ngIf="data.field.classification === 'unknown'">? Kompatibilität unbekannt</span>
+          </span>
+        </div>
+      </div>
     </div>
 
-    <!-- Current Action Display -->
-    <div class="current-action">
-      <strong>Aktuelle Aktion:</strong>
-      <div class="current-action-wrapper">
-        <app-mapping-action-display
-          [field]="data.field"
-          [compact]="false">
-        </app-mapping-action-display>
-      </div>
+    <!-- Current Action & Status Display -->
+    <div class="current-status-section">
+      <h4 class="info-section-title">
+        <mat-icon class="info-icon">assignment</mat-icon>
+        Aktueller Status
+        <button mat-icon-button
+                class="info-toggle-btn"
+                (click)="showStatusInfo = !showStatusInfo"
+                [matTooltip]="showStatusInfo ? 'Info ausblenden' : 'Was bedeutet das?'"
+                type="button">
+          <mat-icon>{{ showStatusInfo ? 'expand_less' : 'info' }}</mat-icon>
+        </button>
+      </h4>
 
-      <!-- Helpful message when no action is selected -->
-      <div *ngIf="data.field.action === null" class="no-action-hint">
-        <mat-icon>info</mat-icon>
-        <span>Bitte wählen Sie unten eine Mapping-Aktion aus, um dieses Feld zu behandeln.</span>
+      <div class="status-grid">
+        <!-- Current Action -->
+        <div class="status-box">
+          <div class="status-label"
+               matTooltip="Die Aktion beschreibt, was mit diesem Feld gemacht werden soll"
+               matTooltipPosition="above">
+            Gewählte Aktion / Aktuelle Empfehlungen:
+            <mat-icon class="help-icon">help_outline</mat-icon>
+          </div>
+          <div class="status-value">
+            <div class="current-action-wrapper">
+              <app-mapping-action-display
+                [field]="data.field"
+                [compact]="false">
+              </app-mapping-action-display>
+            </div>
+
+            <!-- Recommendation Notice - only show when no action selected -->
+            <div *ngIf="hasRecommendations() && data.field.action === null" class="recommendation-notice">
+              <mat-icon>lightbulb</mat-icon>
+              <span>
+                Es gibt {{ data.field.recommendations?.length }} Empfehlung(en) vom System.
+                Diese sind <strong>noch nicht aktiv</strong> und müssen explizit übernommen werden.
+              </span>
+            </div>
+
+            <div class="collapsible-info" *ngIf="showStatusInfo">
+              <div *ngIf="data.field.action === null" class="status-explanation">
+                <mat-icon>info</mat-icon>
+                <span>Noch keine Aktion gewählt - beschreibt, was mit dem Feld gemacht werden soll</span>
+              </div>
+              <div *ngIf="data.field.action !== null" class="status-explanation">
+                <mat-icon>check_circle</mat-icon>
+                <span>Diese Aktion bestimmt, wie das Feld behandelt wird</span>
+              </div>
+              <div *ngIf="hasRecommendations()" class="status-explanation" style="background-color: #fff8e1; border-color: #ffc107; color: #856404;">
+                <mat-icon style="color: #ffc107;">info</mat-icon>
+                <span>
+                  <strong>Empfehlungen (Recommendations):</strong> Das System zeigt automatisch generierte Vorschläge an.
+                  Diese beeinflussen den Status NICHT, bis Sie eine Empfehlung explizit als Aktion übernehmen.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mapping Status -->
+        <div class="status-box" *ngIf="data.field.evaluation">
+          <div class="status-label"
+               matTooltip="Der finale Status zeigt, ob das Feld fertig bearbeitet ist"
+               matTooltipPosition="above">
+            Finaler Status:
+            <mat-icon class="help-icon">help_outline</mat-icon>
+          </div>
+          <div class="status-value">
+            <app-mapping-status-display
+              [field]="data.field"
+              [showTooltip]="true">
+            </app-mapping-status-display>
+            <div class="collapsible-info" *ngIf="showStatusInfo">
+              <div class="status-explanation">
+                <mat-icon>help_outline</mat-icon>
+                <span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'compatible'">Keine Probleme - Feld ist fertig</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'warning'">Warnung vorhanden - keine Aktion ausgewählt</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'incompatible'">Problem vorhanden - Aktion erforderlich</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'solved'">Problem wurde durch Aktion gelöst</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Action Selection -->
     <div class="action-selection">
-      <h4 class="action-selection-title">Mapping-Action wählen:</h4>
+      <h4 class="info-section-title">
+        <mat-icon class="info-icon">touch_app</mat-icon>
+        <span *ngIf="!data.field.action">Mapping-Aktion wählen</span>
+        <span *ngIf="data.field.action">Mapping-Aktion ändern</span>
+        <button mat-icon-button
+                class="info-toggle-btn"
+                (click)="showActionInfo = !showActionInfo"
+                [matTooltip]="showActionInfo ? 'Info ausblenden' : 'Was sind Allowed Actions?'"
+                type="button">
+          <mat-icon>{{ showActionInfo ? 'expand_less' : 'info' }}</mat-icon>
+        </button>
+      </h4>
+      <div class="collapsible-info" *ngIf="showActionInfo">
+        <p class="info-explanation">
+          <span *ngIf="!data.field.action">Wählen Sie eine der erlaubten Aktionen (Allowed Actions) aus, um festzulegen, wie dieses Feld behandelt werden soll.</span>
+          <span *ngIf="data.field.action">Ändern Sie die gewählte Aktion oder wählen Sie eine andere erlaubte Aktion aus.</span>
+          Nur die für dieses Feld erlaubten Aktionen werden angezeigt.
+        </p>
+      </div>
       <div class="action-buttons">
         <button *ngFor="let action of getFilteredActions()"
                 type="button"
@@ -53,27 +170,37 @@
           <span class="action-label">{{ getActionLabel(action.value) }}</span>
         </button>
       </div>
-      
+
+      <!-- Action Hints -->
+      <div class="action-hints">
+        <div *ngIf="!selectedAction && !data.field.action" class="hint-box hint-warning">
+          <mat-icon>info</mat-icon>
+          <div>
+            <strong>Keine Aktion gewählt</strong>
+            <p>Wählen Sie oben eine Aktion aus, um zu definieren, wie das Feld behandelt werden soll.</p>
+          </div>
+        </div>
+        <div *ngIf="selectedAction !== null && getActionInstruction()" class="hint-box hint-info">
+          <mat-icon>lightbulb</mat-icon>
+          <div>
+            <strong>Hinweis zur gewählten Aktion:</strong>
+            <p>{{ getActionInstruction() }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Remove Action Button -->
       <div *ngIf="data.field.action !== null" class="remove-action-section">
         <button type="button"
                 class="remove-action-button"
                 (click)="removeAction()"
-                matTooltip="Aktion entfernen und Feld als 'Keine Aktion' markieren"
+                matTooltip="Aktion entfernen (Action = null)"
                 matTooltipPosition="above">
           <mat-icon>delete_outline</mat-icon>
           <span>Aktion entfernen</span>
         </button>
+        <span class="remove-hint">Dadurch wird das Feld wieder als "Aktion erforderlich" markiert</span>
       </div>
-      
-      <p *ngIf="selectedAction === null" class="action-hint">
-        <mat-icon>info</mat-icon>
-        Bitte wählen Sie eine Aktion aus
-      </p>
-      <p *ngIf="selectedAction !== null && getActionInstruction()" class="action-instruction">
-        <mat-icon>lightbulb</mat-icon>
-        {{ getActionInstruction() }}
-      </p>
     </div>
 
     <!-- Conditional Fields -->
