@@ -30,6 +30,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -135,7 +136,8 @@ export class EditProjectComponent implements OnInit {
     private comparisonService: ComparisonService,
     private router: Router,
     private dialog: MatDialog,
-    private packageService: PackageService
+    private packageService: PackageService,
+    private snackBar: MatSnackBar
   ) { }
 
   /**
@@ -652,5 +654,42 @@ export class EditProjectComponent implements OnInit {
         this.refreshProjectData();
       }
     });
+  }
+
+  /**
+   * Downloads all StructureMaps for all mappings in the project
+   */
+  downloadAllStructureMaps(): void {
+    this.mappingsService.downloadProjectStructureMaps(this.projectKey)
+      .pipe(catchError(err => {
+        console.error('Error downloading project StructureMaps', err);
+        this.snackBar.open('Fehler beim Herunterladen der StructureMap-Dateien', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(new Blob());
+      }))
+      .subscribe(data => {
+        if (data.size > 0) {
+          this.saveFile(data, `${this.projectKey}_all_structuremaps.zip`);
+          this.snackBar.open('Alle StructureMap-Dateien erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
+        }
+      });
+  }
+
+  /**
+   * Helper method to save a blob as a file
+   * @param blob The blob to save
+   * @param filename The filename to use
+   */
+  private saveFile(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }

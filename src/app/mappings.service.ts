@@ -280,6 +280,17 @@ export class MappingsService {
   }
 
   /**
+   * Downloads all FHIR StructureMaps for all mappings in a project
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing a ZIP file with all StructureMaps as a blob
+   */
+  downloadProjectStructureMaps(projectKey: string): Observable<Blob> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/structuremaps`, { responseType: 'blob' })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Handles HTTP errors and provides user-friendly error messages
    * @param error The HTTP error response
    * @returns Observable error with formatted message
