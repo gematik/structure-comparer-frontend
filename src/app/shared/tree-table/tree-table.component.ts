@@ -173,8 +173,17 @@ export class TreeTableComponent implements OnInit, OnChanges {
     // Rebuild tree with filtered fields
     if (filteredFields.length > 0) {
       this.filteredTree = buildPropertyTree(filteredFields);
-      // Re-initialize expansion states for filtered tree
-      this.initializeExpansionStates(this.filteredTree, true);
+
+      // If text filter is active, expand all nodes to show search results
+      // Otherwise, only expand root level
+      const hasTextFilter = this.textFilter && this.textFilter.trim().length > 0;
+      if (hasTextFilter) {
+        // Expand all nodes recursively when text filter is active
+        this.expandNodesRecursive(this.filteredTree);
+      } else {
+        // Re-initialize expansion states for filtered tree (only root level)
+        this.initializeExpansionStates(this.filteredTree, true);
+      }
     } else {
       this.filteredTree = [];
     }
