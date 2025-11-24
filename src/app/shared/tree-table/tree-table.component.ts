@@ -120,14 +120,14 @@ export class TreeTableComponent implements OnInit, OnChanges {
     // Initialize expansion states - root nodes expanded by default
     // But preserve existing states for nodes that still exist
     this.initializeExpansionStates(this.propertyTree, true);
-    
+
     // Restore saved expansion states for nodes that still exist
     Object.keys(savedExpansionStates).forEach(nodeId => {
       if (this.isExpandedById.hasOwnProperty(nodeId)) {
         this.isExpandedById[nodeId] = savedExpansionStates[nodeId];
       }
     });
-    
+
     // Update visible rows after building tree
     this.updateVisibleRows();
   }
@@ -177,7 +177,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
     } else {
       this.filteredTree = [];
     }
-    
+
     // Update visible rows after filtering
     this.updateVisibleRows();
   }
@@ -249,7 +249,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   toggleNode(node: PropertyTreeNode): void {
     if (node.children && node.children.length > 0) {
       this.isExpandedById[node.id] = !this.isExpandedById[node.id];
-      
+
       // Update visible rows after toggling
       this.updateVisibleRows();
     }
