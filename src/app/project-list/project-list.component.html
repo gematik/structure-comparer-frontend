@@ -35,6 +35,14 @@
     <tr *ngFor="let project of projectsWithProgress.length > 0 ? projectsWithProgress : projects.projects" class="project-row clickable-row" (click)="loadProject(project.url)">
       <td class="project-items">
         <div class="project-name">{{ project.name }}</div>
+        <div class="project-metadata">
+          <span *ngIf="project.version" class="project-version">
+            <strong>Version:</strong> {{ project.version }}
+          </span>
+          <span *ngIf="project.status" class="project-status-badge" [class.status-active]="project.status === 'active'" [class.status-draft]="project.status === 'draft'" [class.status-retired]="project.status === 'retired'">
+            {{ project.status }}
+          </span>
+        </div>
         <div *ngIf="project.progressSummary" class="project-status" [ngClass]="getProjectProgressClass(project.progressSummary)">
           {{ getProjectStatusDescription(project.progressSummary) }}
         </div>

@@ -29,6 +29,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ImportManualEntriesResponse } from './models/manual-entries-import.model';
+import { Project, ProjectInput } from './models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -83,6 +84,18 @@ export class ProjectService {
   reloadProjectData(projectKey: string): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey); 
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Updates project metadata (version and status)
+   * @param projectKey The unique identifier of the project to update
+   * @param projectInput The project data to update (name, version, status)
+   * @returns Observable containing the updated project data
+   */
+  updateProject(projectKey: string, projectInput: ProjectInput): Observable<Project> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<Project>(`${this.baseUrl}/project/${encodedProjectKey}`, projectInput)
       .pipe(catchError(this.handleError));
   }
 

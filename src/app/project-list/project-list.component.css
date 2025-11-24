@@ -184,6 +184,43 @@ mat-form-field {
   margin-bottom: 4px;
 }
 
+/* Project Metadata (Version & Status) */
+.project-metadata {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+.project-version {
+  color: #6c757d;
+}
+
+.project-status-badge {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.project-status-badge.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.project-status-badge.status-draft {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.project-status-badge.status-retired {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
 .project-status {
   font-size: 12px;
   padding: 2px 8px;

@@ -10,7 +10,26 @@
   <!-- Project Progress Overview -->
   <div class="project-progress-overview">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h2>Übersicht Mapping: {{ projectName }}</h2>
+      <div>
+        <h2>Übersicht Mapping: {{ projectName }}</h2>
+        <div style="display: flex; gap: 16px; margin-top: 8px; align-items: center;">
+          <div *ngIf="projectData?.version" style="font-size: 14px; color: #666;">
+            <strong>Version:</strong> {{ projectData.version }}
+          </div>
+          <div *ngIf="projectData?.status" style="font-size: 14px; color: #666;">
+            <strong>Status:</strong> {{ projectData.status }}
+          </div>
+          <button
+            mat-button
+            color="primary"
+            (click)="openEditProjectMetadataDialog()"
+            matTooltip="Projekt-Version und Status bearbeiten"
+          >
+            <mat-icon>edit</mat-icon>
+            Projekt-Metadaten bearbeiten
+          </button>
+        </div>
+      </div>
       <button
         mat-raised-button
         color="accent"

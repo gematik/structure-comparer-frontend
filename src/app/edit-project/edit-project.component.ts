@@ -47,6 +47,7 @@ import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dia
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { ManualEntriesImportDialogComponent } from '../manual-entries-import-dialog/manual-entries-import-dialog.component';
+import { EditProjectMetadataDialogComponent, EditProjectMetadataDialogData, EditProjectMetadataDialogResult } from '../edit-project-metadata-dialog/edit-project-metadata-dialog.component';
 
 // Import new sub-components
 import { PackageListComponent } from '../shared/package-list/package-list.component';
@@ -675,6 +676,52 @@ export class EditProjectComponent implements OnInit {
           this.snackBar.open('Alle StructureMap-Dateien erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
         }
       });
+  }
+
+  /**
+   * Opens the dialog to edit project metadata (version and status)
+   */
+  openEditProjectMetadataDialog(): void {
+    const dialogData: EditProjectMetadataDialogData = {
+      projectKey: this.projectKey,
+      projectName: this.projectName,
+      currentVersion: this.projectData?.version,
+      currentStatus: this.projectData?.status
+    };
+
+    this.dialog.open(EditProjectMetadataDialogComponent, {
+      width: '500px',
+      data: dialogData
+    }).afterClosed().subscribe((result: EditProjectMetadataDialogResult) => {
+      if (result) {
+        this.updateProjectMetadata(result);
+      }
+    });
+  }
+
+  /**
+   * Updates project metadata (version and status) via API
+   */
+  private updateProjectMetadata(metadata: EditProjectMetadataDialogResult): void {
+    const updateData = {
+      name: this.projectName,
+      version: metadata.version,
+      status: metadata.status
+    };
+
+    this.projectService.updateProject(this.projectKey, updateData).subscribe({
+      next: (updatedProject) => {
+        this.projectData = updatedProject;
+        this.snackBar.open('Projekt-Metadaten erfolgreich aktualisiert', 'Schließen', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Error updating project metadata:', error);
+        this.snackBar.open('Fehler beim Aktualisieren der Projekt-Metadaten', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
 
   /**
