@@ -385,7 +385,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   getStatusLabel(status: MappingStatus): string {
     return StatusHelper.getLabelForStatus(status);
   }
-  
+
   getFieldStatusLabel(field: MappingField): string {
     return StatusHelper.getFieldStatusLabel(field);
   }
@@ -393,7 +393,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   getStatusCssClass(status: MappingStatus): string {
     return StatusHelper.getClassForStatus(status);
   }
-  
+
   getFieldStatusCssClass(field: MappingField): string {
     return StatusHelper.getFieldStatusClass(field);
   }
