@@ -22,6 +22,7 @@ import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-t
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 import { MappingActionStatisticsComponent } from '../shared/mapping-action-statistics/mapping-action-statistics.component';
 import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
+import { ProfileBadgesComponent } from '../shared/profile-badges/profile-badges.component';
 import { FilterSettingsComponent, FilterSettings } from '../shared/filter-settings/filter-settings.component';
 
 // Imported helpers for cleaner code organization
@@ -63,7 +64,8 @@ export interface IProfile {
     MappingActionDisplayComponent,
     MappingActionStatisticsComponent,
     MappingStatusDisplayComponent,
-    FilterSettingsComponent
+    FilterSettingsComponent,
+    ProfileBadgesComponent
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -384,6 +386,27 @@ export class MappingDetailComponent implements OnInit {
 
     const firstRefs = allRefs[0].sort().join(',');
     return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+  }
+
+  hasTypeDifferences(field: any): boolean {
+    const allTypes = this.profileColumns
+      .map(p => field.profiles?.[p.key]?.types || [])
+      .filter(types => types.length > 0);
+
+    if (allTypes.length <= 1) return false;
+
+    const firstTypes = allTypes[0].sort().join(',');
+    return allTypes.some(types => types.sort().join(',') !== firstTypes);
+  }
+
+  getFieldTypes(field: any): string {
+    const allTypes = this.profileColumns
+      .map(p => field.profiles?.[p.key]?.types || [])
+      .filter(types => types.length > 0);
+    
+    if (allTypes.length === 0) return '';
+    // Verwende die Typen des ersten Profils als Basis
+    return allTypes[0].join(', ');
   }
 
   // === FILTER & SORT LOGIC ===

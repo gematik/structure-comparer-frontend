@@ -36,6 +36,7 @@ import {
 import { MappingStatus } from '../../models/mapping-evaluation.model';
 import { MappingActionDisplayComponent } from '../mapping-action-display/mapping-action-display.component';
 import { MappingStatusDisplayComponent } from '../mapping-status-display/mapping-status-display.component';
+import { ProfileBadgesComponent } from '../profile-badges/profile-badges.component';
 
 export interface DisplayRow {
   node: PropertyTreeNode;
@@ -64,7 +65,8 @@ export interface EditFieldEvent {
     MatTooltip,
     MatSortModule,
     MappingActionDisplayComponent,
-    MappingStatusDisplayComponent
+    MappingStatusDisplayComponent,
+    ProfileBadgesComponent
   ],
   templateUrl: './tree-table.component.html',
   styleUrls: ['./tree-table.component.css']
@@ -503,5 +505,31 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     const firstRefs = allRefs[0].sort().join(',');
     return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+  }
+
+  /**
+   * Checks if there are type differences across profiles
+   */
+  hasTypeDifferences(field: any): boolean {
+    const allTypes = this.config.profileColumns
+      .map(p => field.profiles?.[p.key]?.types || [])
+      .filter(types => types.length > 0);
+
+    if (allTypes.length <= 1) return false;
+
+    const firstTypes = allTypes[0].sort().join(',');
+    return allTypes.some(types => types.sort().join(',') !== firstTypes);
+  }
+
+  /**
+   * Gets the field types for display
+   */
+  getFieldTypes(field: any): string {
+    const allTypes = this.config.profileColumns
+      .map(p => field.profiles?.[p.key]?.types || [])
+      .filter(types => types.length > 0);
+    
+    if (allTypes.length === 0) return '';
+    return allTypes[0].join(', ');
   }
 }

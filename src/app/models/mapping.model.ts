@@ -81,6 +81,8 @@ export interface FieldProfile {
   max: number | string;
   // Whether the field is must support
   must_support?: boolean;
+  // Type codes for the field (e.g., "string", "code", "Reference")
+  types?: string[];
   // Referenced types for the field
   ref_types?: string[];
   // Note about inherited cardinality (e.g., "inherited from .parent")

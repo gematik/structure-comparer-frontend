@@ -325,6 +325,9 @@
           <!-- Property -->
           <td class="default-td" [matTooltip]="field.name" matTooltipPosition="above">
             {{ field.name }}
+            <ng-container *ngIf="getFieldTypes(field)">
+              <br /><span class="field-type">{{ getFieldTypes(field) }}</span>
+            </ng-container>
             <ng-container *ngIf="field.extension">
               <br /><span class="muted">({{ field.extension }})</span>
             </ng-container>
@@ -332,36 +335,11 @@
           <!-- Profilspalten: min..max, MS, Ref-Typen oder — -->
           <ng-container *ngFor="let p of profileColumns">
             <td class="default-td">
-              <ng-container
-                *ngIf="field.profiles?.[p.key] as fp; else notAvailable"
-              >
-                <div
-                  class="profile-content"
-                  [matTooltip]="getRefTooltip(field, p.key)"
-                  matTooltipPosition="above"
-                >
-                  <span
-                    class="badge-cardinality"
-                    [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
-                    [matTooltip]="fp.cardinality_note || ''"
-                    [class.inherited-cardinality]="fp.cardinality_note"
-                  >
-                    {{ formatCardinality(fp.min, fp.max) }}
-                    <span *ngIf="fp.cardinality_note" class="inherited-icon" title="Kardinalität vererbt">↓</span>
-                  </span>
-
-                  <span *ngIf="fp.must_support" class="badge-ms">S</span>
-
-                  <span
-                    *ngIf="fp.ref_types?.length && hasRefDifferences(field)"
-                    class="ref-warning"
-                    title="Referenz-Unterschiede vorhanden"
-                  >
-                    ❗
-                  </span>
-                </div>
-              </ng-container>
-              <ng-template #notAvailable>—</ng-template>
+              <app-profile-badges
+                [profile]="field.profiles?.[p.key]"
+                [refTooltip]="getRefTooltip(field, p.key)"
+                [showRefWarning]="field.profiles?.[p.key]?.ref_types?.length && hasRefDifferences(field)"
+              ></app-profile-badges>
             </td>
           </ng-container>
 
