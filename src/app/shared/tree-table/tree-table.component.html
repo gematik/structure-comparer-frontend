@@ -55,7 +55,11 @@
     >
       <!-- Property Column with Tree Structure -->
       <td class="default-td" [matTooltip]="row.field?.name || row.node.label" matTooltipPosition="above">
-        <div class="tree-cell">
+        <div 
+          class="tree-cell" 
+          [class.clickable]="row.hasChildren"
+          (click)="handleTreeCellClick(row, $event)"
+        >
           <!-- Depth indicator bars -->
           <div class="tree-depth">
             <span
@@ -68,8 +72,9 @@
           <button
             *ngIf="row.hasChildren"
             class="tree-toggle-btn"
-            (click)="toggleNode(row.node)"
+            (click)="toggleNode(row.node); $event.stopPropagation()"
             [attr.aria-expanded]="isExpanded(row.node)"
+            [attr.data-node-id]="row.node.id"
             [title]="isExpanded(row.node) ? 'Zuklappen' : 'Aufklappen'"
           >
             {{ isExpanded(row.node) ? '▼' : '►' }}

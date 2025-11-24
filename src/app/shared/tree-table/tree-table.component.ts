@@ -87,9 +87,11 @@ export class TreeTableComponent implements OnInit, OnChanges {
   propertyTree: PropertyTreeNode[] = [];
   filteredTree: PropertyTreeNode[] = [];
   isExpandedById: Record<string, boolean> = {};
+  visibleRows: DisplayRow[] = [];
 
   ngOnInit(): void {
     this.buildTree();
+    this.updateVisibleRows();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -109,11 +111,25 @@ export class TreeTableComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Save current expansion states before rebuilding
+    const savedExpansionStates = { ...this.isExpandedById };
+
     this.propertyTree = buildPropertyTree(this.fields);
     this.filteredTree = [...this.propertyTree];
 
     // Initialize expansion states - root nodes expanded by default
+    // But preserve existing states for nodes that still exist
     this.initializeExpansionStates(this.propertyTree, true);
+    
+    // Restore saved expansion states for nodes that still exist
+    Object.keys(savedExpansionStates).forEach(nodeId => {
+      if (this.isExpandedById.hasOwnProperty(nodeId)) {
+        this.isExpandedById[nodeId] = savedExpansionStates[nodeId];
+      }
+    });
+    
+    // Update visible rows after building tree
+    this.updateVisibleRows();
   }
 
   /**
@@ -161,6 +177,9 @@ export class TreeTableComponent implements OnInit, OnChanges {
     } else {
       this.filteredTree = [];
     }
+    
+    // Update visible rows after filtering
+    this.updateVisibleRows();
   }
 
   /**
@@ -174,6 +193,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
    * Gets visible tree rows for table display
    */
   getVisibleTreeRows(): DisplayRow[] {
+    return this.visibleRows;
+  }
+
+  /**
+   * Updates the cached visible rows based on current expansion states
+   */
+  private updateVisibleRows(): void {
     const visibleRows: DisplayRow[] = [];
 
     const traverse = (node: PropertyTreeNode, depth = 0, parentExpanded = true) => {
@@ -199,7 +225,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
     };
 
     this.filteredTree.forEach(node => traverse(node));
-    return visibleRows;
+    this.visibleRows = visibleRows;
   }
 
   /**
@@ -223,6 +249,19 @@ export class TreeTableComponent implements OnInit, OnChanges {
   toggleNode(node: PropertyTreeNode): void {
     if (node.children && node.children.length > 0) {
       this.isExpandedById[node.id] = !this.isExpandedById[node.id];
+      
+      // Update visible rows after toggling
+      this.updateVisibleRows();
+    }
+  }
+
+  /**
+   * Handles click on entire tree cell (label, icon, etc.)
+   */
+  handleTreeCellClick(row: DisplayRow, event: MouseEvent): void {
+    if (row.hasChildren) {
+      this.toggleNode(row.node);
+      event.stopPropagation();
     }
   }
 
@@ -245,6 +284,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   expandAllNodes(): void {
     this.expandNodesRecursive(this.filteredTree);
+    this.updateVisibleRows();
   }
 
   /**
@@ -252,6 +292,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   collapseAllNodes(): void {
     this.collapseNodesRecursive(this.filteredTree);
+    this.updateVisibleRows();
   }
 
   /**
