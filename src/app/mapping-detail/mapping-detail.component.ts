@@ -693,6 +693,17 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private updateMappingMetadata(updateData: EditMappingDialogResult): void {
+    // Save tree expansion state before reloading
+    if (this.viewMode === 'tree' && this.treeTableComponent) {
+      this.savedTreeState = this.treeTableComponent.saveExpansionState();
+    }
+
+    // Save filter state
+    this.savedQuickFilter = this.currentQuickFilter;
+    this.savedTextFilter = this.textFilterValue;
+    this.savedPageIndex = this.pageIndex;
+    this.savedPageSize = this.pageSize;
+
     this.mappingsService.updateMappingMetadata(this.projectKey, this.mappingId, updateData)
       .pipe(catchError(error => {
         console.error('Error updating mapping metadata:', error);
@@ -729,6 +740,12 @@ export class MappingDetailComponent implements OnInit {
       this.savedTreeState = this.treeTableComponent.saveExpansionState();
     }
 
+    // Save filter state
+    this.savedQuickFilter = this.currentQuickFilter;
+    this.savedTextFilter = this.textFilterValue;
+    this.savedPageIndex = this.pageIndex;
+    this.savedPageSize = this.pageSize;
+
     this.mappingsService.updateMappingField(this.projectKey, this.mapping.id, field.name, action, updateData)
       .subscribe({
         next: () => this.loadMapping(this.projectKey, this.mapping.id),
@@ -743,6 +760,12 @@ export class MappingDetailComponent implements OnInit {
     if (this.viewMode === 'tree' && this.treeTableComponent) {
       this.savedTreeState = this.treeTableComponent.saveExpansionState();
     }
+
+    // Save filter state
+    this.savedQuickFilter = this.currentQuickFilter;
+    this.savedTextFilter = this.textFilterValue;
+    this.savedPageIndex = this.pageIndex;
+    this.savedPageSize = this.pageSize;
 
     this.mappingsService.updateMappingFieldAction(this.projectKey, this.mappingId, fieldName, updateRequest)
       .pipe(catchError(error => {
