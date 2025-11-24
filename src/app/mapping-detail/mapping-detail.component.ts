@@ -282,7 +282,7 @@ export class MappingDetailComponent implements OnInit {
   getStatusLabel(status: MappingStatus): string {
     return StatusHelper.getLabelForStatus(status);
   }
-  
+
   getFieldStatusLabel(field: MappingField): string {
     return StatusHelper.getFieldStatusLabel(field);
   }
@@ -290,7 +290,7 @@ export class MappingDetailComponent implements OnInit {
   getStatusCssClass(status: MappingStatus): string {
     return StatusHelper.getClassForStatus(status);
   }
-  
+
   getFieldStatusCssClass(field: MappingField): string {
     return StatusHelper.getFieldStatusClass(field);
   }
@@ -1052,7 +1052,7 @@ export class MappingDetailComponent implements OnInit {
 
   downloadStructureMap(): void {
     const filenameBase = this.sanitizeFilename(this.filtered?.name || this.mappingId);
-    const filename = `${filenameBase}_structuremap.json`;
+    const filename = `${filenameBase}_structuremaps.zip`;
 
     this.mappingsService.downloadStructureMap(this.projectKey, this.mappingId)
       .pipe(catchError(err => {
