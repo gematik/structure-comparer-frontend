@@ -454,10 +454,10 @@ button.cancel:hover {
 }
 
 .inherited-cardinality {
-  background: linear-gradient(135deg, 
-    var(--background-color, #f0f0f0) 0%, 
-    var(--background-color, #f0f0f0) 85%, 
-    #e0e0e0 85%, 
+  background: linear-gradient(135deg,
+    var(--background-color, #f0f0f0) 0%,
+    var(--background-color, #f0f0f0) 85%,
+    #e0e0e0 85%,
     #e0e0e0 100%) !important;
   border-style: dashed !important;
   position: relative;
