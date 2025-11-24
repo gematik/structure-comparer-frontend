@@ -150,11 +150,11 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private processLoadedMapping(mapping: any): void {
-    const sortedFields = this.sortFieldsByClassification(mapping.fields ?? []);
-    const processedMapping = { ...mapping, fields: sortedFields };
+    // Keep the natural order from StructureDefinition (as received from backend)
+    const fields = mapping.fields ?? [];
 
-    this.setupProfileColumns(processedMapping);
-    this.initializeMappingData(processedMapping, sortedFields);
+    this.setupProfileColumns(mapping);
+    this.initializeMappingData(mapping, fields);
     this.updateTreeTableConfig();
 
     if (this.savedTreeState && this.viewMode === 'tree') {
@@ -171,14 +171,6 @@ export class MappingDetailComponent implements OnInit {
         this.restoreFilterState();
       }, 100);
     }
-  }
-
-  private sortFieldsByClassification(fields: any[]): any[] {
-    return [...fields].sort((a, b) => {
-      const classA = (a?.classification ?? '').toString();
-      const classB = (b?.classification ?? '').toString();
-      return classA < classB ? 1 : classA > classB ? -1 : 0;
-    });
   }
 
   private setupProfileColumns(mapping: any): void {
@@ -444,6 +436,7 @@ export class MappingDetailComponent implements OnInit {
   /**
    * Includes parent nodes for filtered fields
    * Only includes direct ancestors, not siblings ("uncles" and "aunts")
+   * Preserves the natural order from the StructureDefinition
    */
   private includeParentNodes(filteredFields: MappingField[], allFields: MappingField[]): MappingField[] {
     const filteredFieldNames = new Set(filteredFields.map(f => f.name));
@@ -463,21 +456,11 @@ export class MappingDetailComponent implements OnInit {
       }
     });
 
-    // Add parent fields that are direct ancestors of filtered fields
-    const parentFields = allFields.filter(field => {
-      if (!field.name || filteredFieldNames.has(field.name)) {
-        return false;
-      }
-      return parentsToInclude.has(field.name);
-    });
+    // Create a set of all field names we want to include (filtered fields + parents)
+    const fieldsToInclude = new Set([...filteredFieldNames, ...parentsToInclude]);
 
-    // Combine filtered fields with parent fields and sort by name
-    const combined = [...filteredFields, ...parentFields];
-    return combined.sort((a, b) => {
-      const nameA = a.name || '';
-      const nameB = b.name || '';
-      return nameA.localeCompare(nameB);
-    });
+    // Filter allFields to only include the fields we want, preserving original order
+    return allFields.filter(field => field.name && fieldsToInclude.has(field.name));
   }
 
   /**
