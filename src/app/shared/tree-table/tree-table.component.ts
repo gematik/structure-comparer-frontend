@@ -204,20 +204,22 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     const traverse = (node: PropertyTreeNode, depth = 0, parentExpanded = true) => {
       if (parentExpanded) {
+        const hasChildren = !!(node.children && node.children.length > 0);
+
         const displayRow: DisplayRow = {
           node: node,
           field: node.originalField,
           depth: depth,
           isLeaf: node.isLeaf || false,
-          hasChildren: (node.children && node.children.length > 0) || false
+          hasChildren: hasChildren
         };
 
         visibleRows.push(displayRow);
 
-        // Check if this node is expanded
+        // Check if this node is expanded and has children
         const nodeExpanded = this.isExpanded(node);
-        if (node.children && nodeExpanded) {
-          node.children.forEach(child =>
+        if (hasChildren && nodeExpanded) {
+          node.children!.forEach(child =>
             traverse(child, depth + 1, true)
           );
         }

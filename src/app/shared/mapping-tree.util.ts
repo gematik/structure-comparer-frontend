@@ -32,7 +32,8 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
       let existingNode = currentNodes.find(node => node.label === segment);
 
       if (!existingNode) {
-        // Create new node
+        // Create new node - always initialize with children array
+        // A node can be both a leaf (have field data) AND have children
         const newNode: PropertyTreeNode = {
           id: currentPath,
           label: segment,
@@ -40,7 +41,7 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
           isExpanded: false,
           depth: index,
           isLeaf: isLastSegment,
-          children: isLastSegment ? undefined : []
+          children: [] // Always initialize children array
         };
 
         // Add leaf node data
@@ -56,8 +57,9 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
         currentNodes.push(newNode);
         nodeMap.set(currentPath, newNode);
         existingNode = newNode;
-      } else if (isLastSegment && !existingNode.isLeaf) {
-        // Convert intermediate node to leaf node if needed
+      } else if (isLastSegment) {
+        // Node already exists - add field data to it
+        // This allows a node to have both its own field data AND children
         existingNode.isLeaf = true;
         existingNode.originalField = field;
         existingNode.compatibilityStatus = field.classification;
@@ -65,11 +67,20 @@ export function buildPropertyTree(fields: any[]): PropertyTreeNode[] {
         existingNode.mappingDescription = getMappingDescription(field);
         existingNode.profileCardinalities = extractProfileCardinalities(field);
         existingNode.recommendationText = extractRecommendationText(field);
+
+        // Ensure children array exists even for leaf nodes
+        if (!existingNode.children) {
+          existingNode.children = [];
+        }
       }
 
       // Move to the next level
       if (!isLastSegment) {
-        currentNodes = existingNode.children || [];
+        // Ensure children array exists
+        if (!existingNode.children) {
+          existingNode.children = [];
+        }
+        currentNodes = existingNode.children;
         parentNode = existingNode;
       }
     });
