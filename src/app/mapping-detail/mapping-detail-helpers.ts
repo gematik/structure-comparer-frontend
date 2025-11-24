@@ -242,26 +242,15 @@ export class RecommendationHelper {
   /**
    * Get all recommendations for a field
    * Returns an empty array if no recommendations exist
-   * Filters out recommendations whose action is not in the field's actions_allowed list
+   *
+   * Note: We do NOT filter by actions_allowed here because:
+   * 1. The backend already validates recommendations before creating them
+   * 2. Greedy inheritance may create valid recommendations (e.g., copy_to for child fields)
+   *    even if the field's actions_allowed doesn't include that action
+   * 3. actions_allowed is for MANUAL actions, not for system-generated recommendations
    */
   static getRecommendations(field: MappingField): ActionInfo[] {
-    const allRecommendations = field.recommendations || [];
-
-    // If there are no allowed actions defined, show all recommendations (backwards compatibility)
-    if (!field.actions_allowed || field.actions_allowed.length === 0) {
-      return allRecommendations;
-    }
-
-    // Filter recommendations to only include those with allowed actions
-    return allRecommendations.filter(rec => {
-      // If recommendation has no action, exclude it
-      if (!rec.action) {
-        return false;
-      }
-
-      // Check if the recommendation's action is in the allowed actions list
-      return field.actions_allowed.includes(rec.action);
-    });
+    return field.recommendations || [];
   }
 
   /**

@@ -1404,9 +1404,17 @@ tr:hover {
 
 .recommendation-container {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px;
+}
+
+/* Recommendation row - horizontal layout for chip and badges */
+.recommendation-row {
+  display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px;
 }
 
 /* Base recommendation chip style - matches action chips but with dashed border */
@@ -1558,6 +1566,35 @@ tr:hover {
   background-color: #ffe0b2;
   color: #ef6c00;
   border-color: #ff9800;
+}
+
+/* System Remark for Recommendations */
+.recommendation-system-remark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border-left: 3px solid #2196f3;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.recommendation-system-remark .remark-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.recommendation-system-remark .remark-text {
+  flex: 1;
+  font-weight: 400;
 }
 
 /* Responsive Design */

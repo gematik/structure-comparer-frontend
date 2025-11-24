@@ -57,7 +57,9 @@ export interface ActionInfo {
   auto_generated?: boolean;
 
   user_remark?: string | null;
+  /** @deprecated Use system_remarks instead */
   system_remark?: string | null;
+  system_remarks?: string[] | null;  // Multiple system remarks for detailed information
 
   fixed_value?: unknown;
   other_value?: unknown;

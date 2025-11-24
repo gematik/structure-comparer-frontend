@@ -834,6 +834,31 @@ export class MappingDetailComponent implements OnInit {
   }
 
   /**
+   * Get all system remarks from recommendations
+   * Uses system_remarks array if available, falls back to system_remark string
+   */
+  getRecommendationSystemRemarks(field: MappingField): string[] {
+    if (!field.recommendations || field.recommendations.length === 0) {
+      return [];
+    }
+
+    const remarks: string[] = [];
+    
+    for (const rec of field.recommendations) {
+      // Prefer system_remarks array if available
+      if (rec.system_remarks && Array.isArray(rec.system_remarks)) {
+        remarks.push(...rec.system_remarks.filter(r => r && r.trim().length > 0));
+      }
+      // Fallback to single system_remark for backwards compatibility
+      else if (rec.system_remark && rec.system_remark.trim().length > 0) {
+        remarks.push(rec.system_remark);
+      }
+    }
+
+    return remarks;
+  }
+
+  /**
    * Apply a recommendation to convert it into an active action
    * @param field The field with the recommendation
    * @param index The index of the recommendation to apply (default: 0)
