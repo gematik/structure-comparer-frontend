@@ -21,6 +21,7 @@ import { ActionOption as ActionOptionModel, MappingAction, MappingField, Mapping
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 import { MappingActionStatisticsComponent } from '../shared/mapping-action-statistics/mapping-action-statistics.component';
+import { FilterSettingsComponent, FilterSettings } from '../shared/filter-settings/filter-settings.component';
 
 // Imported helpers for cleaner code organization
 import {
@@ -59,7 +60,8 @@ export interface IProfile {
     MatIcon,
     TreeTableComponent,
     MappingActionDisplayComponent,
-    MappingActionStatisticsComponent
+    MappingActionStatisticsComponent,
+    FilterSettingsComponent
   ],
   templateUrl: './mapping-detail.component.html',
   styleUrls: ['./mapping-detail.component.css'],
@@ -79,6 +81,11 @@ export class MappingDetailComponent implements OnInit {
   currentActionFilter: MappingAction[] = [];
   filteredFields: MappingField[] = [];
   textFilterValue: string = '';
+
+  // Filter settings
+  filterSettings: FilterSettings = {
+    showParentNodes: true
+  };
 
   // Profile columns and view settings
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
@@ -398,6 +405,10 @@ export class MappingDetailComponent implements OnInit {
 
   private applyAllFilters(): void {
     let filteredFields = this.original?.fields ?? [];
+    const allFields = [...filteredFields];
+
+    // Track if any filters are active
+    const hasActiveFilters = this.currentQuickFilter !== null || this.currentActionFilter.length > 0;
 
     if (this.currentQuickFilter) {
       filteredFields = filteredFields.filter((field: MappingField) => {
@@ -412,7 +423,61 @@ export class MappingDetailComponent implements OnInit {
       });
     }
 
+    // Include parent nodes ONLY if:
+    // 1. The setting is enabled AND
+    // 2. We have active filters (quick or action)
+    if (hasActiveFilters && this.filterSettings.showParentNodes) {
+      filteredFields = this.includeParentNodes(filteredFields, allFields);
+    }
+
     this.updateFilteredData(filteredFields);
+  }
+
+  /**
+   * Includes parent nodes for filtered fields
+   * Only includes direct ancestors, not siblings ("uncles" and "aunts")
+   */
+  private includeParentNodes(filteredFields: MappingField[], allFields: MappingField[]): MappingField[] {
+    const filteredFieldNames = new Set(filteredFields.map(f => f.name));
+    const parentsToInclude = new Set<string>();
+
+    // Find all parent paths for filtered fields
+    filteredFields.forEach(field => {
+      if (!field.name) return;
+
+      const segments = field.name.split('.');
+      let currentPath = '';
+
+      // Build all parent paths (direct ancestors only)
+      for (let i = 0; i < segments.length - 1; i++) {
+        currentPath = currentPath ? `${currentPath}.${segments[i]}` : segments[i];
+        parentsToInclude.add(currentPath);
+      }
+    });
+
+    // Add parent fields that are direct ancestors of filtered fields
+    const parentFields = allFields.filter(field => {
+      if (!field.name || filteredFieldNames.has(field.name)) {
+        return false;
+      }
+      return parentsToInclude.has(field.name);
+    });
+
+    // Combine filtered fields with parent fields and sort by name
+    const combined = [...filteredFields, ...parentFields];
+    return combined.sort((a, b) => {
+      const nameA = a.name || '';
+      const nameB = b.name || '';
+      return nameA.localeCompare(nameB);
+    });
+  }
+
+  /**
+   * Handles changes to filter settings
+   */
+  onFilterSettingsChanged(settings: FilterSettings): void {
+    this.filterSettings = settings;
+    this.applyAllFilters();
   }
 
   private restoreFilterState(): void {

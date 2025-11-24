@@ -1,21 +1,29 @@
 <!-- Tree Controls -->
-<div class="tree-controls" style="margin-bottom: 16px;">
-  <button
-    mat-button
-    (click)="expandAllNodes()"
-    matTooltip="Alle Knoten aufklappen"
-  >
-    <span>▼</span>
-    Alle aufklappen
-  </button>
-  <button
-    mat-button
-    (click)="collapseAllNodes()"
-    matTooltip="Alle Knoten zuklappen"
-  >
-    <span>►</span>
-    Alle zuklappen
-  </button>
+<div class="tree-controls" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; gap: 8px;">
+    <button
+      mat-button
+      (click)="expandAllNodes()"
+      matTooltip="Alle Knoten aufklappen"
+    >
+      <span>▼</span>
+      Alle aufklappen
+    </button>
+    <button
+      mat-button
+      (click)="collapseAllNodes()"
+      matTooltip="Alle Knoten zuklappen"
+    >
+      <span>►</span>
+      Alle zuklappen
+    </button>
+  </div>
+
+  <!-- Filter Settings -->
+  <app-filter-settings
+    [settings]="filterSettings"
+    (settingsChanged)="onFilterSettingsChanged($event)"
+  ></app-filter-settings>
 </div>
 
 <!-- Tree Table View -->

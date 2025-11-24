@@ -248,3 +248,85 @@ export function filterTreeNodes(nodes: PropertyTreeNode[], searchTerm: string): 
 
   return filteredNodes;
 }
+
+/**
+ * Filters tree nodes with option to include parent nodes
+ * @param nodes Tree nodes to filter
+ * @param filterFn Function that determines if a leaf node matches the filter
+ * @param includeParents Whether to include parent nodes even if they don't match
+ * @returns Filtered tree with only direct ancestor parents included if specified
+ */
+export function filterTreeWithParents(
+  nodes: PropertyTreeNode[],
+  filterFn: (node: PropertyTreeNode) => boolean,
+  includeParents: boolean = false
+): PropertyTreeNode[] {
+  if (!nodes || nodes.length === 0) {
+    return [];
+  }
+
+  /**
+   * Recursively check if a node or any of its descendants match the filter
+   */
+  function hasMatchingDescendant(node: PropertyTreeNode): boolean {
+    // Check if this node itself matches (if it's a leaf)
+    if (node.isLeaf && filterFn(node)) {
+      return true;
+    }
+
+    // Check if any children match
+    if (!node.children || node.children.length === 0) {
+      return false;
+    }
+
+    return node.children.some(child => hasMatchingDescendant(child));
+  }
+
+  /**
+   * Recursively filter nodes, keeping only matching leaves and their direct ancestors
+   */
+  function filterNode(node: PropertyTreeNode): PropertyTreeNode | null {
+    const nodeMatches = node.isLeaf && filterFn(node);
+    const hasMatchingChildren = node.children && node.children.some(child => hasMatchingDescendant(child));
+
+    // If includeParents is false, exclude nodes that don't match and have no matching children
+    if (!includeParents && !nodeMatches && !hasMatchingChildren) {
+      return null;
+    }
+
+    // If includeParents is true, include this node only if:
+    // 1. It matches the filter itself, OR
+    // 2. It has at least one matching descendant (making it a direct ancestor)
+    if (includeParents && !nodeMatches && !hasMatchingChildren) {
+      return null;
+    }
+
+    // Filter children recursively - only keep children that match or have matching descendants
+    const filteredChildren = node.children
+      ? node.children.map(child => filterNode(child)).filter(child => child !== null) as PropertyTreeNode[]
+      : [];
+
+    // Include this node if:
+    // 1. It matches the filter (leaf node), OR
+    // 2. includeParents is true AND it has matching descendants (is a direct ancestor)
+    if (nodeMatches || (includeParents && filteredChildren.length > 0)) {
+      return {
+        ...node,
+        children: filteredChildren.length > 0 ? filteredChildren : (node.children || []),
+        isExpanded: filteredChildren.length > 0 // Auto-expand if has matching children
+      };
+    }
+
+    return null;
+  }
+
+  const filteredNodes: PropertyTreeNode[] = [];
+  nodes.forEach(node => {
+    const filtered = filterNode(node);
+    if (filtered) {
+      filteredNodes.push(filtered);
+    }
+  });
+
+  return filteredNodes;
+}

@@ -37,6 +37,13 @@
   align-items: center;
 }
 
+/* Filter Input Container */
+.filter-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* Filter Input */
 .filter-input {
   min-width: 200px;

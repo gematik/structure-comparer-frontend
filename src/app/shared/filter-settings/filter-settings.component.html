@@ -1,0 +1,36 @@
+<div class="filter-settings-container">
+  <button
+    mat-icon-button
+    (click)="toggleExpansion()"
+    class="filter-toggle-btn"
+    [class.expanded]="isExpanded"
+    matTooltip="Filter-Einstellungen"
+    aria-label="Filter-Einstellungen öffnen/schließen"
+  >
+    <mat-icon>tune</mat-icon>
+  </button>
+
+  <div class="filter-settings-panel" *ngIf="isExpanded">
+    <div class="filter-settings-header">
+      <h4>Filter-Einstellungen</h4>
+      <button
+        mat-icon-button
+        (click)="toggleExpansion()"
+        class="close-btn"
+        aria-label="Schließen"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="filter-settings-content">
+      <mat-checkbox
+        [(ngModel)]="settings.showParentNodes"
+        (change)="onSettingChanged()"
+        matTooltip="Zeigt Elternknoten an, auch wenn sie nicht dem Filter entsprechen"
+      >
+        Elternknoten immer anzeigen
+      </mat-checkbox>
+    </div>
+  </div>
+</div>

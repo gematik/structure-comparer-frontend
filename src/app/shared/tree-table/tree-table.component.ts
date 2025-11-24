@@ -24,7 +24,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatSortModule } from '@angular/material/sort';
 import { PropertyTreeNode } from '../../models/property-tree-node.model';
-import { buildPropertyTree } from '../mapping-tree.util';
+import { buildPropertyTree, filterTreeWithParents } from '../mapping-tree.util';
+import { FilterSettingsComponent, FilterSettings } from '../filter-settings/filter-settings.component';
 import { MappingField, MappingAction } from '../../models/mapping.model';
 import {
   MappingTextHelper,
@@ -62,7 +63,8 @@ export interface EditFieldEvent {
 
     MatTooltip,
     MatSortModule,
-    MappingActionDisplayComponent
+    MappingActionDisplayComponent,
+    FilterSettingsComponent
   ],
   templateUrl: './tree-table.component.html',
   styleUrls: ['./tree-table.component.css']
@@ -89,6 +91,10 @@ export class TreeTableComponent implements OnInit, OnChanges {
   filteredTree: PropertyTreeNode[] = [];
   isExpandedById: Record<string, boolean> = {};
   visibleRows: DisplayRow[] = [];
+
+  filterSettings: FilterSettings = {
+    showParentNodes: true
+  };
 
   ngOnInit(): void {
     this.buildTree();
@@ -137,55 +143,82 @@ export class TreeTableComponent implements OnInit, OnChanges {
    * Apply current filter to the tree
    */
   applyFilter(): void {
-    let filteredFields = [...this.fields];
+    // Build tree from all fields first
+    const fullTree = buildPropertyTree(this.fields);
 
-    // Apply quick filter if active
-    if (this.currentQuickFilter) {
-      filteredFields = filteredFields.filter(field => {
+    // Check if any filters are active
+    const hasQuickFilter = !!this.currentQuickFilter;
+    const hasActionFilter = this.currentActionFilter.length > 0;
+    const hasTextFilter = this.textFilter && this.textFilter.trim().length > 0;
+    const hasAnyFilter = hasQuickFilter || hasActionFilter || hasTextFilter;
+
+    if (!hasAnyFilter) {
+      // No filters active - show full tree
+      this.filteredTree = fullTree;
+      this.initializeExpansionStates(this.filteredTree, true);
+      this.updateVisibleRows();
+      return;
+    }
+
+    // Apply filters using filterTreeWithParents
+    const filterFn = (node: PropertyTreeNode): boolean => {
+      if (!node.originalField) return false;
+
+      const field = node.originalField;
+
+      // Apply quick filter
+      if (hasQuickFilter) {
         const fieldStatus = this.getFieldStatus(field);
-        return fieldStatus === this.currentQuickFilter;
-      });
-    }
+        if (fieldStatus !== this.currentQuickFilter) {
+          return false;
+        }
+      }
 
-    // Apply action filter if active
-    if (this.currentActionFilter.length > 0) {
-      filteredFields = filteredFields.filter(field => {
-        return field.action && this.currentActionFilter.includes(field.action);
-      });
-    }
+      // Apply action filter
+      if (hasActionFilter) {
+        if (!field.action || !this.currentActionFilter.includes(field.action)) {
+          return false;
+        }
+      }
 
-    // Apply text filter if present
-    if (this.textFilter && this.textFilter.trim()) {
-      const normalizedFilter = this.normalizeString(this.textFilter);
-      filteredFields = filteredFields.filter(field => {
+      // Apply text filter
+      if (hasTextFilter) {
+        const normalizedFilter = this.normalizeString(this.textFilter);
         const name = this.normalizeString(field.name || '');
         const action = this.normalizeString(field.action || '');
         const remark = this.normalizeString(field.remark || '');
         const status = this.normalizeString(this.getStatusLabel(this.getFieldStatus(field)));
 
-        return name.includes(normalizedFilter) ||
-               action.includes(normalizedFilter) ||
-               remark.includes(normalizedFilter) ||
-               status.includes(normalizedFilter);
-      });
-    }
-
-    // Rebuild tree with filtered fields
-    if (filteredFields.length > 0) {
-      this.filteredTree = buildPropertyTree(filteredFields);
-
-      // If text filter is active, expand all nodes to show search results
-      // Otherwise, only expand root level
-      const hasTextFilter = this.textFilter && this.textFilter.trim().length > 0;
-      if (hasTextFilter) {
-        // Expand all nodes recursively when text filter is active
-        this.expandNodesRecursive(this.filteredTree);
-      } else {
-        // Re-initialize expansion states for filtered tree (only root level)
-        this.initializeExpansionStates(this.filteredTree, true);
+        if (!name.includes(normalizedFilter) &&
+            !action.includes(normalizedFilter) &&
+            !remark.includes(normalizedFilter) &&
+            !status.includes(normalizedFilter)) {
+          return false;
+        }
       }
+
+      return true;
+    };
+
+    // Determine whether to include parent nodes:
+    // - Only include if showParentNodes is enabled
+    // - AND we have status/action filters (not for text filter)
+    const includeParents = this.filterSettings.showParentNodes && (hasQuickFilter || hasActionFilter);
+
+    // Apply filter with or without parent nodes
+    this.filteredTree = filterTreeWithParents(
+      fullTree,
+      filterFn,
+      includeParents
+    );
+
+    // Expand nodes based on filter type
+    if (hasTextFilter || hasQuickFilter || hasActionFilter) {
+      // Expand all nodes to show filtered results
+      this.expandNodesRecursive(this.filteredTree);
     } else {
-      this.filteredTree = [];
+      // Only expand root level
+      this.initializeExpansionStates(this.filteredTree, true);
     }
 
     // Update visible rows after filtering
@@ -440,6 +473,14 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   onApplyRecommendation(event: { field: any; index: number; event: Event }): void {
     this.applyRecommendation.emit(event);
+  }
+
+  /**
+   * Handles changes to filter settings
+   */
+  onFilterSettingsChanged(settings: FilterSettings): void {
+    this.filterSettings = settings;
+    this.applyFilter();
   }
 
   /**

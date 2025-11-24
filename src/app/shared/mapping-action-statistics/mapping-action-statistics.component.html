@@ -28,16 +28,20 @@
     </button>
   </div>
 
-  <!-- Text Filter Input -->
-  <mat-form-field class="filter-input" appearance="outline">
-    <mat-label>Filter</mat-label>
-    <input
-      matInput
-      type="text"
-      [value]="textFilterValue"
-      (input)="onTextFilterInput($event)"
-      placeholder="Suchen..."
-    />
-    <mat-icon matPrefix>search</mat-icon>
-  </mat-form-field>
+  <!-- Text Filter Input and Settings -->
+  <div class="filter-input-container">
+    <mat-form-field class="filter-input" appearance="outline">
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="textFilterValue"
+        (input)="onTextFilterInput($event)"
+        placeholder="Suchen..."
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    
+    <ng-content select="[filterSettings]"></ng-content>
+  </div>
 </div>

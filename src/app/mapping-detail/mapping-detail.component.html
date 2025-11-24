@@ -268,8 +268,6 @@
           Baum
         </button>
       </div>
-
-      <!-- Tree Controls werden jetzt in der TreeTableComponent behandelt -->
     </div>
 
     <!-- Mapping Action Statistics with Filter -->
@@ -279,7 +277,14 @@
       [textFilterValue]="textFilterValue"
       (actionsSelected)="applyActionFilter($event)"
       (textFilterChanged)="onTextFilterChanged($event)"
-    ></app-mapping-action-statistics>
+    >
+      <!-- Filter Settings projected into the statistics component -->
+      <app-filter-settings
+        filterSettings
+        [settings]="filterSettings"
+        (settingsChanged)="onFilterSettingsChanged($event)"
+      ></app-filter-settings>
+    </app-mapping-action-statistics>
   </div>
   <div style="overflow: auto">
     <!-- Flat Table View -->
