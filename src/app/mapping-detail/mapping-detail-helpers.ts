@@ -36,6 +36,13 @@ const STATUS_META: Record<MappingStatus, { label: string; cssClass: string; defa
   },
 };
 
+// Special metadata for inherited incompatibility
+const INHERITED_INCOMPATIBLE_META = {
+  label: '↓ Inkompatibel (vererbt)',  // ↓ indicates inheritance from children
+  cssClass: 'status-incompatible-inherited',
+  defaultTooltip: 'Feld ist inkompatibel aufgrund von inkompatiblen Kind-Feldern.',
+};
+
 export const ACTION_CSS: Record<string, string> = {
   use: 'row-use',
   not_use: 'row-not-use',
@@ -337,12 +344,54 @@ export class EvaluationHelper {
     }
 
     return evaluation.reasons.map((reason: EvaluationReason) => {
-      const severity = reason.severity.toUpperCase();
-      const actionSuffix = reason.related_action ? ` (Aktion: ${reason.related_action})` : '';
-      const details = Object.keys(reason.details ?? {}).length > 0
-        ? ` ${JSON.stringify(reason.details)}`
-        : '';
-      return `[${severity}] ${reason.message_key}${details}${actionSuffix}`;
+      // Format user-friendly messages based on message_key
+      const classification = reason.details?.['classification'] as string;
+      const fieldName = reason.details?.['field'] as string;
+      
+      switch (reason.message_key) {
+        case 'mapping.reason.field.incompatible':
+          if (classification === 'incompatible') {
+            return '❌ Feld ist inkompatibel\n→ Fügen Sie eine Mapping-Aktion hinzu, um das Problem zu lösen';
+          } else if (classification === 'target_required') {
+            return '❌ Pflichtfeld im Ziel fehlt\n→ Fügen Sie eine Mapping-Aktion hinzu (z.B. fixed_value, copy, transform)';
+          } else if (classification === 'cardinality_mismatch') {
+            return '❌ Kardinalität ist inkompatibel\n→ Passen Sie die Kardinalität an oder fügen Sie eine spezielle Aktion hinzu';
+          } else if (classification === 'type_mismatch') {
+            return '❌ Datentypen sind inkompatibel\n→ Fügen Sie eine Transform-Aktion hinzu, um den Typ zu konvertieren';
+          }
+          return '❌ Feld ist inkompatibel\n→ Fügen Sie eine passende Mapping-Aktion hinzu';
+        
+        case 'mapping.reason.field.warning':
+          if (classification === 'removed_from_source') {
+            return '⚠️ Feld wurde aus der Quelle entfernt\n→ Prüfen Sie, ob das Mapping noch benötigt wird';
+          } else if (classification === 'added_to_target') {
+            return '⚠️ Neues Feld im Ziel hinzugefügt\n→ Prüfen Sie, ob eine Mapping-Aktion erforderlich ist';
+          }
+          return '⚠️ Feld hat Warnungen\n→ Überprüfen Sie das Feld und erwägen Sie eine Anpassung';
+        
+        case 'mapping.reason.field.incompatible.resolved':
+          const resolvedAction = reason.related_action || 'Mapping-Aktion';
+          return `✓ Inkompatibilität gelöst durch: ${resolvedAction}`;
+        
+        case 'mapping.reason.field.warning.resolved':
+          const warningAction = reason.related_action || 'Mapping-Aktion';
+          return `✓ Warnung adressiert durch: ${warningAction}`;
+        
+        case 'mapping.reason.target_required.not_use':
+          return `❌ Pflichtfeld im Ziel kann nicht ignoriert werden${fieldName ? ': ' + fieldName : ''}\n→ Entfernen Sie die 'not_use' Aktion oder fügen Sie eine andere Aktion hinzu`;
+        
+        case 'mapping.reason.parent.inherited_incompatible':
+          // This should be filtered out in getFieldStatusTooltip, but just in case
+          const childCount = reason.details?.['incompatible_children_count'] as number;
+          return `⚠️ Inkompatibilität vererbt von ${childCount} Kind-Feld${childCount === 1 ? '' : 'ern'}\n→ Lösen Sie die Probleme in den Kind-Feldern`;
+        
+        default:
+          // Fallback: Show technical details but more readable
+          const severity = reason.severity === 'error' ? '❌' : 
+                          reason.severity === 'warning' ? '⚠️' : 'ℹ️';
+          const actionSuffix = reason.related_action ? ` (Aktion: ${reason.related_action})` : '';
+          return `${severity} ${reason.message_key}${actionSuffix}`;
+      }
     });
   }
 }
@@ -375,13 +424,71 @@ export class StatusHelper {
   static getFieldStatus(field: MappingField): MappingStatus {
     return this.getStatusFromEvaluation(field.evaluation) ?? this.getFallbackStatus(field);
   }
+  
+  /**
+   * Check if a field has inherited incompatibility from its children
+   */
+  static hasInheritedIncompatibility(field: MappingField): boolean {
+    const evaluation = field.evaluation;
+    if (!evaluation) return false;
+    
+    return evaluation.reasons.some(
+      reason => reason.code === 'INHERITED_INCOMPATIBLE_FROM_CHILDREN'
+    );
+  }
+  
+  /**
+   * Get list of incompatible children for a field with inherited incompatibility
+   */
+  static getIncompatibleChildren(field: MappingField): string[] {
+    const evaluation = field.evaluation;
+    if (!evaluation) return [];
+    
+    const inheritedReason = evaluation.reasons.find(
+      reason => reason.code === 'INHERITED_INCOMPATIBLE_FROM_CHILDREN'
+    );
+    
+    if (inheritedReason && inheritedReason.details) {
+      return (inheritedReason.details['incompatible_children'] as string[]) || [];
+    }
+    
+    return [];
+  }
 
   static getLabelForStatus(status: MappingStatus): string {
     return STATUS_META[status]?.label ?? STATUS_META[FALLBACK_STATUS].label;
   }
+  
+  /**
+   * Get label for status with special handling for inherited incompatibility
+   */
+  static getLabelForField(field: MappingField): string {
+    const status = this.getFieldStatus(field);
+    
+    // Check if this is an inherited incompatibility
+    if (status === 'incompatible' && this.hasInheritedIncompatibility(field)) {
+      return INHERITED_INCOMPATIBLE_META.label;
+    }
+    
+    return this.getLabelForStatus(status);
+  }
 
   static getClassForStatus(status: MappingStatus): string {
     return STATUS_META[status]?.cssClass ?? STATUS_META[FALLBACK_STATUS].cssClass;
+  }
+  
+  /**
+   * Get CSS class for status with special handling for inherited incompatibility
+   */
+  static getClassForField(field: MappingField): string {
+    const status = this.getFieldStatus(field);
+    
+    // Check if this is an inherited incompatibility
+    if (status === 'incompatible' && this.hasInheritedIncompatibility(field)) {
+      return INHERITED_INCOMPATIBLE_META.cssClass;
+    }
+    
+    return this.getClassForStatus(status);
   }
 
   static getDefaultTooltip(status: MappingStatus): string {
@@ -389,18 +496,42 @@ export class StatusHelper {
   }
 
   static getFieldStatusLabel(field: MappingField): string {
-    return this.getLabelForStatus(this.getFieldStatus(field));
+    return this.getLabelForField(field);
   }
 
   static getFieldStatusClass(field: MappingField): string {
-    return this.getClassForStatus(this.getFieldStatus(field));
+    return this.getClassForField(field);
   }
 
   static getFieldStatusTooltip(field: MappingField): string[] {
+    // Check for inherited incompatibility first
+    if (this.hasInheritedIncompatibility(field)) {
+      const children = this.getIncompatibleChildren(field);
+      const lines: string[] = [];
+      
+      const childrenInfo = children.length > 0 
+        ? ` (${children.length} inkompatible${children.length === 1 ? 's' : ''} Kind-Feld${children.length === 1 ? '' : 'er'})`
+        : '';
+      lines.push(`⚠️ Inkompatibel vererbt von Kind-Feldern${childrenInfo}`);
+      
+      // Add list of incompatible children that need to be solved
+      if (children.length > 0) {
+        lines.push(''); // Empty line for separation
+        lines.push('Zu lösen:');
+        children.forEach(child => {
+          lines.push(`  • ${child}`);
+        });
+      }
+      
+      return lines;
+    }
+    
+    // For non-inherited incompatibility, show evaluation details
     const evaluationLines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
     if (evaluationLines.length > 0) {
       return evaluationLines;
     }
+    
     return [this.getDefaultTooltip(this.getFieldStatus(field))];
   }
 }

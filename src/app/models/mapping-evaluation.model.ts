@@ -73,6 +73,8 @@ export interface EvaluationReason {
   message_key: string;
   details: Record<string, unknown>;
   related_action?: ActionType | null;
+  // Flag indicating if this reason represents an inherited incompatibility from children
+  is_inherited?: boolean;
 }
 
 export interface EvaluationResult {

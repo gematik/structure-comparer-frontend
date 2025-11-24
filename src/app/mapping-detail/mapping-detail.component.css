@@ -47,6 +47,12 @@ table {
   color: #7a1f1f;
 }
 
+.pill.status-incompatible-inherited {
+  background-color: #fdecea; /* Same red as incompatible */
+  color: #7a1f1f;
+  font-style: italic; /* Italic to distinguish, plus ↓ icon in label */
+}
+
 .pill.status-unknown {
   background-color: #eceff1;
   color: #37474f;
@@ -729,6 +735,13 @@ tr:hover {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f1aeb5;
+}
+
+.status-incompatible-inherited {
+  background-color: #f8d7da; /* Same red as incompatible */
+  color: #721c24;
+  border: 1px solid #f1aeb5;
+  font-style: italic; /* Italic to distinguish, plus ↓ icon in label */
 }
 
 /* Status column width */

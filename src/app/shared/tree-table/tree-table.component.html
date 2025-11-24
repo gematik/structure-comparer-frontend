@@ -144,11 +144,11 @@
         <ng-container *ngIf="row.field">
           <span
             class="status-pill"
-            [ngClass]="getStatusCssClass(getFieldStatus(row.field))"
+            [ngClass]="getFieldStatusCssClass(row.field)"
             [matTooltip]="getStatusTooltip(row.field)"
             matTooltipPosition="above"
           >
-            {{ getStatusLabel(getFieldStatus(row.field)) }}
+            {{ getFieldStatusLabel(row.field) }}
           </span>
 
           <div

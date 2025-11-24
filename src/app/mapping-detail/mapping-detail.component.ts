@@ -282,9 +282,17 @@ export class MappingDetailComponent implements OnInit {
   getStatusLabel(status: MappingStatus): string {
     return StatusHelper.getLabelForStatus(status);
   }
+  
+  getFieldStatusLabel(field: MappingField): string {
+    return StatusHelper.getFieldStatusLabel(field);
+  }
 
   getStatusCssClass(status: MappingStatus): string {
     return StatusHelper.getClassForStatus(status);
+  }
+  
+  getFieldStatusCssClass(field: MappingField): string {
+    return StatusHelper.getFieldStatusClass(field);
   }
 
   getStatusTooltip(field: MappingField): string {

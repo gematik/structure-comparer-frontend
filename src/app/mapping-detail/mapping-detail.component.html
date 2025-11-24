@@ -366,11 +366,11 @@
           <td class="default-td">
             <span
               class="status-pill"
-              [ngClass]="getStatusCssClass(getFieldStatus(field))"
+              [ngClass]="getFieldStatusCssClass(field)"
               [matTooltip]="getStatusTooltip(field)"
               matTooltipPosition="above"
             >
-              {{ getStatusLabel(getFieldStatus(field)) }}
+              {{ getFieldStatusLabel(field) }}
             </span>
 
             <div

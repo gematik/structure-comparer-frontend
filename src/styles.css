@@ -1,5 +1,13 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* Material Tooltip: Enable line breaks and wider tooltips */
+.mat-mdc-tooltip,
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  white-space: pre-line !important;
+  max-width: 600px !important;
+  min-width: 300px !important;
+}
+
 html, body { height: 100%; }
 body {
     font-family: Arial, sans-serif;

@@ -142,6 +142,13 @@
 .status-incompatible .status-icon {
   color: #dc3545;
 }
+
+.status-incompatible-inherited,
+.status-incompatible-inherited .status-icon {
+  color: #dc3545; /* Same red as incompatible */
+  font-style: italic; /* Italic to distinguish, plus ↓ icon in label */
+}
+
 .pill.status-evaluation-failed {
   background-color: #ffebef;
   color: #8a1c33;
@@ -267,6 +274,13 @@ button.cancel:hover {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f1aeb5;
+}
+
+.status-incompatible-inherited {
+  background-color: #f8d7da; /* Same red as incompatible */
+  color: #721c24;
+  border: 1px solid #f1aeb5;
+  font-style: italic; /* Italic to distinguish, plus ↓ icon in label */
 }
 
 /* Consolidated Mapping Display */
