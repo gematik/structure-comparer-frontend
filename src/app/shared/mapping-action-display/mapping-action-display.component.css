@@ -247,11 +247,29 @@
   border-color: #90caf9;
 }
 
-/* Recommendation action-specific colors */
+/* Recommendation action-specific colors - lighter versions of action colors */
 .recommendation-chip--use {
   background-color: #e8f5e9;
   color: #2e7d32;
   border-color: #81c784;
+}
+
+.recommendation-chip--use_recursive {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  border-color: #66bb6a;
+}
+
+.recommendation-chip--not_use {
+  background-color: #fce4ec;
+  color: #c2185b;
+  border-color: #f48fb1;
+}
+
+.recommendation-chip--empty {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border-color: #ce93d8;
 }
 
 .recommendation-chip--copy_from,
@@ -261,16 +279,22 @@
   border-color: #90caf9;
 }
 
-.recommendation-chip--not_use {
-  background-color: #fce4ec;
-  color: #c2185b;
-  border-color: #f48fb1;
+.recommendation-chip--fixed {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border-color: #ffcc80;
 }
 
 .recommendation-chip--manual {
-  background-color: #fff9e6;
+  background-color: #fffde7;
   color: #f57f17;
-  border-color: #ffd54f;
+  border-color: #fff59d;
+}
+
+.recommendation-chip--medication_service {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border-color: #ef9a9a;
 }
 
 /* Recommendation system remark */

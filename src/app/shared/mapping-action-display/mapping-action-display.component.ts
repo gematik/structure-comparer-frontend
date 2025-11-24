@@ -23,6 +23,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MappingAction, MappingField } from '../../models/mapping.model';
+import { ActionInfo } from '../../models/mapping-evaluation.model';
 import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helpers';
 
 @Component({
@@ -108,7 +109,7 @@ export class MappingActionDisplayComponent {
   }
 
   // === RECOMMENDATION METHODS ===
-  
+
   /**
    * Check if field has a recommendation
    */
@@ -117,47 +118,37 @@ export class MappingActionDisplayComponent {
   }
 
   /**
-   * Get label for the first recommendation
+   * Get all recommendations for this field
    */
-  getRecommendationLabel(): string {
-    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
-    if (!recommendation) {
-      return '';
-    }
+  getRecommendations(field: MappingField): ActionInfo[] {
+    return RecommendationHelper.getRecommendations(field);
+  }
+
+  /**
+   * Get label for a recommendation
+   */
+  getRecommendationLabel(recommendation: ActionInfo): string {
     return RecommendationHelper.buildRecommendationLabel(recommendation);
   }
 
   /**
-   * Get tooltip for the first recommendation
+   * Get tooltip for a recommendation
    */
-  getRecommendationTooltip(): string {
-    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
-    if (!recommendation) {
-      return '';
-    }
+  getRecommendationTooltip(recommendation: ActionInfo): string {
     return RecommendationHelper.buildRecommendationTooltip(recommendation);
   }
 
   /**
-   * Get recommendation action type for CSS class binding (first recommendation)
+   * Get recommendation action type for CSS class binding
    */
-  getRecommendationAction(): string | null {
-    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
-    if (!recommendation) {
-      return null;
-    }
+  getRecommendationAction(recommendation: ActionInfo): string | null {
     return RecommendationHelper.getRecommendationAction(recommendation);
   }
 
   /**
-   * Get the other_value from the first recommendation (for copy_from/copy_to)
+   * Get the other_value from a recommendation (for copy_from/copy_to)
    */
-  getRecommendationOtherValue(): string | null {
-    const recommendation = RecommendationHelper.getFirstRecommendation(this.field);
-    if (!recommendation) {
-      return null;
-    }
-
+  getRecommendationOtherValue(recommendation: ActionInfo): string | null {
     // Only show for copy_from/copy_to actions
     if (recommendation.action !== 'copy_from' && recommendation.action !== 'copy_to') {
       return null;

@@ -3,23 +3,25 @@
   <div *ngIf="hasRecommendation() && !field.action" class="recommendation-container">
     <!-- Chip and detail badge in horizontal row -->
     <div class="recommendation-row">
-      <div class="recommendation-chip"
-           [class]="'recommendation-chip--' + getRecommendationAction()"
-           [matTooltip]="getRecommendationTooltip()"
-           matTooltipPosition="above"
-           (click)="onApplyRecommendation($event)">
-        <mat-icon>lightbulb_outline</mat-icon>
-        <span class="chip-label">
-          {{ getRecommendationLabel() }}
-        </span>
-      </div>
+      <ng-container *ngFor="let recommendation of getRecommendations(field); let i = index">
+        <div class="recommendation-chip"
+             [class]="'recommendation-chip--' + getRecommendationAction(recommendation)"
+             [matTooltip]="getRecommendationTooltip(recommendation)"
+             matTooltipPosition="above"
+             (click)="onApplyRecommendation($event, i)">
+          <mat-icon>lightbulb_outline</mat-icon>
+          <span class="chip-label">
+            {{ getRecommendationLabel(recommendation) }}
+          </span>
+        </div>
 
-      <!-- Detail Badge for copy_from/copy_to recommendations -->
-      <div *ngIf="getRecommendationOtherValue()"
-           [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction()">
-        <mat-icon class="detail-icon">{{ getRecommendationAction() === 'copy_from' ? 'input' : 'output' }}</mat-icon>
-        <span class="detail-text">{{ getRecommendationOtherValue() }}</span>
-      </div>
+        <!-- Detail Badge for copy_from/copy_to recommendations -->
+        <div *ngIf="getRecommendationOtherValue(recommendation)"
+             [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction(recommendation)">
+          <mat-icon class="detail-icon">{{ getRecommendationAction(recommendation) === 'copy_from' ? 'input' : 'output' }}</mat-icon>
+          <span class="detail-text">{{ getRecommendationOtherValue(recommendation) }}</span>
+        </div>
+      </ng-container>
     </div>
 
     <!-- System Remarks below in their own rows -->
