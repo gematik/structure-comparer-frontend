@@ -724,6 +724,11 @@ export class MappingDetailComponent implements OnInit {
         break;
     }
 
+    // Save tree expansion state before reloading
+    if (this.viewMode === 'tree' && this.treeTableComponent) {
+      this.savedTreeState = this.treeTableComponent.saveExpansionState();
+    }
+
     this.mappingsService.updateMappingField(this.projectKey, this.mapping.id, field.name, action, updateData)
       .subscribe({
         next: () => this.loadMapping(this.projectKey, this.mapping.id),
@@ -843,7 +848,7 @@ export class MappingDetailComponent implements OnInit {
     }
 
     const remarks: string[] = [];
-    
+
     for (const rec of field.recommendations) {
       // Prefer system_remarks array if available
       if (rec.system_remarks && Array.isArray(rec.system_remarks)) {

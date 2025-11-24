@@ -331,6 +331,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   restoreExpansionState(savedState: Record<string, boolean>): void {
     this.isExpandedById = { ...savedState };
+    this.updateVisibleRows();
   }
 
   // Helper methods - these should match the parent component's implementation
