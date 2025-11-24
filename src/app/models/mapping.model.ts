@@ -83,6 +83,8 @@ export interface FieldProfile {
   must_support?: boolean;
   // Referenced types for the field
   ref_types?: string[];
+  // Note about inherited cardinality (e.g., "inherited from .parent")
+  cardinality_note?: string;
 }
 
 /**

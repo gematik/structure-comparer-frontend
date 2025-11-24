@@ -1537,3 +1537,42 @@ table {
   }
 }
 
+/* Inherited cardinality styling */
+.badge-cardinality {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.inherited-cardinality {
+  background: linear-gradient(135deg, 
+    var(--background-color, #f0f0f0) 0%, 
+    var(--background-color, #f0f0f0) 85%, 
+    #e0e0e0 85%, 
+    #e0e0e0 100%) !important;
+  border-style: dashed !important;
+  position: relative;
+}
+
+.inherited-icon {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+.badge-ms {
+  display: inline-block;
+  padding: 2px 5px;
+  background-color: #ff6b6b;
+  color: white;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+

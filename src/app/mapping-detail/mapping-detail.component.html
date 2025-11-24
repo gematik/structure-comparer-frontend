@@ -343,8 +343,11 @@
                   <span
                     class="badge-cardinality"
                     [ngStyle]="getCardinalityStyle(fp.min, fp.max)"
+                    [matTooltip]="fp.cardinality_note || ''"
+                    [class.inherited-cardinality]="fp.cardinality_note"
                   >
                     {{ formatCardinality(fp.min, fp.max) }}
+                    <span *ngIf="fp.cardinality_note" class="inherited-icon" title="Kardinalität vererbt">↓</span>
                   </span>
 
                   <span *ngIf="fp.must_support" class="badge-ms">S</span>
