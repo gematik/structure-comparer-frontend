@@ -89,6 +89,7 @@ export class MappingDetailComponent implements OnInit {
   @ViewChild(TreeTableComponent) treeTableComponent?: TreeTableComponent;
   private savedTreeState: Record<string, boolean> | null = null;
   private savedQuickFilter: MappingStatus | null = null;
+  private savedActionFilter: MappingAction[] = [];
   private savedTextFilter: string = '';
   private savedPageIndex: number = 0;
   private savedPageSize: number = 200;
@@ -149,9 +150,7 @@ export class MappingDetailComponent implements OnInit {
     this.initializeMappingData(processedMapping, sortedFields);
     this.updateTreeTableConfig();
 
-    // Restore tree expansion state if we saved it before reloading
     if (this.savedTreeState && this.viewMode === 'tree') {
-      // Use setTimeout to ensure the tree table component is ready
       setTimeout(() => {
         if (this.treeTableComponent) {
           this.treeTableComponent.restoreExpansionState(this.savedTreeState!);
@@ -160,11 +159,10 @@ export class MappingDetailComponent implements OnInit {
       }, 0);
     }
 
-    // Restore filter state if we saved it before reloading
     if (this.savedQuickFilter !== null || this.savedTextFilter || this.savedPageIndex > 0 || this.savedPageSize !== 200) {
       setTimeout(() => {
         this.restoreFilterState();
-      }, 0);
+      }, 100);
     }
   }
 
@@ -401,7 +399,6 @@ export class MappingDetailComponent implements OnInit {
   private applyAllFilters(): void {
     let filteredFields = this.original?.fields ?? [];
 
-    // Apply status filter
     if (this.currentQuickFilter) {
       filteredFields = filteredFields.filter((field: MappingField) => {
         const fieldStatus = this.getFieldStatus(field);
@@ -409,7 +406,6 @@ export class MappingDetailComponent implements OnInit {
       });
     }
 
-    // Apply action filter - support multiple actions
     if (this.currentActionFilter.length > 0) {
       filteredFields = filteredFields.filter((field: MappingField) => {
         return field.action && this.currentActionFilter.includes(field.action);
@@ -420,28 +416,23 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private restoreFilterState(): void {
-    // Restore page size first
     if (this.savedPageSize && this.savedPageSize !== this.pageSize) {
       this.pageSize = this.savedPageSize;
     }
 
-    // Restore quick filter
     if (this.savedQuickFilter !== null) {
       this.applyQuickFilter(this.savedQuickFilter);
     }
 
-    // Restore text filter
-    if (this.savedTextFilter) {
-      const filterInput = document.querySelector('input[placeholder="Filter"]') as HTMLInputElement;
-      if (filterInput) {
-        filterInput.value = this.savedTextFilter;
-        this.textFilterValue = this.savedTextFilter;
-        // Apply text filter
-        this.handleFiltering({ target: filterInput });
-      }
+    if (this.savedActionFilter && this.savedActionFilter.length > 0) {
+      this.applyActionFilter(this.savedActionFilter);
     }
 
-    // Restore page index
+    if (this.savedTextFilter) {
+      this.textFilterValue = this.savedTextFilter;
+      this.handleFiltering({ target: { value: this.savedTextFilter } } as any);
+    }
+
     if (this.savedPageIndex > 0) {
       this.pageIndex = this.savedPageIndex;
       this.filtered = {
@@ -453,8 +444,8 @@ export class MappingDetailComponent implements OnInit {
       };
     }
 
-    // Clear saved state
     this.savedQuickFilter = null;
+    this.savedActionFilter = [];
     this.savedTextFilter = '';
     this.savedPageIndex = 0;
     this.savedPageSize = 200;
@@ -568,13 +559,10 @@ export class MappingDetailComponent implements OnInit {
     const raw = (e?.target as HTMLInputElement)?.value ?? '';
     const val = normalizeString(raw);
 
-    // Store the filter value for tree view
     this.textFilterValue = raw;
 
-    // Start with original fields or quick-filtered fields
     let sourceFields = this.original?.fields ?? [];
 
-    // Apply quick filter first if active
     if (this.currentQuickFilter) {
       sourceFields = sourceFields.filter((field: MappingField) => {
         const fieldStatus = this.getFieldStatus(field);
@@ -582,13 +570,11 @@ export class MappingDetailComponent implements OnInit {
       });
     }
 
-    // If no text filter, use the source fields (original or quick-filtered)
     if (!val) {
       this.updateFilteredData(sourceFields);
       return;
     }
 
-    // Apply text filter on top of quick filter
     const filteredFields = sourceFields.filter((record: IProfile & MappingField) => {
       const name = normalizeString(record.name);
       const classification = normalizeString(record.action);
@@ -700,6 +686,7 @@ export class MappingDetailComponent implements OnInit {
 
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
+    this.savedActionFilter = [...this.currentActionFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -742,6 +729,7 @@ export class MappingDetailComponent implements OnInit {
 
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
+    this.savedActionFilter = [...this.currentActionFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -763,6 +751,7 @@ export class MappingDetailComponent implements OnInit {
 
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
+    this.savedActionFilter = [...this.currentActionFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -953,6 +942,7 @@ export class MappingDetailComponent implements OnInit {
 
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
+    this.savedActionFilter = [...this.currentActionFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
