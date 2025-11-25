@@ -66,6 +66,13 @@
   font-weight: 500;
 }
 
+/* Field type styling (displayed under field name) */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
 /* Detail badge colors matching action chips */
 .detail-badge--copy_from,
 .detail-badge--copy_to {

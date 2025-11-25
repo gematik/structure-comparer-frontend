@@ -101,6 +101,19 @@ table {
   flex-wrap: wrap;
 }
 
+/* Field type styling (displayed under field name) */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Muted text styling (for extensions) */
+.muted {
+  font-size: 0.85em;
+  color: #6c757d;
+}
+
 /* Reference warning indicator */
 .ref-warning {
   color: #ff9800;

@@ -19,7 +19,12 @@
         <div *ngIf="getRecommendationOtherValue(recommendation)"
              [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction(recommendation)">
           <mat-icon class="detail-icon">{{ getRecommendationAction(recommendation) === 'copy_from' ? 'input' : 'output' }}</mat-icon>
-          <span class="detail-text">{{ getRecommendationOtherValue(recommendation) }}</span>
+          <span class="detail-text">
+            {{ getRecommendationOtherValue(recommendation) }}
+            <ng-container *ngIf="formatTypes(getFieldTypes(getRecommendationOtherValue(recommendation)!)) as formattedTypes">
+              <span *ngIf="formattedTypes"><br /><span class="field-type">{{ formattedTypes }}</span></span>
+            </ng-container>
+          </span>
         </div>
       </ng-container>
     </div>
@@ -56,7 +61,12 @@
     <div *ngIf="field.action_info?.other_value && (field.action === 'copy_from' || field.action === 'copy_to')"
          [class]="'detail-badge detail-badge--' + field.action">
       <mat-icon class="detail-icon">{{ field.action === 'copy_from' ? 'input' : 'output' }}</mat-icon>
-      <span class="detail-text">{{ field.action_info!.other_value }}</span>
+      <span class="detail-text">
+        {{ field.action_info!.other_value }}
+        <ng-container *ngIf="formatTypes(getFieldTypes(field.action_info!.other_value?.toString() || '')) as formattedTypes">
+          <span *ngIf="formattedTypes"><br /><span class="field-type">{{ formattedTypes }}</span></span>
+        </ng-container>
+      </span>
     </div>
 
     <div *ngIf="field.action_info?.fixed_value && field.action === 'fixed'"

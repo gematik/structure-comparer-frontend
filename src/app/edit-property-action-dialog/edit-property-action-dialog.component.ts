@@ -37,6 +37,7 @@ export interface EditPropertyActionDialogData {
   field: MappingField;
   availableActions: ActionOption[];
   availableFields: { name: string }[];
+  allFields?: MappingField[]; // Optional: All fields for type lookup in copy_from/copy_to
   projectKey: string;
   mappingId: string;
   sources: { name: string }[];
@@ -190,6 +191,58 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   hasRecommendations(): boolean {
     return !!(this.data.field.recommendations && this.data.field.recommendations.length > 0);
+  }
+
+  /**
+   * Gets the types for the current field
+   */
+  getFieldTypes(): string {
+    const fieldProfiles = this.data.field.profiles || {};
+    const allTypes = new Set<string>();
+
+    Object.values(fieldProfiles).forEach(profile => {
+      if (profile && profile.types) {
+        profile.types.forEach(type => allTypes.add(type));
+      }
+    });
+
+    return allTypes.size > 0 ? Array.from(allTypes).join(', ') : '';
+  }
+
+  /**
+   * Gets source profiles where this field exists
+   */
+  getSourceProfiles(): Array<{name: string, package?: string}> {
+    const fieldProfiles = this.data.field.profiles || {};
+    const sourceProfiles: Array<{name: string, package?: string}> = [];
+
+    this.data.sources.forEach(source => {
+      if (fieldProfiles[source.name] || fieldProfiles[(source as any).key]) {
+        sourceProfiles.push({
+          name: source.name,
+          package: (source as any).package
+        });
+      }
+    });
+
+    return sourceProfiles;
+  }
+
+  /**
+   * Gets target profile if this field exists in it
+   */
+  getTargetProfile(): {name: string, package?: string} | null {
+    const fieldProfiles = this.data.field.profiles || {};
+    const targetKey = (this.data.target as any).key || this.data.target.name;
+
+    if (fieldProfiles[this.data.target.name] || fieldProfiles[targetKey]) {
+      return {
+        name: this.data.target.name,
+        package: (this.data.target as any).package
+      };
+    }
+
+    return null;
   }
 
   /**

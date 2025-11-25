@@ -375,6 +375,7 @@
               <app-mapping-action-display
                 [field]="field"
                 [compact]="true"
+                [allFields]="mapping?.fields"
                 (applyRecommendation)="applyRecommendation(field, $event.index, $event.event)">
               </app-mapping-action-display>
             </div>

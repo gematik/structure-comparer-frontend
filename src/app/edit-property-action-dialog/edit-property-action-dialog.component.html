@@ -8,10 +8,46 @@
 
     <!-- Field Information -->
     <div class="field-info">
+      
       <h3>{{ data.field.name }}</h3>
-      <p *ngIf="data.field.extension" class="field-extension">
-        Extension: {{ data.field.extension }}
-      </p>
+
+      <div class="field-meta-row" *ngIf="getFieldTypes()">
+        <mat-icon class="info-icon-small">data_object</mat-icon>
+        <span class="field-meta-label">Typ:</span>
+        <span class="field-type">{{ getFieldTypes() }}</span>
+      </div>
+
+      <div class="field-meta-row" *ngIf="data.field.extension">
+        <mat-icon class="info-icon-small">extension</mat-icon>
+        <span class="field-meta-label">Extension:</span>
+        <span class="field-extension-text">{{ data.field.extension }}</span>
+      </div>
+
+      <!-- Profile Badges -->
+      <div class="profile-badges-container" *ngIf="getSourceProfiles().length > 0 || getTargetProfile()">
+        <div class="profile-badges-label">
+          <mat-icon class="info-icon-small">account_tree</mat-icon>
+          <span>Profile:</span>
+        </div>
+        <div class="profile-badges-list">
+          <div class="profile-badge source-badge" *ngFor="let profile of getSourceProfiles()"
+               [matTooltip]="'Source Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">input</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="profile.package" class="package-prefix">{{ profile.package }}.</span>{{ profile.name }}
+            </span>
+          </div>
+          <div class="profile-badge target-badge" *ngIf="getTargetProfile()"
+               [matTooltip]="'Target Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">output</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="getTargetProfile()!.package" class="package-prefix">{{ getTargetProfile()!.package }}.</span>{{ getTargetProfile()!.name }}
+            </span>
+          </div>
+        </div>
+      </div>
 
       <!-- Classification Explanation -->
       <div class="field-classification-section">
@@ -74,7 +110,8 @@
             <div class="current-action-wrapper">
               <app-mapping-action-display
                 [field]="data.field"
-                [compact]="false">
+                [compact]="false"
+                [allFields]="data.allFields">
               </app-mapping-action-display>
             </div>
 

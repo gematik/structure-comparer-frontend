@@ -36,6 +36,7 @@ import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helper
 export class MappingActionDisplayComponent {
   @Input() field!: MappingField;
   @Input() compact: boolean = false; // Für kompakte Darstellung in der Tabelle
+  @Input() allFields?: MappingField[]; // Optional: Alle Felder für Typ-Lookup bei copy_from/copy_to
   @Output() applyRecommendation = new EventEmitter<{ field: MappingField; index: number; event: Event }>();
 
   /**
@@ -193,5 +194,40 @@ export class MappingActionDisplayComponent {
     event.stopPropagation();
     event.preventDefault();
     this.applyRecommendation.emit({ field: this.field, index, event });
+  }
+
+  /**
+   * Get types from a field by field name
+   * Returns array of type strings or null if field not found or no types available
+   */
+  getFieldTypes(fieldName: string): string[] | null {
+    if (!this.allFields || !fieldName) {
+      return null;
+    }
+
+    const targetField = this.allFields.find(f => f.name === fieldName);
+    if (!targetField || !targetField.profiles) {
+      return null;
+    }
+
+    // Collect all types from all profiles
+    const allTypes = new Set<string>();
+    Object.values(targetField.profiles).forEach(profile => {
+      if (profile && profile.types) {
+        profile.types.forEach(type => allTypes.add(type));
+      }
+    });
+
+    return allTypes.size > 0 ? Array.from(allTypes) : null;
+  }
+
+  /**
+   * Format types array for display
+   */
+  formatTypes(types: string[] | null): string | null {
+    if (!types || types.length === 0) {
+      return null;
+    }
+    return types.join(', ');
   }
 }

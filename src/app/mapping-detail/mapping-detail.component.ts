@@ -703,6 +703,7 @@ export class MappingDetailComponent implements OnInit {
       field: field,
       availableActions: this.classifications,
       availableFields: this.availableFields,
+      allFields: this.original?.fields, // Pass all fields for type lookup
       projectKey: this.projectKey,
       mappingId: this.mappingId,
       sources: this.filtered.sources,

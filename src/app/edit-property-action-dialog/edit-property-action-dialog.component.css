@@ -21,9 +21,116 @@
 }
 
 .field-info h3 {
-  margin: 0 0 8px 0;
+  margin: 0 0 16px 0;
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 1.3rem;
+  word-break: break-word;
+}
+
+.field-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.field-meta-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 80px;
+}
+
+.field-type {
+  font-style: italic;
+  color: #6c757d;
   font-weight: 500;
-  color: #333;
+}
+
+.field-extension-text {
+  color: #757575;
+  font-size: 0.9rem;
+}
+
+.info-icon-small {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+/* Profile Badges */
+.profile-badges-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.profile-badges-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.profile-badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid;
+  transition: all 0.2s ease;
+}
+
+.profile-badge .badge-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.profile-badge .badge-text {
+  line-height: 1;
+}
+
+.profile-badge .package-prefix {
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.source-badge {
+  background-color: #e3f2fd;
+  border-color: #90caf9;
+  color: #1565c0;
+}
+
+.source-badge:hover {
+  background-color: #bbdefb;
+  border-color: #64b5f6;
+}
+
+.target-badge {
+  background-color: #f3e5f5;
+  border-color: #ce93d8;
+  color: #7b1fa2;
+}
+
+.target-badge:hover {
+  background-color: #e1bee7;
+  border-color: #ba68c8;
 }
 
 .field-classification-section {
