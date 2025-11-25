@@ -403,7 +403,7 @@ export class MappingDetailComponent implements OnInit {
     const allTypes = this.profileColumns
       .map(p => field.profiles?.[p.key]?.types || [])
       .filter(types => types.length > 0);
-    
+
     if (allTypes.length === 0) return '';
     // Verwende die Typen des ersten Profils als Basis
     return allTypes[0].join(', ');
