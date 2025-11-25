@@ -247,16 +247,97 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   /**
    * Extracts the suffix (last segment after last dot) from the field name
+   * Only auto-activates if it's one of the predefined suffixes
    */
   extractSuffixFromFieldName(): void {
+    const predefinedSuffixes = ['extension', 'code', 'value', 'value[x]', 'url', 'id', 'system'];
     const fieldName = this.data.field.name;
     const lastDotIndex = fieldName.lastIndexOf('.');
+    
     if (lastDotIndex !== -1 && lastDotIndex < fieldName.length - 1) {
-      this.suffixFilter = fieldName.substring(lastDotIndex + 1);
-      this.suffixFilterActive = true;
-      // Apply initial filter when suffix is active
-      this.applyFieldFilter('');
+      const suffix = fieldName.substring(lastDotIndex + 1);
+      this.suffixFilter = suffix;
+      
+      // Only auto-activate if it's a predefined suffix
+      const isPredefined = predefinedSuffixes.some(
+        predefined => predefined.toLowerCase() === suffix.toLowerCase()
+      );
+      
+      if (isPredefined) {
+        this.suffixFilterActive = true;
+        // Apply initial filter when suffix is active
+        this.applyFieldFilter('');
+      } else {
+        // For custom suffixes, suggest but don't activate
+        this.suffixFilterActive = false;
+      }
     }
+  }
+
+  /**
+   * Gets available suffix options based on actual fields
+   * Only returns suffixes that exist in the current filtered field set
+   * If the current field has a predefined suffix, only show that one
+   * If it has a custom suffix, suggest it but don't activate it by default
+   */
+  getAvailableSuffixes(): string[] {
+    const predefinedSuffixes = ['extension', 'code', 'value', 'value[x]', 'url', 'id', 'system'];
+    
+    // Check if the current field has one of the predefined suffixes
+    const currentFieldName = this.data.field.name.toLowerCase();
+    const currentFieldSuffix = predefinedSuffixes.find(suffix => 
+      currentFieldName.endsWith('.' + suffix.toLowerCase())
+    );
+    
+    // If current field has a predefined suffix, only show that one
+    if (currentFieldSuffix) {
+      return [currentFieldSuffix];
+    }
+    
+    // Check if field has a custom suffix (last word after last dot)
+    const lastDotIndex = currentFieldName.lastIndexOf('.');
+    if (lastDotIndex !== -1 && lastDotIndex < currentFieldName.length - 1) {
+      const customSuffix = this.data.field.name.substring(lastDotIndex + 1);
+      // Return the custom suffix (will be shown but not activated by default)
+      return [customSuffix];
+    }
+    
+    // Otherwise, show all available predefined suffixes from the filtered fields
+    const available = this.data.availableFields ?? [];
+    const relevantProfileNames = this.getRelevantProfileNames();
+    
+    // Get fields that match the profile filter (same as in applyFieldFilter)
+    let relevantFields = available;
+    if (this.requiresTargetField() && relevantProfileNames.length > 0) {
+      relevantFields = available.filter(field => {
+        const fieldProfiles = (field as any).profiles;
+        if (fieldProfiles) {
+          return relevantProfileNames.some(
+            profileName => fieldProfiles[profileName]
+          );
+        }
+        return false;
+      });
+    }
+
+    // Check which predefined suffixes actually exist in the relevant fields
+    const availableSuffixes = predefinedSuffixes.filter(suffix => {
+      return relevantFields.some(field => {
+        const fieldNameLower = field.name.toLowerCase();
+        return fieldNameLower.endsWith(suffix.toLowerCase());
+      });
+    });
+
+    return availableSuffixes;
+  }
+
+  /**
+   * Sets a specific suffix filter
+   */
+  setSuffixFilter(suffix: string): void {
+    this.suffixFilter = suffix;
+    this.suffixFilterActive = true;
+    this.applyFieldFilter(this.targetField);
   }
 
   /**

@@ -244,22 +244,26 @@
 
     <!-- Target Field Selection (for copy_from / copy_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
-      <!-- Suffix Filter Chip -->
-      <div *ngIf="suffixFilter" class="suffix-chip-container">
-        <div class="suffix-chip" (click)="toggleSuffixFilter()"
-             [style.opacity]="suffixFilterActive ? '1' : '0.5'"
-             [matTooltip]="suffixFilterActive ? 'Klicken um Suffix-Filter zu deaktivieren' : 'Klicken um Suffix-Filter zu aktivieren'"
-             matTooltipPosition="above">
-          <span class="suffix-chip-label">
-            <span>Filter:</span>
-            <span class="suffix-chip-text">{{ suffixFilter }}</span>
-          </span>
-          <mat-icon *ngIf="suffixFilterActive">filter_alt</mat-icon>
-          <mat-icon *ngIf="!suffixFilterActive">filter_alt_off</mat-icon>
+      <!-- Available Suffix Filter Chips -->
+      <div class="suffix-chips-container" *ngIf="getAvailableSuffixes().length > 0">
+        <span class="suffix-chips-label">Schnellfilter nach Endung:</span>
+        <div class="suffix-chips-list">
+          <div class="suffix-chip"
+               *ngFor="let suffix of getAvailableSuffixes()"
+               [class.active]="suffixFilterActive && suffixFilter === suffix"
+               (click)="setSuffixFilter(suffix)"
+               [matTooltip]="'Nur Felder die auf .' + suffix + ' enden'"
+               matTooltipPosition="above">
+            <span class="suffix-chip-text">.{{ suffix }}</span>
+          </div>
+          <div class="suffix-chip clear-chip"
+               *ngIf="suffixFilterActive"
+               (click)="suffixFilterActive = false; suffixFilter = ''; applyFieldFilter(targetField)"
+               matTooltip="Filter deaktivieren"
+               matTooltipPosition="above">
+            <mat-icon>clear</mat-icon>
+          </div>
         </div>
-        <span style="font-size: 0.85em; color: #666;">
-          {{ suffixFilterActive ? 'Nur Felder die auf "' + suffixFilter + '" enden' : 'Suffix-Filter deaktiviert' }}
-        </span>
       </div>
 
       <mat-form-field appearance="outline" class="full-width">
