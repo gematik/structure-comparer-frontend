@@ -100,11 +100,21 @@
       <div class="status-grid">
         <!-- Current Action -->
         <div class="status-box">
-          <div class="status-label"
-               matTooltip="Die Aktion beschreibt, was mit diesem Feld gemacht werden soll"
-               matTooltipPosition="above">
-            Gewählte Aktion / Aktuelle Empfehlungen:
-            <mat-icon class="help-icon">help_outline</mat-icon>
+          <div class="status-label-with-action">
+            <div class="status-label"
+                 matTooltip="Die Aktion beschreibt, was mit diesem Feld gemacht werden soll"
+                 matTooltipPosition="above">
+              Gewählte Aktion / Aktuelle Empfehlungen:
+              <mat-icon class="help-icon">help_outline</mat-icon>
+            </div>
+            <!-- Remove Action Button (Small Chip Style) -->
+            <div class="suffix-chip clear-chip remove-action-chip"
+                 *ngIf="data.field.action !== null"
+                 (click)="removeAction()"
+                 matTooltip="Aktion entfernen"
+                 matTooltipPosition="above">
+              <mat-icon>clear</mat-icon>
+            </div>
           </div>
           <div class="status-value">
             <div class="current-action-wrapper">
@@ -173,95 +183,46 @@
       </div>
     </div>
 
-    <!-- Action Selection -->
-    <div class="action-selection">
-      <h4 class="info-section-title">
-        <mat-icon class="info-icon">touch_app</mat-icon>
-        <span *ngIf="!data.field.action">Mapping-Aktion wählen</span>
-        <span *ngIf="data.field.action">Mapping-Aktion ändern</span>
-        <button mat-icon-button
-                class="info-toggle-btn"
-                (click)="showActionInfo = !showActionInfo"
-                [matTooltip]="showActionInfo ? 'Info ausblenden' : 'Was sind Allowed Actions?'"
-                type="button">
-          <mat-icon>{{ showActionInfo ? 'expand_less' : 'info' }}</mat-icon>
-        </button>
-      </h4>
-      <div class="collapsible-info" *ngIf="showActionInfo">
-        <p class="info-explanation">
-          <span *ngIf="!data.field.action">Wählen Sie eine der erlaubten Aktionen (Allowed Actions) aus, um festzulegen, wie dieses Feld behandelt werden soll.</span>
-          <span *ngIf="data.field.action">Ändern Sie die gewählte Aktion oder wählen Sie eine andere erlaubte Aktion aus.</span>
-          Nur die für dieses Feld erlaubten Aktionen werden angezeigt.
-        </p>
-      </div>
-      <div class="action-buttons">
-        <button *ngFor="let action of getFilteredActions()"
-                type="button"
-                class="action-button"
-                [class.selected]="selectedAction === action.value"
-                [attr.data-action]="action.value"
-                (click)="selectAction(action.value)"
-                [matTooltip]="action.instruction || action.description"
-                matTooltipPosition="above">
-          <mat-icon *ngIf="getActionIcon(action.value)">{{ getActionIcon(action.value) }}</mat-icon>
-          <span class="action-label">{{ getActionLabel(action.value) }}</span>
-        </button>
-      </div>
-
-      <!-- Action Hints -->
-      <div class="action-hints">
-        <div *ngIf="!selectedAction && !data.field.action" class="hint-box hint-warning">
-          <mat-icon>info</mat-icon>
-          <div>
-            <strong>Keine Aktion gewählt</strong>
-            <p>Wählen Sie oben eine Aktion aus, um zu definieren, wie das Feld behandelt werden soll.</p>
-          </div>
-        </div>
-        <div *ngIf="selectedAction !== null && getActionInstruction()" class="hint-box hint-info">
-          <mat-icon>lightbulb</mat-icon>
-          <div>
-            <strong>Hinweis zur gewählten Aktion:</strong>
-            <p>{{ getActionInstruction() }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Remove Action Button -->
-      <div *ngIf="data.field.action !== null" class="remove-action-section">
-        <button type="button"
-                class="remove-action-button"
-                (click)="removeAction()"
-                matTooltip="Aktion entfernen (Action = null)"
-                matTooltipPosition="above">
-          <mat-icon>delete_outline</mat-icon>
-          <span>Aktion entfernen</span>
-        </button>
-        <span class="remove-hint">Dadurch wird das Feld wieder als "Aktion erforderlich" markiert</span>
-      </div>
-    </div>
+    <!-- Action Selection Component -->
+    <app-action-selection
+      [field]="data.field"
+      [availableActions]="data.availableActions"
+      [selectedAction]="selectedAction"
+      (actionSelected)="selectAction($event)"
+      (actionRemoved)="removeAction()">
+    </app-action-selection>
 
     <!-- Conditional Fields -->
 
     <!-- Target Field Selection (for copy_from / copy_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
-      <!-- Available Suffix Filter Chips -->
-      <div class="suffix-chips-container" *ngIf="getAvailableSuffixes().length > 0">
-        <span class="suffix-chips-label">Schnellfilter nach Endung:</span>
-        <div class="suffix-chips-list">
-          <div class="suffix-chip"
-               *ngFor="let suffix of getAvailableSuffixes()"
-               [class.active]="suffixFilterActive && suffixFilter === suffix"
-               (click)="setSuffixFilter(suffix)"
-               [matTooltip]="'Nur Felder die auf .' + suffix + ' enden'"
+      <!-- Quick Filters Container -->
+      <div class="quick-filters-container">
+        <!-- Type Filter -->
+        <div class="filter-group">
+          <span class="filter-label">Schnellfilter:</span>
+          <div class="suffix-chip filter-chip"
+               [class.active]="typeFilterActive"
+               (click)="toggleTypeFilter()"
+               [matTooltip]="typeFilterActive ? 'Nur Felder mit gleichem Typ anzeigen (aktiv)' : 'Typ-Filter deaktiviert'"
                matTooltipPosition="above">
-            <span class="suffix-chip-text">.{{ suffix }}</span>
+            <mat-icon class="chip-icon">data_object</mat-icon>
+            <span class="suffix-chip-text">Gleicher Typ</span>
           </div>
-          <div class="suffix-chip clear-chip"
-               *ngIf="suffixFilterActive"
-               (click)="suffixFilterActive = false; suffixFilter = ''; applyFieldFilter(targetField)"
-               matTooltip="Filter deaktivieren"
-               matTooltipPosition="above">
-            <mat-icon>clear</mat-icon>
+        </div>
+
+        <!-- Suffix Filters -->
+        <div class="filter-group" *ngIf="getAvailableSuffixes().length > 0">
+          <span class="filter-label">Nach Endung:</span>
+          <div class="suffix-chips-list">
+            <div class="suffix-chip"
+                 *ngFor="let suffix of getAvailableSuffixes()"
+                 [class.active]="suffixFilterActive && suffixFilter === suffix"
+                 (click)="setSuffixFilter(suffix)"
+                 [matTooltip]="'Nur Felder die auf .' + suffix + ' enden'"
+                 matTooltipPosition="above">
+              <span class="suffix-chip-text">.{{ suffix }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -271,6 +232,18 @@
           <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
           <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
         </mat-label>
+
+        <!-- Display selected field with formatting above input -->
+        <div class="selected-field-preview" *ngIf="targetField">
+          <div class="autocomplete-option-large">
+            <span class="field-name">{{ targetField }}</span>
+            <div class="field-profile-badges" *ngIf="getProfilesForField(targetField).length > 0">
+              <span class="field-profile-badge" *ngFor="let profile of getProfilesForField(targetField)">{{ profile }}</span>
+            </div>
+            <span class="field-type-small" *ngIf="getTypesForField(targetField)">{{ getTypesForField(targetField) }}</span>
+          </div>
+        </div>
+
         <input matInput
                type="text"
                placeholder="Feldname eingeben oder auswählen..."
@@ -278,6 +251,7 @@
                (ngModelChange)="onFieldInputChange($event)"
                [matAutocomplete]="auto"
                required>
+
         <button mat-icon-button
                 matSuffix
                 aria-label="Feldauswahl leeren"
@@ -288,7 +262,15 @@
         </button>
         <mat-autocomplete #auto="matAutocomplete">
           <mat-option *ngFor="let field of filteredFields" [value]="field.name">
-            {{ field.name }}
+            <div class="autocomplete-option">
+              <div class="autocomplete-main-row">
+                <span class="field-name">{{ field.name }}</span>
+                <div class="field-profile-badges" *ngIf="getProfilesForField(field.name).length > 0">
+                  <span class="field-profile-badge" *ngFor="let profile of getProfilesForField(field.name)">{{ profile }}</span>
+                </div>
+              </div>
+              <span class="field-type-small" *ngIf="getTypesForField(field.name)">{{ getTypesForField(field.name) }}</span>
+            </div>
           </mat-option>
           <mat-option *ngIf="filteredFields.length === 0" disabled>
             Keine Felder gefunden
@@ -297,8 +279,9 @@
         <mat-hint>
           <span *ngIf="getProfileFilterHint()" class="profile-filter-hint">
             {{ getProfileFilterHint() }}
-            <span *ngIf="suffixFilterActive && suffixFilter"> - </span>
+            <span *ngIf="(suffixFilterActive && suffixFilter) || typeFilterActive"> - </span>
           </span>
+          <span *ngIf="typeFilterActive">Nur Felder mit gleichem Typ - </span>
           <span *ngIf="suffixFilterActive && suffixFilter">Gefiltert nach Suffix "{{ suffixFilter }}" - </span>
           Beginnen Sie zu tippen, um weiter zu filtern
         </mat-hint>

@@ -32,6 +32,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActionOption, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
+import { ActionSelectionComponent } from './action-selection/action-selection.component';
 
 export interface EditPropertyActionDialogData {
   field: MappingField;
@@ -59,7 +60,8 @@ export interface EditPropertyActionDialogData {
     MatAutocompleteModule,
     MatTooltipModule,
     MappingActionDisplayComponent,
-    MappingStatusDisplayComponent
+    MappingStatusDisplayComponent,
+    ActionSelectionComponent
   ],
   templateUrl: './edit-property-action-dialog.component.html',
   styleUrl: './edit-property-action-dialog.component.css'
@@ -73,11 +75,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
   filteredFields: { name: string }[] = [];
   suffixFilter: string = '';
   suffixFilterActive: boolean = false;
+  typeFilterActive: boolean = true; // Type filter is active by default
 
   // Info panel toggles
   showClassificationInfo: boolean = false;
   showStatusInfo: boolean = false;
-  showActionInfo: boolean = false;
 
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
@@ -210,6 +212,69 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
+   * Gets the types for a specific field by name from allFields
+   */
+  getTypesForField(fieldName: string): string {
+    if (!this.data.allFields) {
+      return '';
+    }
+
+    const field = this.data.allFields.find(f => f.name === fieldName);
+    if (!field || !field.profiles) {
+      return '';
+    }
+
+    const allTypes = new Set<string>();
+    Object.values(field.profiles).forEach(profile => {
+      if (profile && profile.types) {
+        profile.types.forEach(type => allTypes.add(type));
+      }
+    });
+
+    return allTypes.size > 0 ? Array.from(allTypes).join(', ') : '';
+  }
+
+  /**
+   * Gets the profile names where a specific field exists
+   * Returns an array of profile display names
+   */
+  getProfilesForField(fieldName: string): string[] {
+    if (!this.data.allFields) {
+      return [];
+    }
+
+    const field = this.data.allFields.find(f => f.name === fieldName);
+    if (!field || !field.profiles) {
+      return [];
+    }
+
+    const profileNames: string[] = [];
+
+    // Get relevant profiles based on copy_from/copy_to action
+    if (this.selectedAction === 'copy_from') {
+      // Show source profiles
+      this.data.sources.forEach(source => {
+        const profileKey = (source as any).key || source.name;
+        if (field.profiles![profileKey]) {
+          const packageName = (source as any).package;
+          const displayName = packageName ? `${packageName}.${source.name}` : source.name;
+          profileNames.push(displayName);
+        }
+      });
+    } else if (this.selectedAction === 'copy_to') {
+      // Show target profile
+      const targetKey = (this.data.target as any).key || this.data.target.name;
+      if (field.profiles![targetKey]) {
+        const packageName = (this.data.target as any).package;
+        const displayName = packageName ? `${packageName}.${this.data.target.name}` : this.data.target.name;
+        profileNames.push(displayName);
+      }
+    }
+
+    return profileNames;
+  }
+
+  /**
    * Gets source profiles where this field exists
    */
   getSourceProfiles(): Array<{name: string, package?: string}> {
@@ -253,16 +318,16 @@ export class EditPropertyActionDialogComponent implements OnInit {
     const predefinedSuffixes = ['extension', 'code', 'value', 'value[x]', 'url', 'id', 'system'];
     const fieldName = this.data.field.name;
     const lastDotIndex = fieldName.lastIndexOf('.');
-    
+
     if (lastDotIndex !== -1 && lastDotIndex < fieldName.length - 1) {
       const suffix = fieldName.substring(lastDotIndex + 1);
       this.suffixFilter = suffix;
-      
+
       // Only auto-activate if it's a predefined suffix
       const isPredefined = predefinedSuffixes.some(
         predefined => predefined.toLowerCase() === suffix.toLowerCase()
       );
-      
+
       if (isPredefined) {
         this.suffixFilterActive = true;
         // Apply initial filter when suffix is active
@@ -282,18 +347,18 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   getAvailableSuffixes(): string[] {
     const predefinedSuffixes = ['extension', 'code', 'value', 'value[x]', 'url', 'id', 'system'];
-    
+
     // Check if the current field has one of the predefined suffixes
     const currentFieldName = this.data.field.name.toLowerCase();
-    const currentFieldSuffix = predefinedSuffixes.find(suffix => 
+    const currentFieldSuffix = predefinedSuffixes.find(suffix =>
       currentFieldName.endsWith('.' + suffix.toLowerCase())
     );
-    
+
     // If current field has a predefined suffix, only show that one
     if (currentFieldSuffix) {
       return [currentFieldSuffix];
     }
-    
+
     // Check if field has a custom suffix (last word after last dot)
     const lastDotIndex = currentFieldName.lastIndexOf('.');
     if (lastDotIndex !== -1 && lastDotIndex < currentFieldName.length - 1) {
@@ -301,11 +366,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
       // Return the custom suffix (will be shown but not activated by default)
       return [customSuffix];
     }
-    
+
     // Otherwise, show all available predefined suffixes from the filtered fields
     const available = this.data.availableFields ?? [];
     const relevantProfileNames = this.getRelevantProfileNames();
-    
+
     // Get fields that match the profile filter (same as in applyFieldFilter)
     let relevantFields = available;
     if (this.requiresTargetField() && relevantProfileNames.length > 0) {
@@ -333,10 +398,17 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   /**
    * Sets a specific suffix filter
+   * If the same suffix is clicked again, toggle it off
    */
   setSuffixFilter(suffix: string): void {
-    this.suffixFilter = suffix;
-    this.suffixFilterActive = true;
+    // Toggle off if clicking the same suffix
+    if (this.suffixFilterActive && this.suffixFilter === suffix) {
+      this.suffixFilterActive = false;
+      this.suffixFilter = '';
+    } else {
+      this.suffixFilter = suffix;
+      this.suffixFilterActive = true;
+    }
     this.applyFieldFilter(this.targetField);
   }
 
@@ -349,12 +421,23 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
-   * Applies combined filtering: suffix (if active) + user search query + profile-based filtering
+   * Toggles the type filter on/off
+   */
+  toggleTypeFilter(): void {
+    this.typeFilterActive = !this.typeFilterActive;
+    this.applyFieldFilter(this.targetField);
+  }
+
+  /**
+   * Applies combined filtering: suffix (if active) + type (if active) + user search query + profile-based filtering
    */
   applyFieldFilter(searchQuery: string): void {
     const query = searchQuery.trim().toLowerCase();
     const available = this.data.availableFields ?? [];
     const relevantProfileNames = this.getRelevantProfileNames();
+
+    // Get current field types for type filtering
+    const currentFieldTypes = this.typeFilterActive ? new Set(this.getFieldTypes().split(', ').map(t => t.trim())) : null;
 
     this.filteredFields = available.filter(field => {
       const fieldNameLower = field.name.toLowerCase();
@@ -380,6 +463,22 @@ export class EditPropertyActionDialogComponent implements OnInit {
         }
       }
 
+      // Type filter: only show fields with matching types
+      if (this.typeFilterActive && currentFieldTypes && currentFieldTypes.size > 0) {
+        const fieldTypes = this.getTypesForField(field.name);
+        if (fieldTypes) {
+          const fieldTypeSet = new Set(fieldTypes.split(', ').map(t => t.trim()));
+          // Check if there's any overlap between current field types and this field's types
+          const hasMatchingType = Array.from(currentFieldTypes).some(type => fieldTypeSet.has(type));
+          if (!hasMatchingType) {
+            return false;
+          }
+        } else {
+          // If field has no types, exclude it when type filter is active
+          return false;
+        }
+      }
+
       // First check suffix filter if active
       if (this.suffixFilterActive && this.suffixFilter) {
         const suffixLower = this.suffixFilter.toLowerCase();
@@ -399,15 +498,6 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   onFieldInputChange(value: string): void {
     this.applyFieldFilter(value);
-  }
-
-  /**
-   * Gets available actions filtered by what's allowed for this field
-   */
-  getFilteredActions(): ActionOption[] {
-    return this.data.availableActions.filter(action =>
-      this.data.field.actions_allowed.includes(action.value)
-    );
   }
 
   /**
@@ -478,41 +568,11 @@ export class EditPropertyActionDialogComponent implements OnInit {
   }
 
   /**
-   * Gets the icon for an action
+   * Removes the current action (sets to null)
    */
-  getActionIcon(action: MappingAction): string {
-    if (!action) return '';
-
-    const icons: { [key: string]: string } = {
-      'use': 'check_circle',
-      'use_recursive': 'account_tree',
-      'not_use': 'cancel',
-      'empty': 'remove_circle_outline',
-      'copy_from': 'arrow_back',
-      'copy_to': 'arrow_forward',
-      'fixed': 'lock',
-      'manual': 'edit'
-    };
-    return icons[action] || 'help_outline';
-  }
-
-  /**
-   * Gets the label for an action button
-   */
-  getActionLabel(action: MappingAction): string {
-    if (!action) return '';
-
-    const labels: { [key: string]: string } = {
-      'use': 'USE',
-      'use_recursive': 'USE_RECURSIVE',
-      'not_use': 'NOT_USE',
-      'empty': 'EMPTY',
-      'copy_from': 'COPY_FROM',
-      'copy_to': 'COPY_TO',
-      'fixed': 'FIXED',
-      'manual': 'MANUAL'
-    };
-    return labels[action] || action.toUpperCase();
+  removeAction(): void {
+    this.selectedAction = null;
+    this.onActionChange();
   }
 
   /**
@@ -548,22 +608,6 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   onCancel(): void {
     this.dialogRef.close();
-  }
-
-  /**
-   * Removes the current action (sets to null)
-   */
-  removeAction(): void {
-    this.selectedAction = null;
-    this.onActionChange();
-  }
-
-  /**
-   * Gets the instruction text for the selected action
-   */
-  getActionInstruction(): string {
-    const action = this.data.availableActions.find(a => a.value === this.selectedAction);
-    return action?.instruction || '';
   }
 
   /**

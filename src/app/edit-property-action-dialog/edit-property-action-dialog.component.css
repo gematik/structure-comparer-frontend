@@ -2,14 +2,14 @@
 .dialog-container {
   min-width: 1000px;
   max-width: 1400px;
-  margin: 32px; /* Mehr Margin um den gesamten Dialog */
-  padding: 24px; /* Zusätzliches Padding im Container */
+  margin: 32px;
+  padding: 24px;
 }
 
 .dialog-content {
   min-height: 300px;
-  padding: 24px 32px; /* Mehr Padding im Content-Bereich */
-  margin: 0 -8px; /* Kompensiert Material Dialog Standard-Padding */
+  padding: 24px 32px;
+  margin: 0 -8px;
 }
 
 /* Field Information Section */
@@ -238,13 +238,32 @@
   padding: 12px;
 }
 
+.status-label-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .status-label {
   font-size: 0.85em;
   font-weight: 600;
   color: #666;
-  margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.remove-action-chip {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  margin: 0;
+}
+
+.remove-action-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .status-value {
@@ -798,6 +817,27 @@
 }
 
 /* Suffix Filter Chips */
+.quick-filters-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
 .suffix-chips-container {
   margin-bottom: 16px;
 }
@@ -831,6 +871,16 @@
   user-select: none;
 }
 
+.suffix-chip.filter-chip {
+  gap: 6px;
+}
+
+.suffix-chip .chip-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
 .suffix-chip:hover {
   background-color: #e3f2fd;
   border-color: #90caf9;
@@ -842,6 +892,10 @@
   border-color: #1565c0;
   color: white;
   font-weight: 600;
+}
+
+.suffix-chip.active .chip-icon {
+  color: white;
 }
 
 .suffix-chip.clear-chip {
@@ -919,6 +973,97 @@
   padding: 2px 8px;
   border-radius: 4px;
   border: 1px solid #2196f3;
+}
+
+/* Autocomplete Option Styling */
+.autocomplete-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.autocomplete-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.autocomplete-option .field-name {
+  font-weight: 500;
+  color: #333;
+  flex: 1;
+}
+
+.field-profile-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.autocomplete-option .field-profile-badge {
+  font-size: 0.75em;
+  font-weight: 500;
+  color: #1565c0;
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.autocomplete-option .field-type-small {
+  font-size: 0.85em;
+  font-style: italic;
+  color: #6c757d;
+}
+
+/* Selected Field Preview - Large Display Above Input */
+.selected-field-preview {
+  background-color: #f8f9fa;
+  border: 2px solid #1976d2;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.autocomplete-option-large {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.autocomplete-option-large .field-name {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 1.1em;
+  word-break: break-word;
+}
+
+.autocomplete-option-large .field-profile-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.autocomplete-option-large .field-profile-badge {
+  font-size: 0.7em;
+  font-weight: 500;
+  color: #1565c0;
+  background-color: #e3f2fd;
+  border: 1px solid #90caf9;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.autocomplete-option-large .field-type-small {
+  font-size: 0.95em;
+  font-style: italic;
+  color: #6c757d;
+  font-weight: 500;
 }
 
 /* Responsive Design */
