@@ -36,23 +36,29 @@ import { catchError } from 'rxjs/operators';
 
 import { TransformationService } from '../transformation.service';
 import { ProjectService } from '../project.service';
-import { Transformation, TransformationField, MappingReference, TransformationFieldUpdateRequest } from '../models/transformation.model';
+import { Transformation, TransformationField, MappingReference, TransformationFieldUpdateRequest, TransformationMappingLinkRequest } from '../models/transformation.model';
 import { Mapping, MappingAction } from '../models/mapping.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 /**
- * UI model for a resource mapping row (target-centric)
- * The target resource is fixed, user selects source and mapping
+ * A single source mapping entry (source resource + mapping)
  */
-interface ResourceMappingRow {
-  targetField: string;
-  targetName: string;
+interface SourceMappingEntry {
   sourceField: string | null;
   sourceName: string | null;
   mappingId: string | null;
   mappingName: string | null;
-  originalSourceField: string | null;
-  originalMappingId: string | null;
+}
+
+/**
+ * UI model for a resource mapping row (target-centric)
+ * The target resource is fixed, user can add multiple source resources with mappings
+ */
+interface ResourceMappingRow {
+  targetField: string;
+  targetName: string;
+  sourceMappings: SourceMappingEntry[];
+  originalSourceMappings: SourceMappingEntry[];
 }
 
 /**
@@ -165,79 +171,228 @@ export class TransformationDetailComponent implements OnInit {
           this.transformation = result;
           this.fields = result.fields || [];
           this.linkedMappings = result.linked_mappings || [];
-          this.buildMappings();
+
+          // First load source profile fields, then build mappings
+          this.loadSourceProfileFields().then(() => {
+            this.buildMappings();
+            this.loading = false;
+          });
+        } else {
+          this.loading = false;
         }
-        this.loading = false;
       });
   }
 
   /**
+   * Load fields from all source profiles
+   */
+  private async loadSourceProfileFields(): Promise<void> {
+    if (!this.transformation?.sources?.length) return;
+
+    this.sourceResourceFields = [];
+    this.sourceValueFields = [];
+
+    for (const source of this.transformation.sources) {
+      const profileId = source.id;
+      if (!profileId) continue;
+
+      try {
+        const profile = await this.projectService.getProfileDetails(this.projectKey, profileId).toPromise();
+        if (profile && profile.fields) {
+          // Process each field from the source profile
+          Object.keys(profile.fields).forEach(fieldPath => {
+            const fieldInfo = profile.fields[fieldPath];
+            const types = fieldInfo.types || [];
+
+            // Check if it's a resource field
+            const isResource = types.some((t: string) => t === 'Resource' || t.endsWith('Resource')) ||
+                              fieldPath.toLowerCase().endsWith('.resource');
+
+            // Create display name
+            let displayName = fieldPath;
+            if (fieldPath.startsWith('.')) {
+              displayName = fieldPath.substring(1); // Remove leading dot
+            }
+
+            // For entry resources, extract friendly name
+            if (isResource) {
+              const match = fieldPath.match(/\.entry:([^.]+)\.resource/);
+              if (match) {
+                displayName = match[1] + '.resource';
+              }
+
+              this.sourceResourceFields.push({
+                name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
+                displayName: displayName,
+                profileKey: source.key || profileId
+              });
+            } else {
+              // For value fields
+              const parts = fieldPath.split('.');
+              displayName = parts[parts.length - 1].replace(/:\w+$/, '');
+
+              this.sourceValueFields.push({
+                name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
+                displayName: displayName,
+                profileKey: source.key || profileId
+              });
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error loading source profile:', profileId, error);
+      }
+    }
+
+    // Remove duplicates
+    this.sourceResourceFields = this.sourceResourceFields.filter((v, i, a) =>
+      a.findIndex(t => t.name === v.name) === i
+    );
+    this.sourceValueFields = this.sourceValueFields.filter((v, i, a) =>
+      a.findIndex(t => t.name === v.name) === i
+    );
+
+    console.log('Source resource fields loaded:', this.sourceResourceFields.length);
+    console.log('Source resource fields:', this.sourceResourceFields);
+  }
+
+  /**
    * Build both resource and value mappings from transformation fields
+   * Source fields are already loaded via loadSourceProfileFields()
    */
   private buildMappings(): void {
     this.buildResourceMappings();
     this.buildValueMappings();
-    this.buildSourceFields();
+    // Note: Source fields are now loaded asynchronously in loadSourceProfileFields()
   }
 
   /**
-   * Build the resource mappings from TARGET fields that have type "Resource"
-   * User will select which source resource maps to each target
+   * Build the resource mappings from transformation fields
+   *
+   * IMPORTANT: Backend stores fields SOURCE-CENTRIC:
+   * - Source fields (Bundle.*) have 'other' pointing to target (Parameters.*)
+   * - We need to display TARGET-CENTRIC for the user
+   *
+   * So we:
+   * 1. Find all source resource fields (Bundle.entry:*.resource) with action='use'
+   * 2. Group them by their 'other' target field
+   * 3. Display target fields, with source as dropdown selection
    */
   private buildResourceMappings(): void {
-    // Get the target profile key
-    const targetKey = this.transformation?.target?.key || this.transformation?.target?.id;
-    if (!targetKey) return;
+    console.log('Building resource mappings...');
+    console.log('All fields:', this.fields.length);
 
-    // Filter target fields that have Resource type
-    const targetResourceFields = this.fields.filter(f => {
-      const profile = f.profiles?.[targetKey];
-      if (!profile) return false;
-      // Check if types include Resource
-      const types = profile.types || [];
-      return types.some(t => t === 'Resource' || t.endsWith('Resource'));
-    });
+    // Get the target profile name to identify target fields
+    const targetName = this.transformation?.target?.name || '';
+    const targetResourceType = targetName.includes('Parameters') ? 'Parameters' : targetName.split('_')[0];
 
-    // Also include fields that end with .resource
-    const resourcePatternFields = this.fields.filter(f =>
-      f.name.toLowerCase().endsWith('.resource') &&
-      !targetResourceFields.find(rf => rf.name === f.name)
+    // Get source profile names to identify source fields
+    const sourceNames = this.transformation?.sources?.map(s => s.name || '') || [];
+    const sourceResourceTypes = sourceNames.map(name =>
+      name.includes('Bundle') ? 'Bundle' : name.split('_')[0]
     );
 
-    const allTargetResourceFields = [...targetResourceFields, ...resourcePatternFields];
+    console.log('Target resource type:', targetResourceType);
+    console.log('Source resource types:', sourceResourceTypes);
 
-    // Build target resource rows
-    this.resourceMappings = allTargetResourceFields.map(field => {
+    // Find all SOURCE resource fields (these have the actual mappings)
+    const sourceResourceFields = this.fields.filter(f => {
+      const isSourceField = sourceResourceTypes.some(type => f.name.startsWith(type + '.'));
+      const isResourceField = f.name.toLowerCase().endsWith('.resource');
+      return isSourceField && isResourceField;
+    });
+
+    console.log('Source resource fields with mappings:', sourceResourceFields.length);
+    sourceResourceFields.forEach(f => console.log('  Source:', f.name, 'other:', f.other, 'map:', f.map));
+
+    // Add source fields to dropdown options
+    sourceResourceFields.forEach(field => {
+      const parts = field.name.split('.');
+      const entryPart = parts.find(p => p.startsWith('entry:'));
+      let displayName = field.name;
+      if (entryPart) {
+        displayName = entryPart.replace('entry:', '') + '.resource';
+      }
+
+      const exists = this.sourceResourceFields.some(s => s.name === field.name);
+      if (!exists) {
+        this.sourceResourceFields.push({
+          name: field.name,
+          displayName: displayName,
+          profileKey: 'transformation'
+        });
+      }
+    });
+
+    // Find TARGET resource fields (Parameters.*.resource) for display
+    const targetResourceFields = this.fields.filter(f => {
+      const isTargetField = f.name.startsWith(targetResourceType + '.');
+      const isResourceField = f.name.toLowerCase().endsWith('.resource');
+      return isTargetField && isResourceField;
+    });
+
+    console.log('Target resource fields:', targetResourceFields.length);
+    targetResourceFields.forEach(f => console.log('  Target:', f.name));
+
+    // Build a map: target field -> ALL source fields that map to it (multiple sources per target!)
+    const targetToSourceMap = new Map<string, SourceMappingEntry[]>();
+
+    sourceResourceFields.forEach(srcField => {
+      // Accept both 'use' and 'use_recursive' actions for resource mappings
+      if (srcField.other && (srcField.action === 'use' || srcField.action === 'use_recursive')) {
+        // Convert relative 'other' path to absolute target field name
+        let targetPath = srcField.other;
+        if (targetPath.startsWith('.')) {
+          targetPath = targetResourceType + targetPath;
+        }
+
+        if (!targetToSourceMap.has(targetPath)) {
+          targetToSourceMap.set(targetPath, []);
+        }
+
+        // Extract display name from source field
+        const sourceParts = srcField.name.split('.');
+        const entryPart = sourceParts.find(p => p.startsWith('entry:'));
+        const sourceName = entryPart ? entryPart.replace('entry:', '') : srcField.name;
+
+        targetToSourceMap.get(targetPath)!.push({
+          sourceField: srcField.name,
+          sourceName: sourceName,
+          mappingId: srcField.map || null,
+          mappingName: srcField.map_name || null
+        });
+      }
+    });
+
+    console.log('Target to source mapping:', Array.from(targetToSourceMap.entries()));
+
+    // Build target resource rows with multiple sources per target
+    this.resourceMappings = targetResourceFields.map(field => {
       const parts = field.name.split('.');
       const paramPart = parts.find(p => p.startsWith('parameter:'));
       const partPart = parts.find(p => p.startsWith('part:'));
-      let targetName = field.name;
+      let targetDisplayName = field.name;
       if (paramPart) {
-        targetName = paramPart.replace('parameter:', '');
+        targetDisplayName = paramPart.replace('parameter:', '');
         if (partPart) {
-          targetName += '.' + partPart.replace('part:', '');
+          targetDisplayName += '.' + partPart.replace('part:', '');
         }
-        targetName += '.resource';
+        targetDisplayName += '.resource';
       }
 
-      // Find existing source mapping (from 'other' field)
-      const sourceField = field.other || null;
-      let sourceName: string | null = null;
-      if (sourceField) {
-        const sourceParts = sourceField.split('.');
-        const entryPart = sourceParts.find(p => p.startsWith('entry:'));
-        sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
-      }
+      // Get ALL existing source mappings for this target
+      const existingSourceMappings = targetToSourceMap.get(field.name) || [];
+
+      // If no existing mappings, create one empty entry for the user to fill
+      const sourceMappings: SourceMappingEntry[] = existingSourceMappings.length > 0
+        ? existingSourceMappings.map(m => ({ ...m }))
+        : [{ sourceField: null, sourceName: null, mappingId: null, mappingName: null }];
 
       return {
         targetField: field.name,
-        targetName: targetName,
-        sourceField: sourceField,
-        sourceName: sourceName,
-        mappingId: field.map || null,
-        mappingName: field.map_name || null,
-        originalSourceField: sourceField,
-        originalMappingId: field.map || null
+        targetName: targetDisplayName,
+        sourceMappings: sourceMappings,
+        originalSourceMappings: JSON.parse(JSON.stringify(sourceMappings))
       };
     });
 
@@ -245,9 +400,14 @@ export class TransformationDetailComponent implements OnInit {
 
     // Store original state
     this.originalResourceMappings = JSON.stringify(this.resourceMappings.map(r => ({
-      sourceField: r.sourceField,
-      mappingId: r.mappingId
+      sourceMappings: r.sourceMappings
     })));
+
+    console.log('Resource mappings built:', this.resourceMappings.length);
+    this.resourceMappings.forEach(r => {
+      console.log('  Row:', r.targetName, 'sources:', r.sourceMappings.length);
+      r.sourceMappings.forEach(s => console.log('    -', s.sourceName, 'mapping:', s.mappingName));
+    });
   }
 
   /**
@@ -308,62 +468,6 @@ export class TransformationDetailComponent implements OnInit {
       action: v.action,
       copyFromSource: v.copyFromSource
     })));
-  }
-
-  /**
-   * Build source field options from source profiles
-   */
-  private buildSourceFields(): void {
-    if (!this.transformation?.sources?.length) return;
-
-    // Build source resource fields from source profiles
-    this.sourceResourceFields = [];
-    this.sourceValueFields = [];
-
-    this.transformation.sources.forEach(source => {
-      const sourceKey = source.key || source.id;
-      if (!sourceKey) return;
-
-      this.fields.forEach(field => {
-        const profile = field.profiles?.[sourceKey];
-        if (!profile) return;
-
-        const types = profile.types || [];
-        const isResource = types.some(t => t === 'Resource' || t.endsWith('Resource')) ||
-                          field.name.toLowerCase().endsWith('.resource');
-
-        // Create display name
-        const parts = field.name.split('.');
-        let displayName = field.name;
-
-        if (isResource) {
-          const entryPart = parts.find(p => p.startsWith('entry:'));
-          if (entryPart) {
-            displayName = entryPart.replace('entry:', '') + '.resource';
-          }
-          this.sourceResourceFields.push({
-            name: field.name,
-            displayName: displayName,
-            profileKey: sourceKey
-          });
-        } else {
-          displayName = parts[parts.length - 1].replace(/:\w+$/, '');
-          this.sourceValueFields.push({
-            name: field.name,
-            displayName: displayName,
-            profileKey: sourceKey
-          });
-        }
-      });
-    });
-
-    // Remove duplicates
-    this.sourceResourceFields = this.sourceResourceFields.filter((v, i, a) =>
-      a.findIndex(t => t.name === v.name) === i
-    );
-    this.sourceValueFields = this.sourceValueFields.filter((v, i, a) =>
-      a.findIndex(t => t.name === v.name) === i
-    );
   }
 
   /**
@@ -450,29 +554,61 @@ export class TransformationDetailComponent implements OnInit {
   // =====================
 
   /**
-   * Called when a source resource is selected for a target row
+   * Called when a source resource is selected for a target row's source entry
    */
-  onSourceResourceChanged(index: number, sourceField: string | null): void {
-    this.resourceMappings[index].sourceField = sourceField;
+  onSourceResourceChanged(rowIndex: number, sourceIndex: number, sourceField: string | null): void {
+    const entry = this.resourceMappings[rowIndex].sourceMappings[sourceIndex];
+    entry.sourceField = sourceField;
     if (sourceField) {
       const parts = sourceField.split('.');
       const entryPart = parts.find(p => p.startsWith('entry:'));
-      this.resourceMappings[index].sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
+      entry.sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
     } else {
-      this.resourceMappings[index].sourceName = null;
+      entry.sourceName = null;
     }
   }
 
   /**
-   * Called when a mapping is selected for a resource row
+   * Called when a mapping is selected for a source entry
    */
-  onResourceMappingChanged(index: number, mappingId: string | null): void {
-    this.resourceMappings[index].mappingId = mappingId;
+  onResourceMappingChanged(rowIndex: number, sourceIndex: number, mappingId: string | null): void {
+    const entry = this.resourceMappings[rowIndex].sourceMappings[sourceIndex];
+    entry.mappingId = mappingId;
     if (mappingId) {
       const mapping = this.availableMappings.find(m => m.id === mappingId);
-      this.resourceMappings[index].mappingName = mapping?.name || null;
+      entry.mappingName = mapping?.name || null;
     } else {
-      this.resourceMappings[index].mappingName = null;
+      entry.mappingName = null;
+    }
+  }
+
+  /**
+   * Add a new source mapping entry to a target resource row
+   */
+  addSourceMapping(rowIndex: number): void {
+    this.resourceMappings[rowIndex].sourceMappings.push({
+      sourceField: null,
+      sourceName: null,
+      mappingId: null,
+      mappingName: null
+    });
+  }
+
+  /**
+   * Remove a source mapping entry from a target resource row
+   */
+  removeSourceMapping(rowIndex: number, sourceIndex: number): void {
+    const mappings = this.resourceMappings[rowIndex].sourceMappings;
+    if (mappings.length > 1) {
+      mappings.splice(sourceIndex, 1);
+    } else {
+      // Keep at least one entry, just clear it
+      mappings[0] = {
+        sourceField: null,
+        sourceName: null,
+        mappingId: null,
+        mappingName: null
+      };
     }
   }
 
@@ -481,21 +617,85 @@ export class TransformationDetailComponent implements OnInit {
    */
   hasResourceChanges(): boolean {
     const currentState = JSON.stringify(this.resourceMappings.map(r => ({
-      sourceField: r.sourceField,
-      mappingId: r.mappingId
+      sourceMappings: r.sourceMappings
     })));
     return currentState !== this.originalResourceMappings;
   }
 
   /**
    * Save resource mapping changes
+   *
+   * IMPORTANT: The backend stores transformation fields SOURCE-CENTRIC:
+   * - name: Source field (e.g., Bundle.entry:RezeptierdatenPZNVerordnung.resource)
+   * - other: Target field (e.g., .parameter:rxPrescription.part:medication.resource)
+   * - map: Mapping ID
+   *
+   * For creating/updating: Use POST /link-mapping with action: 'use'
+   * For deleting: Use DELETE /link-mapping to completely remove the entry
    */
   saveResourceChanges(): void {
-    const changedRows = this.resourceMappings.filter(r =>
-      r.sourceField !== r.originalSourceField || r.mappingId !== r.originalMappingId
-    );
+    // Collect all current source mappings
+    const currentSourceMappings: { targetField: string; sourceEntry: SourceMappingEntry }[] = [];
 
-    if (changedRows.length === 0) {
+    this.resourceMappings.forEach(row => {
+      row.sourceMappings.forEach(sourceEntry => {
+        if (sourceEntry.sourceField) {
+          currentSourceMappings.push({
+            targetField: row.targetField,
+            sourceEntry: sourceEntry
+          });
+        }
+      });
+    });
+
+    // Collect all original source mappings to detect deletions
+    const originalSourceFields = new Set<string>();
+    this.resourceMappings.forEach(row => {
+      row.originalSourceMappings.forEach(origEntry => {
+        if (origEntry.sourceField) {
+          originalSourceFields.add(origEntry.sourceField);
+        }
+      });
+    });
+
+    // Find deleted source mappings (in original but not in current)
+    const currentSourceFields = new Set(currentSourceMappings.map(m => m.sourceEntry.sourceField));
+    const deletedSourceFields = [...originalSourceFields].filter(sf => !currentSourceFields.has(sf));
+
+    // Build list of all operations
+    type OperationType = 'link' | 'unlink';
+    interface SaveOperation {
+      type: OperationType;
+      sourceField: string;
+      otherPath?: string;
+      mappingId?: string;
+    }
+
+    const operations: SaveOperation[] = [];
+
+    // Add link operations for current mappings
+    currentSourceMappings.forEach(({ targetField, sourceEntry }) => {
+      let otherPath = targetField;
+      if (otherPath.startsWith('Parameters')) {
+        otherPath = otherPath.replace(/^Parameters/, '');
+      }
+      operations.push({
+        type: 'link',
+        sourceField: sourceEntry.sourceField!,
+        otherPath: otherPath,
+        mappingId: sourceEntry.mappingId || undefined
+      });
+    });
+
+    // Add unlink operations for removed mappings
+    deletedSourceFields.forEach(sourceField => {
+      operations.push({
+        type: 'unlink',
+        sourceField: sourceField
+      });
+    });
+
+    if (operations.length === 0) {
       this.snackBar.open('Keine Änderungen zum Speichern', 'OK', { duration: 2000 });
       return;
     }
@@ -503,34 +703,59 @@ export class TransformationDetailComponent implements OnInit {
     let savedCount = 0;
     let errorCount = 0;
 
-    changedRows.forEach(row => {
-      // Update the target field with the source reference and mapping
-      const updateRequest: TransformationFieldUpdateRequest = {
-        action: 'use',
-        other: row.sourceField || undefined,
-        map: row.mappingId || undefined
-      };
+    operations.forEach(op => {
+      console.log('Executing operation:', op);
 
-      this.transformationService.updateTransformationField(
-        this.projectKey,
-        this.transformationId,
-        row.targetField,
-        updateRequest
-      ).subscribe({
-        next: () => {
-          savedCount++;
-          if (savedCount + errorCount === changedRows.length) {
-            this.onSaveComplete(savedCount, errorCount);
+      if (op.type === 'link') {
+        // Use POST /link-mapping to create/update with action: 'use'
+        const linkRequest: TransformationMappingLinkRequest = {
+          mapping_id: op.mappingId || '',
+          action: 'use',
+          other: op.otherPath
+        };
+
+        this.transformationService.linkMapping(
+          this.projectKey,
+          this.transformationId,
+          op.sourceField,
+          linkRequest
+        ).subscribe({
+          next: () => {
+            savedCount++;
+            if (savedCount + errorCount === operations.length) {
+              this.onSaveComplete(savedCount, errorCount);
+            }
+          },
+          error: (err: unknown) => {
+            console.error('Error linking mapping', err);
+            errorCount++;
+            if (savedCount + errorCount === operations.length) {
+              this.onSaveComplete(savedCount, errorCount);
+            }
           }
-        },
-        error: (err: unknown) => {
-          console.error('Error saving resource mapping', err);
-          errorCount++;
-          if (savedCount + errorCount === changedRows.length) {
-            this.onSaveComplete(savedCount, errorCount);
+        });
+      } else {
+        // Use DELETE /link-mapping to completely remove the entry
+        this.transformationService.unlinkMapping(
+          this.projectKey,
+          this.transformationId,
+          op.sourceField
+        ).subscribe({
+          next: () => {
+            savedCount++;
+            if (savedCount + errorCount === operations.length) {
+              this.onSaveComplete(savedCount, errorCount);
+            }
+          },
+          error: (err: unknown) => {
+            console.error('Error unlinking mapping', err);
+            errorCount++;
+            if (savedCount + errorCount === operations.length) {
+              this.onSaveComplete(savedCount, errorCount);
+            }
           }
-        }
-      });
+        });
+      }
     });
   }
 
@@ -627,6 +852,13 @@ export class TransformationDetailComponent implements OnInit {
     }
     // Reload to get fresh state
     this.loadTransformation();
+  }
+
+  /**
+   * Check if a resource mapping row has any mapping assigned
+   */
+  hasAnyMapping(row: ResourceMappingRow): boolean {
+    return row.sourceMappings.some(s => s.mappingId !== null);
   }
 
   /**

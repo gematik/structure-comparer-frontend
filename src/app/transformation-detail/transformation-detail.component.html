@@ -111,7 +111,7 @@
               <div class="table-header">
                 <div class="col source-col">
                   <mat-icon class="col-icon">input</mat-icon>
-                  Quell-Ressource
+                  Quell-Ressource(n)
                 </div>
                 <div class="col mapping-col">
                   <mat-icon class="col-icon">swap_horiz</mat-icon>
@@ -124,39 +124,65 @@
               </div>
 
               <!-- Rows -->
-              <div *ngFor="let rm of filteredResourceMappings; let i = index"
+              <div *ngFor="let rm of filteredResourceMappings; let rowIndex = index"
                    class="table-row"
-                   [class.has-mapping]="rm.mappingId">
-                <!-- Source Resource Selection -->
-                <div class="col source-col">
-                  <mat-form-field appearance="outline" class="source-select">
-                    <mat-label>Quell-Ressource</mat-label>
-                    <mat-select [(ngModel)]="rm.sourceField"
-                                (selectionChange)="onSourceResourceChanged(i, $event.value)">
-                      <mat-option [value]="null">-- Keine Quelle --</mat-option>
-                      <mat-option *ngFor="let source of sourceResourceFields" [value]="source.name">
-                        {{ source.displayName }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
+                   [class.has-mapping]="hasAnyMapping(rm)">
+
+                <!-- Source Resources (multiple possible) -->
+                <div class="col source-col multi-source">
+                  <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
+                       class="source-entry">
+                    <mat-form-field appearance="outline" class="source-select">
+                      <mat-label>Quell-Ressource {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
+                      <mat-select [ngModel]="sourceEntry.sourceField"
+                                  (selectionChange)="onSourceResourceChanged(rowIndex, sourceIndex, $event.value)">
+                        <mat-option [value]="null">-- Keine Quelle --</mat-option>
+                        <mat-option *ngFor="let source of sourceResourceFields" [value]="source.name">
+                          {{ source.displayName }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+
+                    <!-- Remove source button -->
+                    <button mat-icon-button
+                            *ngIf="rm.sourceMappings.length > 1 || sourceEntry.sourceField"
+                            (click)="removeSourceMapping(rowIndex, sourceIndex)"
+                            matTooltip="Quell-Ressource entfernen"
+                            class="remove-source-btn">
+                      <mat-icon>remove_circle_outline</mat-icon>
+                    </button>
+                  </div>
+
+                  <!-- Add source button -->
+                  <button mat-stroked-button
+                          (click)="addSourceMapping(rowIndex)"
+                          class="add-source-btn"
+                          matTooltip="Weitere Quell-Ressource hinzufügen">
+                    <mat-icon>add</mat-icon>
+                    Quelle hinzufügen
+                  </button>
                 </div>
 
-                <!-- Mapping Selection -->
-                <div class="col mapping-col">
-                  <mat-form-field appearance="outline" class="mapping-select">
-                    <mat-label>Mapping auswählen</mat-label>
-                    <mat-select [(ngModel)]="rm.mappingId"
-                                (selectionChange)="onResourceMappingChanged(i, $event.value)">
-                      <mat-option [value]="null">-- Kein Mapping --</mat-option>
-                      <mat-option *ngFor="let m of availableMappings" [value]="m.id">
-                        {{ m.name }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <div *ngIf="rm.mappingId" class="mapping-link">
-                    <button mat-icon-button (click)="viewMapping(rm.mappingId)" matTooltip="Mapping öffnen">
-                      <mat-icon>open_in_new</mat-icon>
-                    </button>
+                <!-- Mapping Selection (for each source) -->
+                <div class="col mapping-col multi-mapping">
+                  <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
+                       class="mapping-entry">
+                    <mat-form-field appearance="outline" class="mapping-select">
+                      <mat-label>Mapping {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
+                      <mat-select [ngModel]="sourceEntry.mappingId"
+                                  (selectionChange)="onResourceMappingChanged(rowIndex, sourceIndex, $event.value)"
+                                  [disabled]="!sourceEntry.sourceField">
+                        <mat-option [value]="null">-- Kein Mapping --</mat-option>
+                        <mat-option *ngFor="let m of availableMappings" [value]="m.id">
+                          {{ m.name }}
+                        </mat-option>
+                      </mat-select>
+                    </mat-form-field>
+                    <div *ngIf="sourceEntry.mappingId" class="mapping-link">
+                      <button mat-icon-button (click)="viewMapping(sourceEntry.mappingId)" matTooltip="Mapping öffnen">
+                        <mat-icon>open_in_new</mat-icon>
+                      </button>
+                    </div>
                   </div>
                 </div>
 

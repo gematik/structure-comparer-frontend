@@ -306,8 +306,54 @@ mat-card-title {
   border-right: 1px solid #e8e8e8;
 }
 
+/* Multi-source layout */
+.source-col.multi-source,
+.mapping-col.multi-mapping {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.source-entry,
+.mapping-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.source-entry .source-select,
+.mapping-entry .mapping-select {
+  flex: 1;
+}
+
+.remove-source-btn {
+  color: #999;
+}
+
+.remove-source-btn:hover {
+  color: #f44336;
+}
+
+.add-source-btn {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.add-source-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+
 .mapping-col {
   border-right: 1px solid #e8e8e8;
+}
+
+.mapping-col:not(.multi-mapping) {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
