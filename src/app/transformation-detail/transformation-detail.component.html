@@ -1,0 +1,171 @@
+<div class="transformation-detail-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <p>Lade Transformation...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button (click)="goBack()">Zurück</button>
+  </div>
+
+  <!-- Main content -->
+  <div *ngIf="!loading && !error && transformation" class="content">
+    <!-- Header with back button -->
+    <div class="header">
+      <button mat-icon-button (click)="goBack()" matTooltip="Zurück zur Projektübersicht">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>{{ transformation.name }}</h1>
+      <span class="status-badge" [ngClass]="getStatusClass(transformation.status)">
+        {{ transformation.status }}
+      </span>
+    </div>
+
+    <!-- Transformation Overview Card -->
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Transformation Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Version:</span>
+            <span class="value">{{ transformation.version }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Letztes Update:</span>
+            <span class="value">{{ transformation.last_updated | date:'dd.MM.yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- Profiles Row -->
+        <div class="profiles-row">
+          <div class="profile-section source-section">
+            <h4>Source Profile(s)</h4>
+            <div class="profile-chips">
+              <span *ngFor="let source of transformation.sources" class="profile-chip source">
+                <a *ngIf="source.webUrl" [href]="source.webUrl" target="_blank">
+                  {{ source.name || source.url }}
+                </a>
+                <span *ngIf="!source.webUrl">{{ source.name || source.url }}</span>
+              </span>
+            </div>
+          </div>
+          <div class="arrow-section">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+          <div class="profile-section target-section">
+            <h4>Target Profile</h4>
+            <div class="profile-chips">
+              <span class="profile-chip target">
+                <a *ngIf="transformation.target.webUrl" [href]="transformation.target.webUrl" target="_blank">
+                  {{ transformation.target.name || transformation.target.url }}
+                </a>
+                <span *ngIf="!transformation.target.webUrl">{{ transformation.target.name || transformation.target.url }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Resource Mappings Card -->
+    <mat-card class="resource-mappings-card">
+      <mat-card-header>
+        <mat-card-title>
+          Resource Mappings
+          <span class="mapping-count">({{ resourceMappings.length }} Ressourcen)</span>
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <p class="description">
+          Verknüpfen Sie die Ressourcen des Quell-Bundles mit den entsprechenden Ziel-Parametern über Mappings.
+        </p>
+
+        <div *ngIf="resourceMappings.length === 0" class="empty-state">
+          <mat-icon>info</mat-icon>
+          <p>Keine Resource-Felder gefunden.</p>
+        </div>
+
+        <!-- Resource Mapping Table -->
+        <div *ngIf="resourceMappings.length > 0" class="resource-mapping-table">
+          <!-- Header -->
+          <div class="table-header">
+            <div class="col source-col">
+              <mat-icon class="col-icon">input</mat-icon>
+              Quell-Ressource
+            </div>
+            <div class="col mapping-col">
+              <mat-icon class="col-icon">swap_horiz</mat-icon>
+              Mapping
+            </div>
+            <div class="col target-col">
+              <mat-icon class="col-icon">output</mat-icon>
+              Ziel-Ressource
+            </div>
+          </div>
+
+          <!-- Rows -->
+          <div *ngFor="let rm of resourceMappings; let i = index"
+               class="table-row"
+               [class.has-mapping]="rm.mappingId">
+            <!-- Source Resource -->
+            <div class="col source-col">
+              <div class="resource-name">{{ rm.sourceName }}</div>
+              <div class="resource-path">{{ rm.sourceField }}</div>
+            </div>
+
+            <!-- Mapping Selection -->
+            <div class="col mapping-col">
+              <mat-form-field appearance="outline" class="mapping-select">
+                <mat-label>Mapping auswählen</mat-label>
+                <mat-select [(ngModel)]="rm.mappingId"
+                            (selectionChange)="onMappingChanged(i, $event.value)">
+                  <mat-option [value]="null">-- Kein Mapping --</mat-option>
+                  <mat-option *ngFor="let m of availableMappings" [value]="m.id">
+                    {{ m.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              <div *ngIf="rm.mappingId" class="mapping-link">
+                <button mat-icon-button (click)="viewMapping(rm.mappingId)" matTooltip="Mapping öffnen">
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Target Resource -->
+            <div class="col target-col">
+              <mat-form-field appearance="outline" class="target-select">
+                <mat-label>Ziel-Ressource</mat-label>
+                <mat-select [(ngModel)]="rm.targetField"
+                            (selectionChange)="onTargetChanged(i, $event.value)">
+                  <mat-option [value]="null">-- Kein Ziel --</mat-option>
+                  <mat-option *ngFor="let target of targetResourceFields" [value]="target.name">
+                    {{ target.displayName }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="actions-row">
+          <button mat-raised-button color="primary"
+                  [disabled]="!hasChanges()"
+                  (click)="saveChanges()">
+            <mat-icon>save</mat-icon>
+            Änderungen speichern
+          </button>
+          <span *ngIf="hasChanges()" class="unsaved-hint">
+            Es gibt ungespeicherte Änderungen
+          </span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

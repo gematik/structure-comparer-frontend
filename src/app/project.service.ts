@@ -77,12 +77,25 @@ export class ProjectService {
   }
 
   /**
+   * Fetches a single profile with all its field information
+   * @param projectKey The unique identifier of the project
+   * @param profileId The unique identifier of the profile
+   * @returns Observable containing the profile with its fields
+   */
+  getProfileDetails(projectKey: string, profileId: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedProfileId = encodeURIComponent(profileId);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/profile/${encodedProfileId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Reloads project data from the server
    * @param projectKey The unique identifier of the project to reload
    * @returns Observable containing the updated project data
    */
   reloadProjectData(projectKey: string): Observable<any> {
-    const encodedProjectKey = encodeURIComponent(projectKey); 
+    const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}`)
       .pipe(catchError(this.handleError));
   }
@@ -112,7 +125,7 @@ export class ProjectService {
     formData.append('file', file, file.name);
 
     const url = `${this.baseUrl}/project/${encodedProjectKey}/manual-entries/import`;
-    
+
     return this.http.post<ImportManualEntriesResponse>(url, formData)
       .pipe(catchError(this.handleError));
   }

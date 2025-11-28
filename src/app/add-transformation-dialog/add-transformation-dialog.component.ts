@@ -29,7 +29,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Profile } from '../models/profile.model';
-import { TransformationCreate } from '../models/transformation.model';
 import { TransformationService } from '../transformation.service';
 import { ProjectService } from '../project.service';
 
@@ -58,11 +57,11 @@ export class AddTransformationDialogComponent implements OnInit {
   status: string = 'draft';
   description: string = '';
 
-  // Source profiles (multiple)
-  sourceProfiles: { url: string; name: string }[] = [{ url: '', name: '' }];
+  // Source profile keys (multiple)
+  sourceProfileKeys: string[] = [''];
 
-  // Target profile (single)
-  targetProfile: { url: string; name: string } = { url: '', name: '' };
+  // Target profile key (single)
+  targetProfileKey: string = '';
 
   // Profile selection
   packageGroups: { package: string; profiles: Profile[] }[] = [];
@@ -88,9 +87,12 @@ export class AddTransformationDialogComponent implements OnInit {
   }
 
   loadProfiles(): void {
+    console.log('Loading profiles for project:', this.projectKey);
     this.projectService.getProjectProfiles(this.projectKey).subscribe({
       next: (result) => {
+        console.log('Profiles loaded:', result);
         this.groupProfilesByPackage(result.profiles);
+        console.log('Package groups:', this.packageGroups);
       },
       error: (err) => {
         console.error('Error loading profiles:', err);
@@ -126,40 +128,12 @@ export class AddTransformationDialogComponent implements OnInit {
   }
 
   addSourceProfile(): void {
-    this.sourceProfiles.push({ url: '', name: '' });
+    this.sourceProfileKeys.push('');
   }
 
   removeSourceProfile(index: number): void {
-    if (this.sourceProfiles.length > 1) {
-      this.sourceProfiles.splice(index, 1);
-    }
-  }
-
-  onSourceProfileSelected(index: number, profileKey: string): void {
-    // Find the selected profile and update URL and name
-    for (const group of this.packageGroups) {
-      const profile = group.profiles.find(p => p.key === profileKey);
-      if (profile) {
-        this.sourceProfiles[index] = {
-          url: profile.url || profile.key,
-          name: profile.name
-        };
-        break;
-      }
-    }
-  }
-
-  onTargetProfileSelected(profileKey: string): void {
-    // Find the selected profile and update URL and name
-    for (const group of this.packageGroups) {
-      const profile = group.profiles.find(p => p.key === profileKey);
-      if (profile) {
-        this.targetProfile = {
-          url: profile.url || profile.key,
-          name: profile.name
-        };
-        break;
-      }
+    if (this.sourceProfileKeys.length > 1) {
+      this.sourceProfileKeys.splice(index, 1);
     }
   }
 
@@ -171,8 +145,8 @@ export class AddTransformationDialogComponent implements OnInit {
     return (
       this.name.trim() !== '' &&
       this.version.trim() !== '' &&
-      this.sourceProfiles.some(sp => sp.url.trim() !== '') &&
-      this.targetProfile.url.trim() !== ''
+      this.sourceProfileKeys.some(key => key.trim() !== '') &&
+      this.targetProfileKey.trim() !== ''
     );
   }
 
@@ -188,28 +162,15 @@ export class AddTransformationDialogComponent implements OnInit {
 
     this.loading = true;
 
-    const sources = this.sourceProfiles
-      .filter(sp => sp.url.trim() !== '')
-      .map(sp => ({
-        url: sp.url,
-        name: sp.name || undefined
-      }));
+    // Das Backend erwartet source_ids und target_id (Profile-Keys)
+    const source_ids = this.sourceProfileKeys.filter(key => key.trim() !== '');
 
-    const target = {
-      url: this.targetProfile.url,
-      name: this.targetProfile.name || undefined
+    const payload = {
+      source_ids: source_ids,
+      target_id: this.targetProfileKey
     };
 
-    const newTransformation: TransformationCreate = {
-      name: this.name.trim(),
-      version: this.version.trim(),
-      status: this.status,
-      description: this.description.trim() || undefined,
-      sources,
-      target
-    };
-
-    this.transformationService.createTransformation(this.projectKey, newTransformation)
+    this.transformationService.createTransformation(this.projectKey, payload as any)
       .subscribe({
         next: (result) => {
           this.loading = false;

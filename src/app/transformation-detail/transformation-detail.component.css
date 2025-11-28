@@ -1,0 +1,482 @@
+/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.transformation-detail-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.error-container mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+/* Cards */
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-header {
+  margin-bottom: 16px;
+}
+
+mat-card-title {
+  font-size: 1.1rem !important;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item .label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item .value {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-draft {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-published {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-deprecated {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Profiles Section */
+.profiles-section {
+  margin-top: 16px;
+}
+
+.profiles-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+}
+
+.profile-chip.source {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile-chip.target {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile-chip a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-chip a:hover {
+  text-decoration: underline;
+}
+
+.profile-chip .version {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Mappings List */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.mappings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapping-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mapping-item:hover {
+  background: #e8e8e8;
+}
+
+.mapping-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mapping-name {
+  font-weight: 500;
+  color: #1976d2;
+}
+
+.mapping-version {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Fields Table */
+.fields-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fields-table th,
+.fields-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.fields-table th {
+  font-weight: 600;
+  color: #333;
+  background: #f8f9fa;
+}
+
+.fields-table tr:hover {
+  background: #f5f5f5;
+}
+
+.field-name {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9rem;
+}
+
+.action-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.action-copy { background: #e8f5e9; color: #2e7d32; }
+.action-create { background: #e3f2fd; color: #1565c0; }
+.action-equivalent { background: #f3e5f5; color: #7b1fa2; }
+.action-fixed { background: #fff3e0; color: #e65100; }
+.action-ignore { background: #fafafa; color: #666; }
+.action-map { background: #e0f2f1; color: #00695c; }
+
+.no-action {
+  color: #999;
+}
+
+.linked-mapping {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapping-link {
+  color: #1976d2;
+  cursor: pointer;
+}
+
+.mapping-link:hover {
+  text-decoration: underline;
+}
+
+.mapping-select {
+  width: 200px;
+}
+
+.mapping-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.small-button {
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+}
+
+.small-button mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.remark {
+  max-width: 300px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Profiles Row Layout */
+.profiles-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.profile-section {
+  flex: 1;
+}
+
+.profile-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.arrow-section {
+  display: flex;
+  align-items: center;
+  color: #999;
+}
+
+.arrow-section mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Resource Mappings Card */
+.resource-mappings-card {
+  margin-top: 20px;
+}
+
+.resource-mappings-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapping-count {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.description {
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Resource Mapping Table */
+.resource-mapping-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: #f5f5f5;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: 600;
+  color: #333;
+}
+
+.table-header .col {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-header .col-icon {
+  font-size: 20px;
+  color: #666;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid #e8e8e8;
+  transition: background 0.15s;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background: #f9f9f9;
+}
+
+.table-row.has-mapping {
+  background: #fafcff;
+}
+
+.table-row .col {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.source-col {
+  border-right: 1px solid #e8e8e8;
+}
+
+.mapping-col {
+  border-right: 1px solid #e8e8e8;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px;
+}
+
+.resource-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.resource-path {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.mapping-select,
+.target-select {
+  width: 100%;
+}
+
+.mapping-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.target-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.mapping-link {
+  flex-shrink: 0;
+}
+
+/* Actions Row */
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.unsaved-hint {
+  color: #f57c00;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unsaved-hint::before {
+  content: '⚠';
+}

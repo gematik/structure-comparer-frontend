@@ -173,4 +173,5 @@ export interface TransformationFieldUpdateRequest {
 export interface TransformationMappingLinkRequest {
   mapping_id: string;
   action?: MappingAction;
+  other?: string;  // Target profile field path
 }

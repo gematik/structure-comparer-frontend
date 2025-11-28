@@ -40,14 +40,14 @@
     <h3>Source Profile(s) *</h3>
     <p class="hint">Die Quell-Profile aus denen Daten transformiert werden.</p>
 
-    <div *ngFor="let source of sourceProfiles; let i = index; trackBy: trackByIndex" class="source-profile-row">
+    <div *ngFor="let sourceKey of sourceProfileKeys; let i = index; trackBy: trackByIndex" class="source-profile-row">
       <mat-form-field appearance="fill" class="source-selector">
         <mat-label>Source-Profil {{i + 1}}</mat-label>
-        <mat-select (selectionChange)="onSourceProfileSelected(i, $event.value)">
+        <mat-select [(ngModel)]="sourceProfileKeys[i]">
           <ng-container *ngFor="let group of packageGroups">
             <div
               class="group-toggle"
-              (click)="toggleGroup(group.package); $event.stopPropagation()"
+              (click)="toggleGroup(group.package)"
               role="option"
               tabindex="0"
             >
@@ -69,12 +69,9 @@
         </mat-select>
       </mat-form-field>
 
-      <!-- Display selected URL -->
-      <span class="selected-url" *ngIf="source.url">{{ source.url }}</span>
-
       <div class="button-group">
         <button
-          *ngIf="sourceProfiles.length > 1"
+          *ngIf="sourceProfileKeys.length > 1"
           mat-icon-button
           color="warn"
           (click)="removeSourceProfile(i)"
@@ -85,10 +82,10 @@
           <mat-icon>remove</mat-icon>
         </button>
 
-        <div *ngIf="sourceProfiles.length <= 1" class="button-spacer-small"></div>
+        <div *ngIf="sourceProfileKeys.length <= 1" class="button-spacer-small"></div>
 
         <button
-          *ngIf="i === sourceProfiles.length - 1"
+          *ngIf="i === sourceProfileKeys.length - 1"
           mat-icon-button
           color="primary"
           (click)="addSourceProfile()"
@@ -99,7 +96,7 @@
           <mat-icon>add</mat-icon>
         </button>
 
-        <div *ngIf="i !== sourceProfiles.length - 1" class="button-spacer-small"></div>
+        <div *ngIf="i !== sourceProfileKeys.length - 1" class="button-spacer-small"></div>
       </div>
     </div>
   </div>
@@ -112,11 +109,11 @@
     <div class="target-profile-row">
       <mat-form-field appearance="fill" class="target-selector">
         <mat-label>Target-Profil</mat-label>
-        <mat-select (selectionChange)="onTargetProfileSelected($event.value)">
+        <mat-select [(ngModel)]="targetProfileKey">
           <ng-container *ngFor="let group of packageGroups">
             <div
               class="group-toggle"
-              (click)="toggleGroup(group.package); $event.stopPropagation()"
+              (click)="toggleGroup(group.package)"
               role="option"
               tabindex="0"
             >
@@ -137,9 +134,6 @@
           </ng-container>
         </mat-select>
       </mat-form-field>
-
-      <!-- Display selected URL -->
-      <span class="selected-url" *ngIf="targetProfile.url">{{ targetProfile.url }}</span>
     </div>
   </div>
 </mat-dialog-content>
