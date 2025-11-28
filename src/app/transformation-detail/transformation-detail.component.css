@@ -119,12 +119,19 @@ mat-card-title {
   color: #c62828;
 }
 
-/* Profiles Section */
-.profiles-section {
-  margin-top: 16px;
+/* Profiles Row Layout */
+.profiles-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
 }
 
-.profiles-section h4 {
+.profile-section {
+  flex: 1;
+}
+
+.profile-section h4 {
   margin: 0 0 8px;
   font-size: 0.9rem;
   color: #666;
@@ -165,12 +172,56 @@ mat-card-title {
   text-decoration: underline;
 }
 
-.profile-chip .version {
-  font-size: 0.8rem;
-  opacity: 0.8;
+.arrow-section {
+  display: flex;
+  align-items: center;
+  color: #999;
 }
 
-/* Mappings List */
+.arrow-section mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Mappings Card with Tabs */
+.mappings-card {
+  margin-top: 20px;
+}
+
+.tab-icon {
+  margin-right: 8px;
+}
+
+.tab-count {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.description {
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Empty State */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -187,187 +238,9 @@ mat-card-title {
   opacity: 0.5;
 }
 
-.mappings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.mapping-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.mapping-item:hover {
-  background: #e8e8e8;
-}
-
-.mapping-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.mapping-name {
-  font-weight: 500;
-  color: #1976d2;
-}
-
-.mapping-version {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-/* Fields Table */
-.fields-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.fields-table th,
-.fields-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.fields-table th {
-  font-weight: 600;
-  color: #333;
-  background: #f8f9fa;
-}
-
-.fields-table tr:hover {
-  background: #f5f5f5;
-}
-
-.field-name {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 0.9rem;
-}
-
-.action-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.action-copy { background: #e8f5e9; color: #2e7d32; }
-.action-create { background: #e3f2fd; color: #1565c0; }
-.action-equivalent { background: #f3e5f5; color: #7b1fa2; }
-.action-fixed { background: #fff3e0; color: #e65100; }
-.action-ignore { background: #fafafa; color: #666; }
-.action-map { background: #e0f2f1; color: #00695c; }
-
-.no-action {
-  color: #999;
-}
-
-.linked-mapping {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mapping-link {
-  color: #1976d2;
-  cursor: pointer;
-}
-
-.mapping-link:hover {
-  text-decoration: underline;
-}
-
-.mapping-select {
-  width: 200px;
-}
-
-.mapping-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-  display: none;
-}
-
-.small-button {
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-}
-
-.small-button mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-}
-
-.remark {
-  max-width: 300px;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* Profiles Row Layout */
-.profiles-row {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 16px 0;
-}
-
-.profile-section {
-  flex: 1;
-}
-
-.profile-section h4 {
-  margin: 0 0 8px;
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: 500;
-}
-
-.arrow-section {
-  display: flex;
-  align-items: center;
-  color: #999;
-}
-
-.arrow-section mat-icon {
-  font-size: 32px;
-  width: 32px;
-  height: 32px;
-}
-
-/* Resource Mappings Card */
-.resource-mappings-card {
-  margin-top: 20px;
-}
-
-.resource-mappings-card mat-card-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mapping-count {
-  font-size: 0.85rem;
-  color: #666;
-  font-weight: normal;
-}
-
-.description {
-  margin-bottom: 20px;
-  color: #666;
-  font-size: 0.95rem;
-}
-
 /* Resource Mapping Table */
-.resource-mapping-table {
+.resource-mapping-table,
+.value-mapping-table {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   overflow: hidden;
@@ -380,6 +253,10 @@ mat-card-title {
   border-bottom: 2px solid #e0e0e0;
   font-weight: 600;
   color: #333;
+}
+
+.value-mapping-table .table-header {
+  grid-template-columns: 1fr 1fr;
 }
 
 .table-header .col {
@@ -401,6 +278,10 @@ mat-card-title {
   transition: background 0.15s;
 }
 
+.value-row {
+  grid-template-columns: 1fr 1fr;
+}
+
 .table-row:last-child {
   border-bottom: none;
 }
@@ -409,7 +290,8 @@ mat-card-title {
   background: #f9f9f9;
 }
 
-.table-row.has-mapping {
+.table-row.has-mapping,
+.table-row.has-copy-from {
   background: #fafcff;
 }
 
@@ -432,12 +314,22 @@ mat-card-title {
   gap: 8px;
 }
 
-.resource-name {
-  font-weight: 500;
-  color: #333;
+.target-col {
+  background: #fafafa;
 }
 
-.resource-path {
+/* Resource and Value Names */
+.resource-name,
+.value-field-name {
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resource-path,
+.value-field-path {
   font-family: 'Roboto Mono', monospace;
   font-size: 0.8rem;
   color: #666;
@@ -445,18 +337,45 @@ mat-card-title {
   word-break: break-all;
 }
 
+.expand-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+}
+
+/* Form Fields */
+.source-select,
 .mapping-select,
-.target-select {
+.target-select,
+.copy-from-select {
   width: 100%;
 }
 
+.source-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
 .mapping-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
-.target-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+.target-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.copy-from-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
   display: none;
 }
 
 .mapping-link {
   flex-shrink: 0;
+}
+
+/* Action Badges */
+.action-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.action-badge.copy-from {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
 /* Actions Row */
@@ -479,4 +398,19 @@ mat-card-title {
 
 .unsaved-hint::before {
   content: '⚠';
+}
+
+/* Value Tab Specific Styles */
+.value-target-col {
+  min-width: 300px;
+}
+
+.value-source-col {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+.has-children {
+  background: #f5f7fa;
 }

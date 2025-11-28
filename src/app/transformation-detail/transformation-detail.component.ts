@@ -28,26 +28,56 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatInputModule } from '@angular/material/input';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { TransformationService } from '../transformation.service';
 import { ProjectService } from '../project.service';
-import { Transformation, TransformationField, MappingReference, TransformationMappingLinkRequest } from '../models/transformation.model';
-import { Mapping } from '../models/mapping.model';
+import { Transformation, TransformationField, MappingReference, TransformationFieldUpdateRequest } from '../models/transformation.model';
+import { Mapping, MappingAction } from '../models/mapping.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 /**
- * UI model for a resource mapping row
+ * UI model for a resource mapping row (target-centric)
+ * The target resource is fixed, user selects source and mapping
  */
 interface ResourceMappingRow {
-  sourceField: string;
-  sourceName: string;
+  targetField: string;
+  targetName: string;
+  sourceField: string | null;
+  sourceName: string | null;
   mappingId: string | null;
   mappingName: string | null;
-  targetField: string | null;
+  originalSourceField: string | null;
   originalMappingId: string | null;
-  originalTargetField: string | null;
+}
+
+/**
+ * UI model for a value mapping row (target-centric)
+ * The target value is fixed, user defines copy_from sources
+ */
+interface ValueMappingRow {
+  targetField: string;
+  targetName: string;
+  targetPath: string;
+  action: MappingAction | null;
+  copyFromSource: string | null;  // The source field path for copy_from
+  originalAction: MappingAction | null;
+  originalCopyFromSource: string | null;
+  hasChildren: boolean;
+  depth: number;
+}
+
+/**
+ * Source field option for dropdowns
+ */
+interface SourceFieldOption {
+  name: string;
+  displayName: string;
+  profileKey: string;
 }
 
 @Component({
@@ -63,7 +93,10 @@ interface ResourceMappingRow {
     MatCardModule,
     MatChipsModule,
     MatSelectModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    MatTabsModule,
+    MatSlideToggleModule,
+    MatInputModule
   ],
   templateUrl: './transformation-detail.component.html',
   styleUrls: ['./transformation-detail.component.css']
@@ -78,12 +111,26 @@ export class TransformationDetailComponent implements OnInit {
   loading = true;
   error: string | null = null;
 
-  // Resource mapping UI model
+  // Active tab index
+  activeTabIndex = 0;
+
+  // Resource mapping UI model (target-centric)
   resourceMappings: ResourceMappingRow[] = [];
-  targetResourceFields: { name: string; displayName: string }[] = [];
+  filteredResourceMappings: ResourceMappingRow[] = [];
+  sourceResourceFields: SourceFieldOption[] = [];
+
+  // Value mapping UI model (target-centric)
+  valueMappings: ValueMappingRow[] = [];
+  filteredValueMappings: ValueMappingRow[] = [];
+  sourceValueFields: SourceFieldOption[] = [];
+
+  // Quickfilter states (default enabled)
+  resourceFilterEnabled = true;
+  valueFilterEnabled = true;
 
   // Track original state for change detection
   private originalResourceMappings: string = '';
+  private originalValueMappings: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -118,164 +165,250 @@ export class TransformationDetailComponent implements OnInit {
           this.transformation = result;
           this.fields = result.fields || [];
           this.linkedMappings = result.linked_mappings || [];
-          this.buildResourceMappings();
+          this.buildMappings();
         }
         this.loading = false;
       });
   }
 
   /**
-   * Build the resource mappings from fields that end with ".resource"
+   * Build both resource and value mappings from transformation fields
+   */
+  private buildMappings(): void {
+    this.buildResourceMappings();
+    this.buildValueMappings();
+    this.buildSourceFields();
+  }
+
+  /**
+   * Build the resource mappings from TARGET fields that have type "Resource"
+   * User will select which source resource maps to each target
    */
   private buildResourceMappings(): void {
-    // Filter fields that end with "resource" (case insensitive)
-    const resourceFields = this.fields.filter(f =>
-      f.name.toLowerCase().endsWith('.resource') ||
-      f.name.toLowerCase().endsWith('resource')
+    // Get the target profile key
+    const targetKey = this.transformation?.target?.key || this.transformation?.target?.id;
+    if (!targetKey) return;
+
+    // Filter target fields that have Resource type
+    const targetResourceFields = this.fields.filter(f => {
+      const profile = f.profiles?.[targetKey];
+      if (!profile) return false;
+      // Check if types include Resource
+      const types = profile.types || [];
+      return types.some(t => t === 'Resource' || t.endsWith('Resource'));
+    });
+
+    // Also include fields that end with .resource
+    const resourcePatternFields = this.fields.filter(f =>
+      f.name.toLowerCase().endsWith('.resource') &&
+      !targetResourceFields.find(rf => rf.name === f.name)
     );
 
-    // Build source resource list
-    this.resourceMappings = resourceFields.map(field => {
-      // Extract a friendly name from the field path
+    const allTargetResourceFields = [...targetResourceFields, ...resourcePatternFields];
+
+    // Build target resource rows
+    this.resourceMappings = allTargetResourceFields.map(field => {
       const parts = field.name.split('.');
-      const entryPart = parts.find(p => p.startsWith('entry:'));
-      const sourceName = entryPart ? entryPart.replace('entry:', '') : field.name;
+      const paramPart = parts.find(p => p.startsWith('parameter:'));
+      const partPart = parts.find(p => p.startsWith('part:'));
+      let targetName = field.name;
+      if (paramPart) {
+        targetName = paramPart.replace('parameter:', '');
+        if (partPart) {
+          targetName += '.' + partPart.replace('part:', '');
+        }
+        targetName += '.resource';
+      }
+
+      // Find existing source mapping (from 'other' field)
+      const sourceField = field.other || null;
+      let sourceName: string | null = null;
+      if (sourceField) {
+        const sourceParts = sourceField.split('.');
+        const entryPart = sourceParts.find(p => p.startsWith('entry:'));
+        sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
+      }
 
       return {
-        sourceField: field.name,
+        targetField: field.name,
+        targetName: targetName,
+        sourceField: sourceField,
         sourceName: sourceName,
         mappingId: field.map || null,
         mappingName: field.map_name || null,
-        targetField: field.other || null,
-        originalMappingId: field.map || null,
-        originalTargetField: field.other || null
+        originalSourceField: sourceField,
+        originalMappingId: field.map || null
       };
     });
 
-    // Build target resource options from target profile fields
-    this.buildTargetResourceFields();
+    this.applyResourceFilter();
 
-    // Store original state for change detection
+    // Store original state
     this.originalResourceMappings = JSON.stringify(this.resourceMappings.map(r => ({
-      mappingId: r.mappingId,
-      targetField: r.targetField
+      sourceField: r.sourceField,
+      mappingId: r.mappingId
     })));
   }
 
   /**
-   * Build target resource field options from transformation fields
-   * Look for fields in the target profile that could be resource destinations
+   * Build the value mappings from TARGET fields that have value types (not Resource)
    */
-  private buildTargetResourceFields(): void {
-    // Load target profile fields from backend if we have a target profile
-    if (this.transformation?.target?.id) {
-      this.loadTargetProfileFields(this.transformation.target.id);
-    } else {
-      // Fallback: derive from transformation fields
-      this.deriveTargetFieldsFromTransformation();
-    }
-  }
+  private buildValueMappings(): void {
+    const targetKey = this.transformation?.target?.key || this.transformation?.target?.id;
+    if (!targetKey) return;
 
-  /**
-   * Load target profile fields from the backend API
-   */
-  private loadTargetProfileFields(profileId: string): void {
-    this.projectService.getProfileDetails(this.projectKey, profileId)
-      .pipe(catchError((err: unknown) => {
-        console.error('Error loading target profile fields', err);
-        // Fallback to deriving from transformation fields
-        this.deriveTargetFieldsFromTransformation();
-        return of(null);
-      }))
-      .subscribe(profile => {
-        if (profile && profile.fields) {
-          // Filter for fields that end with .resource
-          const resourceFields = Object.keys(profile.fields)
-            .filter(fieldPath =>
-              fieldPath.toLowerCase().endsWith('.resource') ||
-              fieldPath.toLowerCase().includes('parameter') && fieldPath.toLowerCase().includes('resource')
-            )
-            .sort();
-
-          this.targetResourceFields = resourceFields.map(fieldPath => {
-            // Create display-friendly name
-            const parts = fieldPath.split('.');
-            const paramPart = parts.find(p => p.startsWith('parameter:'));
-            const partPart = parts.find(p => p.startsWith('part:'));
-            let displayName = fieldPath;
-            if (paramPart) {
-              displayName = paramPart.replace('parameter:', '');
-              if (partPart) {
-                displayName += '.' + partPart.replace('part:', '');
-              }
-              displayName += '.resource';
-            }
-            return { name: fieldPath, displayName };
-          });
-
-          // If no resource fields found in profile, fallback
-          if (this.targetResourceFields.length === 0) {
-            this.deriveTargetFieldsFromTransformation();
-          }
-        }
-      });
-  }
-
-  /**
-   * Fallback: derive target fields from transformation field data
-   */
-  private deriveTargetFieldsFromTransformation(): void {
-    // Get unique "other" values from fields that could be target resources
-    const targetFields = this.fields
-      .filter(f => f.other && (
-        f.other.toLowerCase().includes('resource') ||
-        f.other.toLowerCase().includes('parameter')
-      ))
-      .map(f => f.other!)
-      .filter((v, i, a) => a.indexOf(v) === i); // unique
-
-    // Also look for Parameters.parameter:*.resource patterns
-    const parameterResourcePattern = /Parameters\.parameter:[^.]+\.(?:part:[^.]+\.)?resource/i;
-    const additionalTargets = this.fields
-      .filter(f => parameterResourcePattern.test(f.name))
-      .map(f => f.name)
-      .filter((v, i, a) => a.indexOf(v) === i);
-
-    // Combine and create display-friendly options
-    const allTargets = [...new Set([...targetFields, ...additionalTargets])];
-
-    this.targetResourceFields = allTargets.map(name => {
-      const parts = name.split('.');
-      const paramPart = parts.find(p => p.startsWith('parameter:'));
-      const partPart = parts.find(p => p.startsWith('part:'));
-      let displayName = name;
-      if (paramPart) {
-        displayName = paramPart.replace('parameter:', '');
-        if (partPart) {
-          displayName += '.' + partPart.replace('part:', '');
-        }
-      }
-      return { name, displayName };
+    // Filter target fields that have value types (exclude Resource type)
+    const targetValueFields = this.fields.filter(f => {
+      const profile = f.profiles?.[targetKey];
+      if (!profile) return false;
+      const types = profile.types || [];
+      // Exclude Resource types, include value types
+      const isResource = types.some(t => t === 'Resource' || t.endsWith('Resource'));
+      const hasValueType = types.some(t =>
+        ['string', 'code', 'boolean', 'integer', 'decimal', 'dateTime', 'date', 'time', 'uri', 'url', 'canonical', 'id', 'oid', 'uuid', 'Identifier', 'CodeableConcept', 'Coding', 'Quantity', 'Reference', 'Period', 'Ratio', 'HumanName', 'Address', 'ContactPoint', 'Attachment', 'Annotation', 'Signature'].includes(t)
+      );
+      return !isResource && (hasValueType || types.length === 0);
     });
 
-    // If no target fields found, create some defaults based on common patterns
-    if (this.targetResourceFields.length === 0) {
-      this.targetResourceFields = [
-        { name: 'Parameters.parameter:rxPrescription.part:medication.resource', displayName: 'rxPrescription.medication' },
-        { name: 'Parameters.parameter:rxPrescription.part:medicationRequest.resource', displayName: 'rxPrescription.medicationRequest' },
-        { name: 'Parameters.parameter:rxPrescription.part:practitioner.resource', displayName: 'rxPrescription.practitioner' },
-        { name: 'Parameters.parameter:rxPrescription.part:organization.resource', displayName: 'rxPrescription.organization' },
-      ];
+    // Build value mapping rows
+    this.valueMappings = targetValueFields.map(field => {
+      const parts = field.name.split('.');
+      const depth = parts.length - 1;
+
+      // Create display name
+      let targetName = parts[parts.length - 1];
+      // Clean up slice notation
+      targetName = targetName.replace(/:\w+$/, '');
+
+      // Check if has children (other fields that start with this field's name)
+      const hasChildren = this.fields.some(f =>
+        f.name !== field.name && f.name.startsWith(field.name + '.')
+      );
+
+      // Get existing copy_from source
+      const copyFromSource = field.other || null;
+
+      return {
+        targetField: field.name,
+        targetName: targetName,
+        targetPath: field.name,
+        action: field.action || null,
+        copyFromSource: copyFromSource,
+        originalAction: field.action || null,
+        originalCopyFromSource: copyFromSource,
+        hasChildren: hasChildren,
+        depth: depth
+      };
+    });
+
+    this.applyValueFilter();
+
+    // Store original state
+    this.originalValueMappings = JSON.stringify(this.valueMappings.map(v => ({
+      action: v.action,
+      copyFromSource: v.copyFromSource
+    })));
+  }
+
+  /**
+   * Build source field options from source profiles
+   */
+  private buildSourceFields(): void {
+    if (!this.transformation?.sources?.length) return;
+
+    // Build source resource fields from source profiles
+    this.sourceResourceFields = [];
+    this.sourceValueFields = [];
+
+    this.transformation.sources.forEach(source => {
+      const sourceKey = source.key || source.id;
+      if (!sourceKey) return;
+
+      this.fields.forEach(field => {
+        const profile = field.profiles?.[sourceKey];
+        if (!profile) return;
+
+        const types = profile.types || [];
+        const isResource = types.some(t => t === 'Resource' || t.endsWith('Resource')) ||
+                          field.name.toLowerCase().endsWith('.resource');
+
+        // Create display name
+        const parts = field.name.split('.');
+        let displayName = field.name;
+
+        if (isResource) {
+          const entryPart = parts.find(p => p.startsWith('entry:'));
+          if (entryPart) {
+            displayName = entryPart.replace('entry:', '') + '.resource';
+          }
+          this.sourceResourceFields.push({
+            name: field.name,
+            displayName: displayName,
+            profileKey: sourceKey
+          });
+        } else {
+          displayName = parts[parts.length - 1].replace(/:\w+$/, '');
+          this.sourceValueFields.push({
+            name: field.name,
+            displayName: displayName,
+            profileKey: sourceKey
+          });
+        }
+      });
+    });
+
+    // Remove duplicates
+    this.sourceResourceFields = this.sourceResourceFields.filter((v, i, a) =>
+      a.findIndex(t => t.name === v.name) === i
+    );
+    this.sourceValueFields = this.sourceValueFields.filter((v, i, a) =>
+      a.findIndex(t => t.name === v.name) === i
+    );
+  }
+
+  /**
+   * Apply resource type filter
+   */
+  applyResourceFilter(): void {
+    if (this.resourceFilterEnabled) {
+      // Filter to only show rows with Resource type assignments
+      this.filteredResourceMappings = this.resourceMappings;
+    } else {
+      this.filteredResourceMappings = this.resourceMappings;
     }
+  }
+
+  /**
+   * Apply value type filter
+   */
+  applyValueFilter(): void {
+    if (this.valueFilterEnabled) {
+      // Filter to show value type fields only
+      this.filteredValueMappings = this.valueMappings;
+    } else {
+      this.filteredValueMappings = this.valueMappings;
+    }
+  }
+
+  /**
+   * Toggle resource filter
+   */
+  onResourceFilterToggle(): void {
+    this.applyResourceFilter();
+  }
+
+  /**
+   * Toggle value filter
+   */
+  onValueFilterToggle(): void {
+    this.applyValueFilter();
   }
 
   loadAvailableMappings(): void {
-    // Die Mappings werden aus den gecachten Projekt-Daten oder über reload geholt
     const projectData = this.projectService.getProjectData();
     if (projectData && projectData.mappings) {
       this.availableMappings = projectData.mappings;
     } else {
-      // Falls keine gecachten Daten, Projekt neu laden
       this.projectService.reloadProjectData(this.projectKey)
         .pipe(catchError(err => {
           console.error('Error loading project', err);
@@ -297,51 +430,6 @@ export class TransformationDetailComponent implements OnInit {
     this.router.navigate(['/project', this.projectKey, 'mapping', mappingId]);
   }
 
-  linkMapping(fieldName: string, mappingId: string): void {
-    const linkRequest: TransformationMappingLinkRequest = {
-      mapping_id: mappingId
-    };
-    this.transformationService.linkMapping(this.projectKey, this.transformationId, fieldName, linkRequest)
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Mapping erfolgreich verknüpft', 'OK', { duration: 3000 });
-          this.loadTransformation();
-        },
-        error: (err) => {
-          console.error('Error linking mapping', err);
-          this.snackBar.open('Fehler beim Verknüpfen des Mappings', 'OK', { duration: 5000 });
-        }
-      });
-  }
-
-  unlinkMapping(fieldName: string): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Mapping-Verknüpfung entfernen',
-        message: 'Möchten Sie die Verknüpfung zu diesem Mapping wirklich entfernen?',
-        confirmText: 'Entfernen',
-        cancelText: 'Abbrechen'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.transformationService.unlinkMapping(this.projectKey, this.transformationId, fieldName)
-          .subscribe({
-            next: () => {
-              this.snackBar.open('Mapping-Verknüpfung entfernt', 'OK', { duration: 3000 });
-              this.loadTransformation();
-            },
-            error: (err) => {
-              console.error('Error unlinking mapping', err);
-              this.snackBar.open('Fehler beim Entfernen der Verknüpfung', 'OK', { duration: 5000 });
-            }
-          });
-      }
-    });
-  }
-
   getStatusClass(status: string): string {
     switch (status) {
       case 'active': return 'status-active';
@@ -357,10 +445,28 @@ export class TransformationDetailComponent implements OnInit {
     return mapping?.name || mappingId;
   }
 
+  // =====================
+  // Resource Tab Methods
+  // =====================
+
+  /**
+   * Called when a source resource is selected for a target row
+   */
+  onSourceResourceChanged(index: number, sourceField: string | null): void {
+    this.resourceMappings[index].sourceField = sourceField;
+    if (sourceField) {
+      const parts = sourceField.split('.');
+      const entryPart = parts.find(p => p.startsWith('entry:'));
+      this.resourceMappings[index].sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
+    } else {
+      this.resourceMappings[index].sourceName = null;
+    }
+  }
+
   /**
    * Called when a mapping is selected for a resource row
    */
-  onMappingChanged(index: number, mappingId: string | null): void {
+  onResourceMappingChanged(index: number, mappingId: string | null): void {
     this.resourceMappings[index].mappingId = mappingId;
     if (mappingId) {
       const mapping = this.availableMappings.find(m => m.id === mappingId);
@@ -371,29 +477,22 @@ export class TransformationDetailComponent implements OnInit {
   }
 
   /**
-   * Called when a target resource is selected for a resource row
+   * Check if there are unsaved resource changes
    */
-  onTargetChanged(index: number, targetField: string | null): void {
-    this.resourceMappings[index].targetField = targetField;
-  }
-
-  /**
-   * Check if there are unsaved changes
-   */
-  hasChanges(): boolean {
+  hasResourceChanges(): boolean {
     const currentState = JSON.stringify(this.resourceMappings.map(r => ({
-      mappingId: r.mappingId,
-      targetField: r.targetField
+      sourceField: r.sourceField,
+      mappingId: r.mappingId
     })));
     return currentState !== this.originalResourceMappings;
   }
 
   /**
-   * Save all changes to the backend
+   * Save resource mapping changes
    */
-  saveChanges(): void {
+  saveResourceChanges(): void {
     const changedRows = this.resourceMappings.filter(r =>
-      r.mappingId !== r.originalMappingId || r.targetField !== r.originalTargetField
+      r.sourceField !== r.originalSourceField || r.mappingId !== r.originalMappingId
     );
 
     if (changedRows.length === 0) {
@@ -405,83 +504,111 @@ export class TransformationDetailComponent implements OnInit {
     let errorCount = 0;
 
     changedRows.forEach(row => {
-      // If mapping was added or changed, or target field changed
-      if (row.mappingId && (row.mappingId !== row.originalMappingId || row.targetField !== row.originalTargetField)) {
-        const linkRequest: TransformationMappingLinkRequest = {
-          mapping_id: row.mappingId,
-          other: row.targetField || undefined
-        };
-        this.transformationService.linkMapping(
-          this.projectKey,
-          this.transformationId,
-          row.sourceField,
-          linkRequest
-        ).subscribe({
-          next: () => {
-            savedCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
-          },
-          error: (err: unknown) => {
-            console.error('Error saving mapping link', err);
-            errorCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
+      // Update the target field with the source reference and mapping
+      const updateRequest: TransformationFieldUpdateRequest = {
+        action: 'use',
+        other: row.sourceField || undefined,
+        map: row.mappingId || undefined
+      };
+
+      this.transformationService.updateTransformationField(
+        this.projectKey,
+        this.transformationId,
+        row.targetField,
+        updateRequest
+      ).subscribe({
+        next: () => {
+          savedCount++;
+          if (savedCount + errorCount === changedRows.length) {
+            this.onSaveComplete(savedCount, errorCount);
           }
-        });
-      }
-      // If mapping was removed
-      else if (!row.mappingId && row.originalMappingId) {
-        this.transformationService.unlinkMapping(
-          this.projectKey,
-          this.transformationId,
-          row.sourceField
-        ).subscribe({
-          next: () => {
-            savedCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
-          },
-          error: (err: unknown) => {
-            console.error('Error removing mapping link', err);
-            errorCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
+        },
+        error: (err: unknown) => {
+          console.error('Error saving resource mapping', err);
+          errorCount++;
+          if (savedCount + errorCount === changedRows.length) {
+            this.onSaveComplete(savedCount, errorCount);
           }
-        });
-      }
-      // If only target field changed (update via updateTransformationField)
-      else if (row.targetField !== row.originalTargetField) {
-        this.transformationService.updateTransformationField(
-          this.projectKey,
-          this.transformationId,
-          row.sourceField,
-          {
-            action: 'use',
-            other: row.targetField || undefined,
-            map: row.mappingId || undefined
-          }
-        ).subscribe({
-          next: () => {
-            savedCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
-          },
-          error: (err: unknown) => {
-            console.error('Error updating field', err);
-            errorCount++;
-            if (savedCount + errorCount === changedRows.length) {
-              this.onSaveComplete(savedCount, errorCount);
-            }
-          }
-        });
-      }
+        }
+      });
     });
+  }
+
+  // =====================
+  // Value Tab Methods
+  // =====================
+
+  /**
+   * Called when a copy_from source is selected for a value row
+   */
+  onValueCopyFromChanged(index: number, sourceField: string | null): void {
+    this.valueMappings[index].copyFromSource = sourceField;
+    if (sourceField) {
+      this.valueMappings[index].action = 'copy_from';
+    }
+  }
+
+  /**
+   * Check if there are unsaved value changes
+   */
+  hasValueChanges(): boolean {
+    const currentState = JSON.stringify(this.valueMappings.map(v => ({
+      action: v.action,
+      copyFromSource: v.copyFromSource
+    })));
+    return currentState !== this.originalValueMappings;
+  }
+
+  /**
+   * Save value mapping changes
+   */
+  saveValueChanges(): void {
+    const changedRows = this.valueMappings.filter(v =>
+      v.action !== v.originalAction || v.copyFromSource !== v.originalCopyFromSource
+    );
+
+    if (changedRows.length === 0) {
+      this.snackBar.open('Keine Änderungen zum Speichern', 'OK', { duration: 2000 });
+      return;
+    }
+
+    let savedCount = 0;
+    let errorCount = 0;
+
+    changedRows.forEach(row => {
+      const updateRequest: TransformationFieldUpdateRequest = {
+        action: row.action || 'copy_from',
+        other: row.copyFromSource || undefined
+      };
+
+      this.transformationService.updateTransformationField(
+        this.projectKey,
+        this.transformationId,
+        row.targetField,
+        updateRequest
+      ).subscribe({
+        next: () => {
+          savedCount++;
+          if (savedCount + errorCount === changedRows.length) {
+            this.onSaveComplete(savedCount, errorCount);
+          }
+        },
+        error: (err: unknown) => {
+          console.error('Error saving value mapping', err);
+          errorCount++;
+          if (savedCount + errorCount === changedRows.length) {
+            this.onSaveComplete(savedCount, errorCount);
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Check if there are any unsaved changes (either tab)
+   */
+  hasChanges(): boolean {
+    return this.hasResourceChanges() || this.hasValueChanges();
   }
 
   private onSaveComplete(savedCount: number, errorCount: number): void {
@@ -500,5 +627,14 @@ export class TransformationDetailComponent implements OnInit {
     }
     // Reload to get fresh state
     this.loadTransformation();
+  }
+
+  /**
+   * Get indent style for nested value fields
+   */
+  getIndentStyle(depth: number): { [key: string]: string } {
+    return {
+      'padding-left': `${depth * 20}px`
+    };
   }
 }
