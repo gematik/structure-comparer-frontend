@@ -1,0 +1,129 @@
+/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+mat-dialog-content {
+  min-width: 600px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+h3 {
+  margin: 20px 0 8px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.hint {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Form rows */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.field-wide {
+  flex: 2;
+}
+
+.field-narrow {
+  flex: 1;
+  max-width: 150px;
+}
+
+.field-medium {
+  flex: 1;
+  max-width: 200px;
+}
+
+.field-full {
+  width: 100%;
+}
+
+/* Source and target profile containers */
+.source-profiles-container,
+.target-profile-container {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.source-profile-row,
+.target-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.source-selector,
+.target-selector {
+  flex: 1;
+  min-width: 300px;
+}
+
+.selected-url {
+  font-size: 0.8rem;
+  color: #666;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.button-group {
+  display: flex;
+  gap: 4px;
+}
+
+.mat-icon-button-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.button-spacer-small {
+  width: 32px;
+  height: 32px;
+}
+
+/* Group toggle styling */
+.group-toggle {
+  padding: 8px 16px;
+  cursor: pointer;
+  background: #f0f0f0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.group-toggle:hover {
+  background: #e8e8e8;
+}
+
+.group-toggle strong {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Dialog actions */
+mat-dialog-actions {
+  padding: 16px 24px;
+  margin: 0;
+}

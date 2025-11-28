@@ -1,0 +1,252 @@
+/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.section-heading {
+  margin: 30px 0 10px;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.section-description {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+/* Modern Table Styles */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table th {
+  background: #f8f9fa;
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 0.9rem;
+}
+
+.modern-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0;
+  color: #555;
+}
+
+.modern-table tr:last-child td {
+  border-bottom: none;
+}
+
+.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.clickable:hover {
+  background: #e8e8e8;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.clickable-row:hover {
+  background-color: #f5f5f5;
+}
+
+.hover-highlight:hover {
+  background-color: #e3f2fd;
+}
+
+/* Column widths */
+.col-wide {
+  width: 35%;
+}
+
+.col-narrow {
+  width: 13%;
+  text-align: center;
+}
+
+.center-text {
+  text-align: center;
+}
+
+/* Transformation name and profiles */
+.transformation-name {
+  font-weight: 500;
+  color: #1976d2;
+  margin-bottom: 4px;
+}
+
+.transformation-profiles {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+
+.profile-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.profile-badge.source {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile-badge.target {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.arrow-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+  color: #999;
+}
+
+/* Version badge */
+.version-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: #f5f5f5;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-draft {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-published {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-deprecated {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Pill styles (for counts) */
+.pill {
+  display: inline-block;
+  min-width: 32px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.pill--total {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.pill--success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.pill--warning {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+/* Button styles */
+.mat-icon-button-sm {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.mat-icon-button-sm .mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.empty-state .empty-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #1976d2;
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px;
+  color: #333;
+  font-weight: 500;
+}
+
+.empty-state p {
+  color: #666;
+  margin: 0 0 20px;
+  max-width: 400px;
+}
+
+.empty-state button mat-icon {
+  margin-right: 8px;
+}

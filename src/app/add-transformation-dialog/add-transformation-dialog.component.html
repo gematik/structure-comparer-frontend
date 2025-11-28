@@ -1,0 +1,154 @@
+<h2 mat-dialog-title>Neue Transformation erstellen</h2>
+
+<mat-dialog-content>
+  <!-- Name and Version -->
+  <div class="form-row">
+    <mat-form-field appearance="fill" class="field-wide">
+      <mat-label>Name *</mat-label>
+      <input matInput [(ngModel)]="name" placeholder="z.B. Bundle-zu-Medication Transformation">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="field-narrow">
+      <mat-label>Version *</mat-label>
+      <input matInput [(ngModel)]="version" placeholder="1.0.0">
+    </mat-form-field>
+  </div>
+
+  <!-- Status -->
+  <div class="form-row">
+    <mat-form-field appearance="fill" class="field-medium">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="status">
+        <mat-option *ngFor="let opt of statusOptions" [value]="opt">
+          {{ opt }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Description -->
+  <div class="form-row">
+    <mat-form-field appearance="fill" class="field-full">
+      <mat-label>Beschreibung</mat-label>
+      <textarea matInput [(ngModel)]="description" rows="3"
+                placeholder="Optionale Beschreibung der Transformation"></textarea>
+    </mat-form-field>
+  </div>
+
+  <!-- Source Profiles -->
+  <div class="source-profiles-container">
+    <h3>Source Profile(s) *</h3>
+    <p class="hint">Die Quell-Profile aus denen Daten transformiert werden.</p>
+
+    <div *ngFor="let source of sourceProfiles; let i = index; trackBy: trackByIndex" class="source-profile-row">
+      <mat-form-field appearance="fill" class="source-selector">
+        <mat-label>Source-Profil {{i + 1}}</mat-label>
+        <mat-select (selectionChange)="onSourceProfileSelected(i, $event.value)">
+          <ng-container *ngFor="let group of packageGroups">
+            <div
+              class="group-toggle"
+              (click)="toggleGroup(group.package); $event.stopPropagation()"
+              role="option"
+              tabindex="0"
+            >
+              <strong>
+                {{ group.package }}
+                {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
+              </strong>
+            </div>
+
+            <ng-container *ngIf="!isGroupCollapsed(group.package)">
+              <mat-option
+                *ngFor="let profile of group.profiles"
+                [value]="profile.key"
+              >
+                {{ profile.name }}
+              </mat-option>
+            </ng-container>
+          </ng-container>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Display selected URL -->
+      <span class="selected-url" *ngIf="source.url">{{ source.url }}</span>
+
+      <div class="button-group">
+        <button
+          *ngIf="sourceProfiles.length > 1"
+          mat-icon-button
+          color="warn"
+          (click)="removeSourceProfile(i)"
+          type="button"
+          title="Quell-Profil entfernen"
+          class="mat-icon-button-sm"
+        >
+          <mat-icon>remove</mat-icon>
+        </button>
+
+        <div *ngIf="sourceProfiles.length <= 1" class="button-spacer-small"></div>
+
+        <button
+          *ngIf="i === sourceProfiles.length - 1"
+          mat-icon-button
+          color="primary"
+          (click)="addSourceProfile()"
+          type="button"
+          title="Weiteres Quell-Profil hinzufügen"
+          class="mat-icon-button-sm"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+
+        <div *ngIf="i !== sourceProfiles.length - 1" class="button-spacer-small"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Target Profile -->
+  <div class="target-profile-container">
+    <h3>Target Profile *</h3>
+    <p class="hint">Das Ziel-Profil in das Daten transformiert werden.</p>
+
+    <div class="target-profile-row">
+      <mat-form-field appearance="fill" class="target-selector">
+        <mat-label>Target-Profil</mat-label>
+        <mat-select (selectionChange)="onTargetProfileSelected($event.value)">
+          <ng-container *ngFor="let group of packageGroups">
+            <div
+              class="group-toggle"
+              (click)="toggleGroup(group.package); $event.stopPropagation()"
+              role="option"
+              tabindex="0"
+            >
+              <strong>
+                {{ group.package }}
+                {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
+              </strong>
+            </div>
+
+            <ng-container *ngIf="!isGroupCollapsed(group.package)">
+              <mat-option
+                *ngFor="let profile of group.profiles"
+                [value]="profile.key"
+              >
+                {{ profile.name }}
+              </mat-option>
+            </ng-container>
+          </ng-container>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Display selected URL -->
+      <span class="selected-url" *ngIf="targetProfile.url">{{ targetProfile.url }}</span>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="loading">Abbrechen</button>
+  <button mat-raised-button color="primary" (click)="save()"
+          [disabled]="!isFormValid() || loading">
+    <span *ngIf="!loading">Erstellen</span>
+    <span *ngIf="loading">Erstelle...</span>
+  </button>
+</mat-dialog-actions>

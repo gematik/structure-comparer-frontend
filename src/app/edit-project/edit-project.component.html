@@ -167,6 +167,16 @@
   >
   </app-mapping-list>
 
+  <!-- Transformation List Component -->
+  <app-transformation-list
+    [transformations]="transformations"
+    [projectKey]="projectKey"
+    (transformationViewed)="onTransformationViewed($event)"
+    (transformationDeleted)="onTransformationDeleted($event)"
+    (transformationCreated)="onTransformationCreated($event)"
+  >
+  </app-transformation-list>
+
   <!-- Manual Entries Import Section -->
   <div class="manual-entries-import-card mat-elevation-z2">
     <div class="import-card-header">

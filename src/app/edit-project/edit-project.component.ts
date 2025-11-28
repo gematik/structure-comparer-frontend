@@ -53,7 +53,12 @@ import { EditProjectMetadataDialogComponent, EditProjectMetadataDialogData, Edit
 import { PackageListComponent } from '../shared/package-list/package-list.component';
 import { ComparisonListComponent } from '../shared/comparison-list/comparison-list.component';
 import { MappingListComponent } from '../shared/mapping-list/mapping-list.component';
+import { TransformationListComponent } from '../shared/transformation-list/transformation-list.component';
 import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overlay.component';
+
+// Import Transformation models and service
+import { Transformation } from '../models/transformation.model';
+import { TransformationService } from '../transformation.service';
 
 
 
@@ -70,6 +75,7 @@ import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overl
     PackageListComponent,
     ComparisonListComponent,
     MappingListComponent,
+    TransformationListComponent,
     LoadingOverlayComponent
   ],
   templateUrl: './edit-project.component.html',
@@ -81,6 +87,7 @@ export class EditProjectComponent implements OnInit {
   packages: Package[] = [];
   comparisons: Comparison[] = [];
   mappings: Mapping[] = [];
+  transformations: Transformation[] = [];
 
   // Project identification
   projectName: string = '';
@@ -130,11 +137,26 @@ export class EditProjectComponent implements OnInit {
     this.refreshProjectData();
   }
 
+  // Transformation event handlers
+  onTransformationViewed(transformationId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'transformation', transformationId]);
+  }
+
+  onTransformationDeleted(event: { id: string; name: string }): void {
+    this.transformations = this.transformations.filter(t => t.id !== event.id);
+    console.log(`Transformation ${event.name} deleted`);
+  }
+
+  onTransformationCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private projectService: ProjectService,
     private comparisonService: ComparisonService,
+    private transformationService: TransformationService,
     private router: Router,
     private dialog: MatDialog,
     private packageService: PackageService,
@@ -163,10 +185,29 @@ export class EditProjectComponent implements OnInit {
       this.packages = this.projectData.packages;
       this.comparisons = this.projectData.comparisons;
 
+      // Load transformations from API
+      this.loadTransformations();
+
       this.hydrateCounts();
     } else {
       console.error('Project data could not be loaded!');
     }
+  }
+
+  /**
+   * Loads transformations for the current project from the API
+   */
+  private loadTransformations(): void {
+    this.transformationService.getTransformations(this.projectKey).subscribe({
+      next: (transformations) => {
+        this.transformations = transformations;
+        console.log('Transformations loaded:', transformations.length);
+      },
+      error: (err) => {
+        console.error('Error loading transformations:', err);
+        this.transformations = [];
+      }
+    });
   }
 
   /**
@@ -417,6 +458,9 @@ export class EditProjectComponent implements OnInit {
       this.mappings = data.mappings;
       this.packages = data.packages;
       this.comparisons = data.comparisons;
+
+      // Reload transformations
+      this.loadTransformations();
 
       this.hydrateCounts();
       console.log('Project data refreshed successfully');
