@@ -39,6 +39,7 @@ import { ProjectService } from '../project.service';
 import { Transformation, TransformationField, MappingReference, TransformationFieldUpdateRequest, TransformationMappingLinkRequest } from '../models/transformation.model';
 import { Mapping, MappingAction } from '../models/mapping.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { FilterBarComponent } from '../shared/filter-bar/filter-bar.component';
 
 /**
  * A single source mapping entry (source resource + mapping)
@@ -59,6 +60,7 @@ interface ResourceMappingRow {
   targetName: string;
   sourceMappings: SourceMappingEntry[];
   originalSourceMappings: SourceMappingEntry[];
+  isResourceField: boolean;  // true if this is a .resource field
 }
 
 /**
@@ -75,6 +77,7 @@ interface ValueMappingRow {
   originalCopyFromSource: string | null;
   hasChildren: boolean;
   depth: number;
+  isValueXField: boolean;  // true if this is a .value[x] field
 }
 
 /**
@@ -102,7 +105,8 @@ interface SourceFieldOption {
     MatFormFieldModule,
     MatTabsModule,
     MatSlideToggleModule,
-    MatInputModule
+    MatInputModule,
+    FilterBarComponent
   ],
   templateUrl: './transformation-detail.component.html',
   styleUrls: ['./transformation-detail.component.css']
@@ -130,9 +134,13 @@ export class TransformationDetailComponent implements OnInit {
   filteredValueMappings: ValueMappingRow[] = [];
   sourceValueFields: SourceFieldOption[] = [];
 
-  // Quickfilter states (default enabled)
+  // Quickfilter states (default enabled to show only Resource types / Value types)
   resourceFilterEnabled = true;
   valueFilterEnabled = true;
+
+  // Text filter for searching source and target resources
+  resourceTextFilter = '';
+  valueTextFilter = '';
 
   // Track original state for change detection
   private originalResourceMappings: string = '';
@@ -324,15 +332,15 @@ export class TransformationDetailComponent implements OnInit {
       }
     });
 
-    // Find TARGET resource fields (Parameters.*.resource) for display
-    const targetResourceFields = this.fields.filter(f => {
+    // Find ALL TARGET fields for display (filter will narrow down)
+    const allTargetFields = this.fields.filter(f => {
       const isTargetField = f.name.startsWith(targetResourceType + '.');
-      const isResourceField = f.name.toLowerCase().endsWith('.resource');
-      return isTargetField && isResourceField;
+      return isTargetField;
     });
 
-    console.log('Target resource fields:', targetResourceFields.length);
-    targetResourceFields.forEach(f => console.log('  Target:', f.name));
+    console.log('All target fields:', allTargetFields.length);
+    const targetResourceFieldsCount = allTargetFields.filter(f => f.name.toLowerCase().endsWith('.resource')).length;
+    console.log('Target resource fields:', targetResourceFieldsCount);
 
     // Build a map: target field -> ALL source fields that map to it (multiple sources per target!)
     const targetToSourceMap = new Map<string, SourceMappingEntry[]>();
@@ -366,18 +374,24 @@ export class TransformationDetailComponent implements OnInit {
 
     console.log('Target to source mapping:', Array.from(targetToSourceMap.entries()));
 
-    // Build target resource rows with multiple sources per target
-    this.resourceMappings = targetResourceFields.map(field => {
+    // Build target rows for ALL fields (filter will narrow down to resource types if enabled)
+    this.resourceMappings = allTargetFields.map(field => {
       const parts = field.name.split('.');
       const paramPart = parts.find(p => p.startsWith('parameter:'));
       const partPart = parts.find(p => p.startsWith('part:'));
+      const isResourceField = field.name.toLowerCase().endsWith('.resource');
+
       let targetDisplayName = field.name;
       if (paramPart) {
         targetDisplayName = paramPart.replace('parameter:', '');
         if (partPart) {
           targetDisplayName += '.' + partPart.replace('part:', '');
         }
-        targetDisplayName += '.resource';
+        // Add the last part of the field name
+        const lastPart = parts[parts.length - 1];
+        if (!targetDisplayName.endsWith(lastPart)) {
+          targetDisplayName += '.' + lastPart.replace(/:\w+$/, '');
+        }
       }
 
       // Get ALL existing source mappings for this target
@@ -392,7 +406,8 @@ export class TransformationDetailComponent implements OnInit {
         targetField: field.name,
         targetName: targetDisplayName,
         sourceMappings: sourceMappings,
-        originalSourceMappings: JSON.parse(JSON.stringify(sourceMappings))
+        originalSourceMappings: JSON.parse(JSON.stringify(sourceMappings)),
+        isResourceField: isResourceField
       };
     });
 
@@ -414,26 +429,31 @@ export class TransformationDetailComponent implements OnInit {
    * Build the value mappings from TARGET fields that have value types (not Resource)
    */
   private buildValueMappings(): void {
-    const targetKey = this.transformation?.target?.key || this.transformation?.target?.id;
-    if (!targetKey) return;
+    // Use the same target resource type detection as buildResourceMappings
+    const targetName = this.transformation?.target?.name || '';
+    const targetResourceType = targetName.includes('Parameters') ? 'Parameters' : targetName.split('_')[0];
 
-    // Filter target fields that have value types (exclude Resource type)
+    if (!targetResourceType) return;
+
+    // Filter target fields (exclude Resource type fields)
+    // Use name-based filtering like buildResourceMappings for consistency
     const targetValueFields = this.fields.filter(f => {
-      const profile = f.profiles?.[targetKey];
-      if (!profile) return false;
-      const types = profile.types || [];
-      // Exclude Resource types, include value types
-      const isResource = types.some(t => t === 'Resource' || t.endsWith('Resource'));
-      const hasValueType = types.some(t =>
-        ['string', 'code', 'boolean', 'integer', 'decimal', 'dateTime', 'date', 'time', 'uri', 'url', 'canonical', 'id', 'oid', 'uuid', 'Identifier', 'CodeableConcept', 'Coding', 'Quantity', 'Reference', 'Period', 'Ratio', 'HumanName', 'Address', 'ContactPoint', 'Attachment', 'Annotation', 'Signature'].includes(t)
-      );
-      return !isResource && (hasValueType || types.length === 0);
+      // Must be a target field (starts with target resource type)
+      const isTargetField = f.name.startsWith(targetResourceType + '.');
+      if (!isTargetField) return false;
+
+      // Exclude Resource type fields (.resource suffix)
+      const isResourceField = f.name.toLowerCase().endsWith('.resource');
+      return !isResourceField;
     });
 
     // Build value mapping rows
     this.valueMappings = targetValueFields.map(field => {
       const parts = field.name.split('.');
       const depth = parts.length - 1;
+
+      // Check if this is a value[x] type field
+      const isValueXField = field.name.endsWith('.value[x]');
 
       // Create display name
       let targetName = parts[parts.length - 1];
@@ -457,7 +477,8 @@ export class TransformationDetailComponent implements OnInit {
         originalAction: field.action || null,
         originalCopyFromSource: copyFromSource,
         hasChildren: hasChildren,
-        depth: depth
+        depth: depth,
+        isValueXField: isValueXField
       };
     });
 
@@ -472,26 +493,99 @@ export class TransformationDetailComponent implements OnInit {
 
   /**
    * Apply resource type filter
+   * When enabled: Only show rows that are Resource type fields (.resource)
+   * When disabled: Show all target fields
+   * Also applies text filter for source and target resources
    */
   applyResourceFilter(): void {
+    let filtered = this.resourceMappings;
+
+    // Apply type filter
     if (this.resourceFilterEnabled) {
-      // Filter to only show rows with Resource type assignments
-      this.filteredResourceMappings = this.resourceMappings;
-    } else {
-      this.filteredResourceMappings = this.resourceMappings;
+      // Filter to only show Resource type fields
+      filtered = filtered.filter(row => row.isResourceField);
     }
+
+    // Apply text filter
+    if (this.resourceTextFilter.trim()) {
+      const searchTerm = this.resourceTextFilter.toLowerCase().trim();
+      filtered = filtered.filter(row => {
+        // Check target field name
+        const targetMatches = row.targetField.toLowerCase().includes(searchTerm) ||
+                              row.targetName.toLowerCase().includes(searchTerm);
+
+        // Check source field names
+        const sourceMatches = row.sourceMappings.some(s =>
+          (s.sourceField?.toLowerCase().includes(searchTerm)) ||
+          (s.sourceName?.toLowerCase().includes(searchTerm))
+        );
+
+        return targetMatches || sourceMatches;
+      });
+    }
+
+    this.filteredResourceMappings = filtered;
   }
 
   /**
    * Apply value type filter
+   * When enabled: Only show rows that are value[x] type fields
+   * When disabled: Show all target fields
+   * Also applies text filter
    */
   applyValueFilter(): void {
+    let filtered = this.valueMappings;
+
+    // Apply type filter
     if (this.valueFilterEnabled) {
-      // Filter to show value type fields only
-      this.filteredValueMappings = this.valueMappings;
-    } else {
-      this.filteredValueMappings = this.valueMappings;
+      // Filter to show only value[x] type fields
+      filtered = filtered.filter(v => v.isValueXField);
     }
+
+    // Apply text filter
+    if (this.valueTextFilter.trim()) {
+      const searchTerm = this.valueTextFilter.toLowerCase().trim();
+      filtered = filtered.filter(v => {
+        return v.targetField.toLowerCase().includes(searchTerm) ||
+               v.targetName.toLowerCase().includes(searchTerm) ||
+               v.targetPath.toLowerCase().includes(searchTerm) ||
+               (v.copyFromSource?.toLowerCase().includes(searchTerm));
+      });
+    }
+
+    this.filteredValueMappings = filtered;
+  }
+
+  /**
+   * Called when resource text filter changes
+   */
+  onResourceTextFilterChange(text: string): void {
+    this.resourceTextFilter = text;
+    this.applyResourceFilter();
+  }
+
+  /**
+   * Called when value text filter changes
+   */
+  onValueTextFilterChange(text: string): void {
+    this.valueTextFilter = text;
+    this.applyValueFilter();
+  }
+
+  /**
+   * Clear resource text filter
+   */
+  clearResourceTextFilter(): void {
+    this.resourceTextFilter = '';
+    this.applyResourceFilter();
+  }
+
+  /**
+   * Clear value text filter
+   */
+  clearValueTextFilter(): void {
+    this.valueTextFilter = '';
+    this.applyValueFilter();
   }
 
   /**
@@ -502,9 +596,25 @@ export class TransformationDetailComponent implements OnInit {
   }
 
   /**
+   * Called when resource filter toggle changes (from FilterBarComponent)
+   */
+  onResourceFilterToggleChange(enabled: boolean): void {
+    this.resourceFilterEnabled = enabled;
+    this.applyResourceFilter();
+  }
+
+  /**
    * Toggle value filter
    */
   onValueFilterToggle(): void {
+    this.applyValueFilter();
+  }
+
+  /**
+   * Called when value filter toggle changes (from FilterBarComponent)
+   */
+  onValueFilterToggleChange(enabled: boolean): void {
+    this.valueFilterEnabled = enabled;
     this.applyValueFilter();
   }
 

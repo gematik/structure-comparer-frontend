@@ -86,15 +86,16 @@
           </ng-template>
 
           <div class="tab-content">
-            <!-- Quickfilter -->
-            <div class="filter-bar">
-              <mat-slide-toggle
-                [(ngModel)]="resourceFilterEnabled"
-                (change)="onResourceFilterToggle()"
-                color="primary">
-                Nur Resource-Typen anzeigen
-              </mat-slide-toggle>
-            </div>
+            <!-- Filter Bar Component -->
+            <app-filter-bar
+              [toggleLabel]="'Nur Resource-Typen anzeigen'"
+              [toggleEnabled]="resourceFilterEnabled"
+              [searchLabel]="'Suche in Quell-/Ziel-Ressourcen'"
+              [searchPlaceholder]="'z.B. Medication, entry:...'"
+              [searchText]="resourceTextFilter"
+              (toggleChange)="onResourceFilterToggleChange($event)"
+              (searchTextChange)="onResourceTextFilterChange($event)">
+            </app-filter-bar>
 
             <p class="description">
               Ordnen Sie den Ziel-Ressourcen die entsprechenden Quell-Ressourcen und Mappings zu.
@@ -220,15 +221,16 @@
           </ng-template>
 
           <div class="tab-content">
-            <!-- Quickfilter -->
-            <div class="filter-bar">
-              <mat-slide-toggle
-                [(ngModel)]="valueFilterEnabled"
-                (change)="onValueFilterToggle()"
-                color="primary">
-                Nur Value-Typen anzeigen
-              </mat-slide-toggle>
-            </div>
+            <!-- Filter Bar Component -->
+            <app-filter-bar
+              [toggleLabel]="'Nur value[x]-Typen anzeigen'"
+              [toggleEnabled]="valueFilterEnabled"
+              [searchLabel]="'Suche in Feldern'"
+              [searchPlaceholder]="'z.B. code, value...'"
+              [searchText]="valueTextFilter"
+              (toggleChange)="onValueFilterToggleChange($event)"
+              (searchTextChange)="onValueTextFilterChange($event)">
+            </app-filter-bar>
 
             <p class="description">
               Definieren Sie copy_from Zuordnungen für die Werte des Ziel-Profils.

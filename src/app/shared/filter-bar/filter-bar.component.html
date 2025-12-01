@@ -1,0 +1,26 @@
+<div class="filter-bar">
+  <!-- Toggle Filter -->
+  <mat-slide-toggle
+    [checked]="toggleEnabled"
+    (change)="onToggleChange($event.checked)"
+    color="primary">
+    {{ toggleLabel }}
+  </mat-slide-toggle>
+
+  <!-- Text Search Filter -->
+  <mat-form-field appearance="outline" class="text-filter">
+    <mat-label>{{ searchLabel }}</mat-label>
+    <input matInput
+           [ngModel]="searchText"
+           (ngModelChange)="onSearchTextChange($event)"
+           [placeholder]="searchPlaceholder">
+    <button *ngIf="searchText"
+            matSuffix
+            mat-icon-button
+            aria-label="Filter löschen"
+            (click)="clearSearch()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <mat-icon matSuffix *ngIf="!searchText">search</mat-icon>
+  </mat-form-field>
+</div>
