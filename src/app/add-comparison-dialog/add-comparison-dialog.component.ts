@@ -19,7 +19,7 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 import { Component, Inject } from '@angular/core';
-import { Profile } from '../models/profile.model'; 
+import { Profile } from '../models/profile.model';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
@@ -44,7 +44,7 @@ import { GroupedSelectComponent, GroupedSelectOption } from '../shared/grouped-s
   styleUrl: './add-comparison-dialog.component.css'
 })
 export class AddComparisonDialogComponent {
-  
+
   // The key of the project being worked with
   projectKey: string;
   // Array of source profile keys (can select multiple sources)
@@ -53,7 +53,7 @@ export class AddComparisonDialogComponent {
   targetProfileKey = '';
   // Set to track which package groups are collapsed in the UI
   collapsedGroups = new Set<string>();
-  
+
   // Profiles grouped by package name for organized display
   packageGroups: { package: string; profiles: Profile[] }[] = [];
 
@@ -182,7 +182,7 @@ export class AddComparisonDialogComponent {
   save(): void {
     // Filter out empty profile keys to ensure only valid selections are returned
     const validSourceProfileKeys = this.sourceProfileKeys.filter(key => key.trim() !== '');
-    
+
     this.dialogRef.close({
       sourceProfileKeys: validSourceProfileKeys,
       targetProfileKey: this.targetProfileKey

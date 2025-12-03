@@ -338,7 +338,7 @@ export class FilterableFieldSelectComponent implements OnInit, OnChanges, OnDest
 
   private updateCachedOptions(): void {
     this.cachedOptions = this.options.map(opt => this.convertToSelectableOption(opt));
-    
+
     if (this.filterZeroCardinality) {
       this.cachedOptions = this.cachedOptions.filter(opt => !opt.excluded);
     }
@@ -348,7 +348,7 @@ export class FilterableFieldSelectComponent implements OnInit, OnChanges, OnDest
     const maxCard = opt.cardinalityMax;
     const isExcluded = maxCard === 0 || maxCard === '0';
     const badge = this.formatCardinality(opt.cardinalityMin, opt.cardinalityMax);
-    
+
     return {
       value: opt.name,
       label: opt.name,

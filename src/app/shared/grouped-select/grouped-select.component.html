@@ -7,19 +7,19 @@
          (ngModelChange)="onInputChange($event)"
          [matAutocomplete]="auto"
          [required]="required">
-  
+
   @if (inputValue) {
     <button matSuffix mat-icon-button (click)="clear()" type="button" aria-label="Auswahl löschen">
       <mat-icon>close</mat-icon>
     </button>
   }
-  
-  <mat-autocomplete #auto="matAutocomplete" 
+
+  <mat-autocomplete #auto="matAutocomplete"
                     autoActiveFirstOption
                     class="grouped-autocomplete">
     @for (group of filteredGroups; track trackByGroupName($index, group)) {
       <!-- Group Header (clickable to toggle) -->
-      <div class="group-header" 
+      <div class="group-header"
            (click)="toggleGroup(group.name, $event)"
            (keydown.enter)="toggleGroup(group.name, $event)"
            (keydown.space)="toggleGroup(group.name, $event)"
@@ -41,7 +41,7 @@
         }
       }
     }
-    
+
     @if (filteredGroups.length === 0 && inputValue) {
       <mat-option disabled class="no-results">
         Keine Ergebnisse für "{{ inputValue }}"

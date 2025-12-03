@@ -5,7 +5,7 @@
   <!-- Source Profile Selection -->
   <div class="source-profiles-container">
     <h3>Source Profiles</h3>
-    
+
     <div *ngFor="let sourceKey of sourceProfileKeys; let i = index; trackBy: trackByIndex" class="source-profile-row">
       <app-grouped-select
         class="wide source-selector"
@@ -14,13 +14,13 @@
         [value]="sourceProfileKeys[i]"
         (valueChange)="sourceProfileKeys[i] = $event || ''">
       </app-grouped-select>
-      
+
       <div class="button-group">
         <!-- Remove button (only show if more than one selector) -->
-        <button 
+        <button
           *ngIf="sourceProfileKeys.length > 1"
-          mat-icon-button 
-          color="warn" 
+          mat-icon-button
+          color="warn"
           (click)="removeSourceProfileSelector(i)"
           type="button"
           title="Remove this source profile"
@@ -28,15 +28,15 @@
         >
           <mat-icon>remove</mat-icon>
         </button>
-        
+
         <!-- Invisible spacer when remove button is not shown to maintain alignment -->
         <div *ngIf="sourceProfileKeys.length <= 1" class="button-spacer-small"></div>
-        
+
         <!-- Add button (only show on the last item) -->
-        <button 
+        <button
           *ngIf="i === sourceProfileKeys.length - 1"
-          mat-icon-button 
-          color="primary" 
+          mat-icon-button
+          color="primary"
           (click)="addSourceProfileSelector()"
           type="button"
           title="Add another source profile"
@@ -44,7 +44,7 @@
         >
           <mat-icon>add</mat-icon>
         </button>
-        
+
         <!-- Invisible spacer when add button is not shown to maintain alignment -->
         <div *ngIf="i !== sourceProfileKeys.length - 1" class="button-spacer-small"></div>
       </div>
@@ -60,7 +60,7 @@
       [value]="targetProfileKey"
       (valueChange)="targetProfileKey = $event || ''">
     </app-grouped-select>
-    
+
     <!-- Empty spacer to maintain alignment with source profile rows -->
     <div class="button-spacer"></div>
   </div>

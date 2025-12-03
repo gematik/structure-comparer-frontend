@@ -19,7 +19,7 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 import { Component, Inject } from '@angular/core';
-import { Profile } from '../models/profile.model'; 
+import { Profile } from '../models/profile.model';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
@@ -42,7 +42,7 @@ export class AddMappingDialogComponent {
   sourceProfileKeys: string[] = [''];
   targetProfileKey = '';
   collapsedGroups = new Set<string>();
-  
+
   packageGroups: { package: string; profiles: Profile[] }[] = [];
   profileOptions: GroupedSelectOption[] = [];
 
@@ -55,10 +55,10 @@ export class AddMappingDialogComponent {
   }
 
   ngOnInit() {
-    
+
    this.loadProfiles(this.projectKey);
-   
-   
+
+
   }
 
   groupProfilesByPackage(profiles: Profile[]) {
@@ -85,13 +85,13 @@ export class AddMappingDialogComponent {
   }
 
   loadProfiles(projectKey: string) {
-    
+
     console.log('Lade Profile fÃ¼r Projekt:', projectKey);
     this.projectService.getProjectProfiles(projectKey).subscribe(
       (profiles) => {
         console.log('Profile geladen:', profiles);
         this.groupProfilesByPackage(profiles.profiles);
-       
+
       },
       (error) => {
         console.error('Fehler beim Laden der Profile:', error);
@@ -133,7 +133,7 @@ trackByIndex(index: number): number {
   save(): void {
     // Filter out empty profile keys
     const validSourceProfileKeys = this.sourceProfileKeys.filter(key => key.trim() !== '');
-    
+
     this.dialogRef.close({
       sourceProfileKeys: validSourceProfileKeys,
       targetProfileKey: this.targetProfileKey

@@ -116,7 +116,7 @@ export class AddTransformationDialogComponent implements OnInit {
       package: pkg,
       profiles
     }));
-    
+
     // Build profile options for grouped select
     this.profileOptions = profiles.map(profile => ({
       value: profile.key,
