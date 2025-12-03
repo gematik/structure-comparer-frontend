@@ -355,12 +355,18 @@ export class TransformationDetailComponent implements OnInit {
         ? existingSourceMappings.map(m => ({ ...m }))
         : [{ sourceField: null, sourceName: null, mappingId: null, mappingName: null }];
 
+      // Extract cardinality from field (use source_min/max as these represent the target field's cardinality)
+      const targetCardinalityMin = field.source_min ?? null;
+      const targetCardinalityMax = field.source_max ?? null;
+
       return {
         targetField: field.name,
         targetName: targetDisplayName,
         sourceMappings: sourceMappings,
         originalSourceMappings: JSON.parse(JSON.stringify(sourceMappings)),
-        isResourceField: isResourceField
+        isResourceField: isResourceField,
+        targetCardinalityMin: targetCardinalityMin,
+        targetCardinalityMax: targetCardinalityMax
       };
     });
 
@@ -421,9 +427,9 @@ export class TransformationDetailComponent implements OnInit {
       // Get existing copy_from source
       const copyFromSource = field.other || null;
 
-      // Extract cardinality from field
-      const cardinalityMin = field.target_min ?? null;
-      const cardinalityMax = field.target_max ?? null;
+      // Extract cardinality from field (use source_min/max as these represent the target field's cardinality)
+      const cardinalityMin = field.source_min ?? null;
+      const cardinalityMax = field.source_max ?? null;
 
       return {
         targetField: field.name,

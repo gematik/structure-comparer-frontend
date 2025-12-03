@@ -104,6 +104,9 @@
       <div class="col target-col">
         <div class="resource-name">{{ rm.targetName }}</div>
         <div class="resource-path">{{ rm.targetField }}</div>
+        <div *ngIf="rm.targetCardinalityMin !== null && rm.targetCardinalityMin !== undefined" class="resource-cardinality">
+          {{ rm.targetCardinalityMin }}..{{ rm.targetCardinalityMax }}
+        </div>
       </div>
     </div>
   </div>

@@ -176,6 +176,17 @@
   word-break: break-all;
 }
 
+.resource-cardinality {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  display: inline-block;
+}
+
 /* Form Fields */
 .source-select,
 .mapping-select {
