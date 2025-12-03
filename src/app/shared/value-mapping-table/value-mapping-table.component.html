@@ -25,13 +25,13 @@
   <div *ngIf="filteredRows.length > 0" class="value-mapping-table">
     <!-- Header -->
     <div class="table-header">
+      <div class="col source-col value-source-col">
+        <mat-icon class="col-icon">input</mat-icon>
+        Copy From (Quell-Feld)
+      </div>
       <div class="col target-col value-target-col">
         <mat-icon class="col-icon">output</mat-icon>
         Ziel-Feld
-      </div>
-      <div class="col source-col value-source-col">
-        <mat-icon class="col-icon">arrow_back</mat-icon>
-        Copy From (Quell-Feld)
       </div>
     </div>
 
@@ -40,15 +40,6 @@
          class="table-row value-row"
          [class.has-copy-from]="vm.copyFromSource"
          [class.has-children]="vm.hasChildren">
-      <!-- Target Field (fixed) -->
-      <div class="col target-col value-target-col" [ngStyle]="getIndentStyle(vm.depth)">
-        <div class="value-field-name">
-          <mat-icon *ngIf="vm.hasChildren" class="expand-icon">subdirectory_arrow_right</mat-icon>
-          {{ vm.targetName }}
-        </div>
-        <div class="value-field-path">{{ vm.targetPath }}</div>
-      </div>
-
       <!-- Copy From Source Selection -->
       <div class="col source-col value-source-col">
         <mat-form-field appearance="outline" class="copy-from-select">
@@ -64,6 +55,15 @@
         <span *ngIf="vm.action === 'copy_from'" class="action-badge copy-from">
           copy_from
         </span>
+      </div>
+
+      <!-- Target Field (fixed) -->
+      <div class="col target-col value-target-col" [ngStyle]="getIndentStyle(vm.depth)">
+        <div class="value-field-name">
+          <mat-icon *ngIf="vm.hasChildren" class="expand-icon">subdirectory_arrow_right</mat-icon>
+          {{ vm.targetName }}
+        </div>
+        <div class="value-field-path">{{ vm.targetPath }}</div>
       </div>
     </div>
   </div>
