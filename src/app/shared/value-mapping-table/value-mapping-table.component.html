@@ -47,8 +47,9 @@
           <mat-select [(ngModel)]="vm.copyFromSource"
                       (selectionChange)="onValueCopyFromChanged(i, $event.value)">
             <mat-option [value]="null">-- Kein copy_from --</mat-option>
-            <mat-option *ngFor="let source of sourceFields" [value]="source.name">
-              {{ source.displayName }} ({{ source.name }})
+            <mat-option *ngFor="let source of availableSourceFields" [value]="source.name">
+              <span class="source-option-text">{{ source.name }}</span>
+              <span class="source-option-cardinality">{{ getSourceCardinalityDisplay(source) }}</span>
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -62,6 +63,7 @@
         <div class="value-field-name">
           <mat-icon *ngIf="vm.hasChildren" class="expand-icon">subdirectory_arrow_right</mat-icon>
           {{ vm.targetName }}
+          <span class="cardinality-badge">{{ getCardinalityDisplay(vm) }}</span>
         </div>
         <div class="value-field-path">{{ vm.targetPath }}</div>
       </div>

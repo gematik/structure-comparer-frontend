@@ -41,6 +41,10 @@ export interface ValueMappingRow {
   hasChildren: boolean;
   depth: number;
   isValueXField: boolean;
+  /** Target cardinality min value */
+  cardinalityMin: number | string | null;
+  /** Target cardinality max value */
+  cardinalityMax: number | string | null;
 }
 
 @Component({
@@ -67,6 +71,20 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
   override filteredRows: ValueMappingRow[] = [];
 
   /**
+   * Get filtered source fields (excludes fields with max cardinality of 0)
+   */
+  get availableSourceFields(): SourceFieldOption[] {
+    return this.sourceFields.filter(source => {
+      const maxCard = source.cardinalityMax;
+      // Exclude if max is exactly 0 (as number or string)
+      if (maxCard === 0 || maxCard === '0') {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
    * Serialize value mappings for change comparison
    */
   protected override serializeForComparison(): string {
@@ -81,6 +99,16 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
    */
   protected override applyFilter(): void {
     let filtered = this.rows;
+
+    // Filter out fields with max cardinality of 0
+    filtered = filtered.filter(v => {
+      const maxCard = v.cardinalityMax;
+      // Exclude if max is exactly 0 (as number or string)
+      if (maxCard === 0 || maxCard === '0') {
+        return false;
+      }
+      return true;
+    });
 
     // Apply type filter (only show value[x] type fields when enabled)
     if (this.filterEnabled) {
@@ -124,6 +152,24 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
     return {
       'padding-left': `${depth * 20}px`
     };
+  }
+
+  /**
+   * Format cardinality as string (e.g., "0..1", "1..*")
+   */
+  getCardinalityDisplay(row: ValueMappingRow): string {
+    const min = row.cardinalityMin ?? '?';
+    const max = row.cardinalityMax ?? '?';
+    return `${min}..${max}`;
+  }
+
+  /**
+   * Format source field cardinality as string (e.g., "0..1", "1..*")
+   */
+  getSourceCardinalityDisplay(source: SourceFieldOption): string {
+    const min = source.cardinalityMin ?? '?';
+    const max = source.cardinalityMax ?? '?';
+    return `${min}..${max}`;
   }
 
   /**

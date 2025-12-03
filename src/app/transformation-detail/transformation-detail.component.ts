@@ -157,6 +157,10 @@ export class TransformationDetailComponent implements OnInit {
             const fieldInfo = profile.fields[fieldPath];
             const types = fieldInfo.types || [];
 
+            // Extract cardinality from field info
+            const cardinalityMin = fieldInfo.min ?? null;
+            const cardinalityMax = fieldInfo.max ?? null;
+
             // Check if it's a resource field
             const isResource = types.some((t: string) => t === 'Resource' || t.endsWith('Resource')) ||
                               fieldPath.toLowerCase().endsWith('.resource');
@@ -177,7 +181,9 @@ export class TransformationDetailComponent implements OnInit {
               this.sourceResourceFields.push({
                 name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
                 displayName: displayName,
-                profileKey: source.key || profileId
+                profileKey: source.key || profileId,
+                cardinalityMin: cardinalityMin,
+                cardinalityMax: cardinalityMax
               });
             } else {
               // For value fields
@@ -187,7 +193,9 @@ export class TransformationDetailComponent implements OnInit {
               this.sourceValueFields.push({
                 name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
                 displayName: displayName,
-                profileKey: source.key || profileId
+                profileKey: source.key || profileId,
+                cardinalityMin: cardinalityMin,
+                cardinalityMax: cardinalityMax
               });
             }
           });
@@ -413,6 +421,10 @@ export class TransformationDetailComponent implements OnInit {
       // Get existing copy_from source
       const copyFromSource = field.other || null;
 
+      // Extract cardinality from field
+      const cardinalityMin = field.target_min ?? null;
+      const cardinalityMax = field.target_max ?? null;
+
       return {
         targetField: field.name,
         targetName: targetName,
@@ -423,7 +435,9 @@ export class TransformationDetailComponent implements OnInit {
         originalCopyFromSource: copyFromSource,
         hasChildren: hasChildren,
         depth: depth,
-        isValueXField: isValueXField
+        isValueXField: isValueXField,
+        cardinalityMin: cardinalityMin,
+        cardinalityMax: cardinalityMax
       };
     });
 

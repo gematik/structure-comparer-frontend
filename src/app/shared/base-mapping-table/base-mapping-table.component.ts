@@ -23,6 +23,10 @@ export interface SourceFieldOption {
   name: string;
   displayName: string;
   profileKey: string;
+  /** Source cardinality min value */
+  cardinalityMin?: number | string | null;
+  /** Source cardinality max value */
+  cardinalityMax?: number | string | null;
 }
 
 /**
