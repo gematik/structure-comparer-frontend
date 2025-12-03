@@ -47,16 +47,16 @@
       <div class="col source-col multi-source">
         <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
              class="source-entry">
-          <mat-form-field appearance="outline" class="source-select">
-            <mat-label>Quell-Ressource {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
-            <mat-select [ngModel]="sourceEntry.sourceField"
-                        (selectionChange)="onSourceResourceChanged(rowIndex, sourceIndex, $event.value)">
-              <mat-option [value]="null">-- Keine Quelle --</mat-option>
-              <mat-option *ngFor="let source of sourceFields" [value]="source.name">
-                {{ source.displayName }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+          <app-filterable-select
+            class="source-select"
+            [label]="'Quell-Ressource ' + (rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '')"
+            [placeholder]="'Ressource auswählen...'"
+            [options]="sourceFieldOptions"
+            [value]="sourceEntry.sourceField"
+            [showBadge]="false"
+            [filterExcluded]="false"
+            (valueChange)="onSourceResourceChanged(rowIndex, sourceIndex, $event)">
+          </app-filterable-select>
 
           <!-- Remove source button -->
           <button mat-icon-button
@@ -82,17 +82,16 @@
       <div class="col mapping-col multi-mapping">
         <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
              class="mapping-entry">
-          <mat-form-field appearance="outline" class="mapping-select">
-            <mat-label>Mapping {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
-            <mat-select [ngModel]="sourceEntry.mappingId"
-                        (selectionChange)="onResourceMappingChanged(rowIndex, sourceIndex, $event.value)"
-                        [disabled]="!sourceEntry.sourceField">
-              <mat-option [value]="null">-- Kein Mapping --</mat-option>
-              <mat-option *ngFor="let m of availableMappings" [value]="m.id">
-                {{ m.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+          <app-filterable-select
+            class="mapping-select"
+            [label]="'Mapping ' + (rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '')"
+            [placeholder]="'Mapping auswählen...'"
+            [options]="mappingOptions"
+            [value]="sourceEntry.mappingId"
+            [showBadge]="false"
+            [filterExcluded]="false"
+            (valueChange)="onResourceMappingChanged(rowIndex, sourceIndex, $event)">
+          </app-filterable-select>
           <div *ngIf="sourceEntry.mappingId" class="mapping-link">
             <button mat-icon-button (click)="viewMapping(sourceEntry.mappingId)" matTooltip="Mapping öffnen">
               <mat-icon>open_in_new</mat-icon>

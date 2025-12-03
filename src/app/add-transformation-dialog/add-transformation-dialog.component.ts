@@ -31,6 +31,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Profile } from '../models/profile.model';
 import { TransformationService } from '../transformation.service';
 import { ProjectService } from '../project.service';
+import { GroupedSelectComponent, GroupedSelectOption } from '../shared/grouped-select/grouped-select.component';
 
 @Component({
   selector: 'app-add-transformation-dialog',
@@ -43,7 +44,8 @@ import { ProjectService } from '../project.service';
     MatFormFieldModule,
     MatButtonModule,
     MatIconModule,
-    MatInputModule
+    MatInputModule,
+    GroupedSelectComponent
   ],
   templateUrl: './add-transformation-dialog.component.html',
   styleUrl: './add-transformation-dialog.component.css'
@@ -65,6 +67,7 @@ export class AddTransformationDialogComponent implements OnInit {
 
   // Profile selection
   packageGroups: { package: string; profiles: Profile[] }[] = [];
+  profileOptions: GroupedSelectOption[] = [];
   collapsedGroups = new Set<string>();
 
   // Status options
@@ -112,6 +115,13 @@ export class AddTransformationDialogComponent implements OnInit {
     this.packageGroups = Array.from(grouped.entries()).map(([pkg, profiles]) => ({
       package: pkg,
       profiles
+    }));
+    
+    // Build profile options for grouped select
+    this.profileOptions = profiles.map(profile => ({
+      value: profile.key,
+      label: profile.name,
+      group: profile.package
     }));
   }
 

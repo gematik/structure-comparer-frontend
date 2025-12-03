@@ -14,14 +14,14 @@
   width: 100%;
 }
 
-.option-name {
+.option-label {
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.option-cardinality {
+.option-badge {
   flex-shrink: 0;
   font-size: 0.75rem;
   color: #666;
@@ -29,6 +29,14 @@
   padding: 2px 6px;
   border-radius: 4px;
   font-family: monospace;
+}
+
+.option-secondary {
+  font-size: 0.75rem;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .option-additional {

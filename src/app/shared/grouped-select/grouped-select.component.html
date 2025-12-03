@@ -1,0 +1,51 @@
+<mat-form-field appearance="fill" class="grouped-select full-width">
+  <mat-label>{{ label }}</mat-label>
+  <input matInput
+         type="text"
+         [placeholder]="placeholder"
+         [ngModel]="inputValue"
+         (ngModelChange)="onInputChange($event)"
+         [matAutocomplete]="auto"
+         [required]="required">
+  
+  @if (inputValue) {
+    <button matSuffix mat-icon-button (click)="clear()" type="button" aria-label="Auswahl löschen">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+  
+  <mat-autocomplete #auto="matAutocomplete" 
+                    autoActiveFirstOption
+                    class="grouped-autocomplete">
+    @for (group of filteredGroups; track trackByGroupName($index, group)) {
+      <!-- Group Header (clickable to toggle) -->
+      <div class="group-header" 
+           (click)="toggleGroup(group.name, $event)"
+           (keydown.enter)="toggleGroup(group.name, $event)"
+           (keydown.space)="toggleGroup(group.name, $event)"
+           role="button"
+           tabindex="0">
+        <mat-icon class="collapse-icon">{{ isGroupCollapsed(group.name) ? 'expand_more' : 'expand_less' }}</mat-icon>
+        <strong>{{ group.name }}</strong>
+        <span class="option-count">({{ group.options.length }})</span>
+      </div>
+
+      <!-- Group Options (only visible when not collapsed) -->
+      @if (!isGroupCollapsed(group.name)) {
+        @for (option of group.options; track trackByValue($index, option)) {
+          <mat-option [value]="option"
+                      class="grouped-option"
+                      (onSelectionChange)="onOptionSelected(option)">
+            {{ option.label }}
+          </mat-option>
+        }
+      }
+    }
+    
+    @if (filteredGroups.length === 0 && inputValue) {
+      <mat-option disabled class="no-results">
+        Keine Ergebnisse für "{{ inputValue }}"
+      </mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

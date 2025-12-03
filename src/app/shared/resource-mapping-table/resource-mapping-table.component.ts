@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +25,7 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { BaseMappingTableComponent, SourceFieldOption } from '../base-mapping-table/base-mapping-table.component';
 import { FilterBarComponent } from '../filter-bar/filter-bar.component';
+import { FilterableSelectComponent, SelectableOption } from '../filterable-field-select/filterable-field-select.component';
 import { Mapping } from '../../models/mapping.model';
 
 /**
@@ -59,7 +60,8 @@ export interface ResourceMappingRow {
     MatTooltipModule,
     MatFormFieldModule,
     MatSelectModule,
-    FilterBarComponent
+    FilterBarComponent,
+    FilterableSelectComponent
   ],
   templateUrl: './resource-mapping-table.component.html',
   styleUrls: ['./resource-mapping-table.component.css']
@@ -73,6 +75,46 @@ export class ResourceMappingTableComponent extends BaseMappingTableComponent<Res
   @Output() viewMappingRequested = new EventEmitter<string>();
 
   override filteredRows: ResourceMappingRow[] = [];
+
+  /** Cached source field options for the filterable select */
+  sourceFieldOptions: SelectableOption[] = [];
+
+  /** Cached mapping options for the mapping select */
+  mappingOptions: SelectableOption[] = [];
+
+  /**
+   * Override ngOnChanges to update cached options when inputs change
+   */
+  override ngOnChanges(changes: SimpleChanges): void {
+    super.ngOnChanges(changes);
+    if (changes['sourceFields']) {
+      this.updateSourceFieldOptions();
+    }
+    if (changes['availableMappings']) {
+      this.updateMappingOptions();
+    }
+  }
+
+  /**
+   * Update cached source field options
+   */
+  private updateSourceFieldOptions(): void {
+    this.sourceFieldOptions = this.sourceFields.map(source => ({
+      value: source.name,
+      label: source.displayName || source.name,
+      secondaryLabel: source.name !== source.displayName ? source.name : undefined
+    }));
+  }
+
+  /**
+   * Update cached mapping options
+   */
+  private updateMappingOptions(): void {
+    this.mappingOptions = this.availableMappings.map(m => ({
+      value: m.id,
+      label: m.name
+    }));
+  }
 
   /**
    * Serialize resource mappings for change comparison

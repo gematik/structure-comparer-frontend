@@ -41,33 +41,13 @@
     <p class="hint">Die Quell-Profile aus denen Daten transformiert werden.</p>
 
     <div *ngFor="let sourceKey of sourceProfileKeys; let i = index; trackBy: trackByIndex" class="source-profile-row">
-      <mat-form-field appearance="fill" class="source-selector">
-        <mat-label>Source-Profil {{i + 1}}</mat-label>
-        <mat-select [(ngModel)]="sourceProfileKeys[i]">
-          <ng-container *ngFor="let group of packageGroups">
-            <div
-              class="group-toggle"
-              (click)="toggleGroup(group.package)"
-              role="option"
-              tabindex="0"
-            >
-              <strong>
-                {{ group.package }}
-                {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
-              </strong>
-            </div>
-
-            <ng-container *ngIf="!isGroupCollapsed(group.package)">
-              <mat-option
-                *ngFor="let profile of group.profiles"
-                [value]="profile.key"
-              >
-                {{ profile.name }}
-              </mat-option>
-            </ng-container>
-          </ng-container>
-        </mat-select>
-      </mat-form-field>
+      <app-grouped-select
+        class="source-selector"
+        [label]="'Source-Profil ' + (i + 1)"
+        [options]="profileOptions"
+        [value]="sourceProfileKeys[i]"
+        (valueChange)="sourceProfileKeys[i] = $event || ''">
+      </app-grouped-select>
 
       <div class="button-group">
         <button
@@ -107,33 +87,13 @@
     <p class="hint">Das Ziel-Profil in das Daten transformiert werden.</p>
 
     <div class="target-profile-row">
-      <mat-form-field appearance="fill" class="target-selector">
-        <mat-label>Target-Profil</mat-label>
-        <mat-select [(ngModel)]="targetProfileKey">
-          <ng-container *ngFor="let group of packageGroups">
-            <div
-              class="group-toggle"
-              (click)="toggleGroup(group.package)"
-              role="option"
-              tabindex="0"
-            >
-              <strong>
-                {{ group.package }}
-                {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
-              </strong>
-            </div>
-
-            <ng-container *ngIf="!isGroupCollapsed(group.package)">
-              <mat-option
-                *ngFor="let profile of group.profiles"
-                [value]="profile.key"
-              >
-                {{ profile.name }}
-              </mat-option>
-            </ng-container>
-          </ng-container>
-        </mat-select>
-      </mat-form-field>
+      <app-grouped-select
+        class="target-selector"
+        [label]="'Target-Profil'"
+        [options]="profileOptions"
+        [value]="targetProfileKey"
+        (valueChange)="targetProfileKey = $event || ''">
+      </app-grouped-select>
     </div>
   </div>
 </mat-dialog-content>

@@ -28,6 +28,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { GroupedSelectComponent, GroupedSelectOption } from '../shared/grouped-select/grouped-select.component';
 
 /**
  * Dialog component for adding comparisons between profiles
@@ -38,7 +39,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-add-comparison-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatDialogModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule, GroupedSelectComponent],
   templateUrl: './add-comparison-dialog.component.html',
   styleUrl: './add-comparison-dialog.component.css'
 })
@@ -55,6 +56,9 @@ export class AddComparisonDialogComponent {
   
   // Profiles grouped by package name for organized display
   packageGroups: { package: string; profiles: Profile[] }[] = [];
+
+  // Profile options for the grouped select component
+  profileOptions: GroupedSelectOption[] = [];
 
   constructor(private dialogRef: MatDialogRef<AddComparisonDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { projectKey: string },
@@ -88,6 +92,13 @@ export class AddComparisonDialogComponent {
     this.packageGroups = Array.from(grouped.entries()).map(([pkg, profiles]) => ({
       package: pkg,
       profiles
+    }));
+
+    // Build profile options for grouped select
+    this.profileOptions = profiles.map(profile => ({
+      value: profile.key,
+      label: profile.name,
+      group: profile.package
     }));
   }
 

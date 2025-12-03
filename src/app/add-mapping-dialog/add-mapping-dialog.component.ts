@@ -28,22 +28,23 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { GroupedSelectComponent, GroupedSelectOption } from '../shared/grouped-select/grouped-select.component';
 
 @Component({
   selector: 'app-add-mapping-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule, GroupedSelectComponent],
   templateUrl: './add-mapping-dialog.component.html',
   styleUrl: './add-mapping-dialog.component.css'
 })
 export class AddMappingDialogComponent {
- projectKey: string;
+  projectKey: string;
   sourceProfileKeys: string[] = [''];
   targetProfileKey = '';
-  collapsedGroups = new Set<string>(); // enthÃ¤lt zugeklappte package-Namen
+  collapsedGroups = new Set<string>();
   
-
   packageGroups: { package: string; profiles: Profile[] }[] = [];
+  profileOptions: GroupedSelectOption[] = [];
 
   constructor(private dialogRef: MatDialogRef<AddMappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { projectKey: string },
@@ -73,6 +74,13 @@ export class AddMappingDialogComponent {
     this.packageGroups = Array.from(grouped.entries()).map(([pkg, profiles]) => ({
       package: pkg,
       profiles
+    }));
+
+    // Build profile options for grouped select
+    this.profileOptions = profiles.map(profile => ({
+      value: profile.key,
+      label: profile.name,
+      group: profile.package
     }));
   }
 
