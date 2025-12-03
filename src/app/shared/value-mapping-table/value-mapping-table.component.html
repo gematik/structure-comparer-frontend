@@ -42,17 +42,17 @@
          [class.has-children]="vm.hasChildren">
       <!-- Copy From Source Selection -->
       <div class="col source-col value-source-col">
-        <mat-form-field appearance="outline" class="copy-from-select">
-          <mat-label>Quell-Feld (copy_from)</mat-label>
-          <mat-select [(ngModel)]="vm.copyFromSource"
-                      (selectionChange)="onValueCopyFromChanged(i, $event.value)">
-            <mat-option [value]="null">-- Kein copy_from --</mat-option>
-            <mat-option *ngFor="let source of availableSourceFields" [value]="source.name">
-              <span class="source-option-text">{{ source.name }}</span>
-              <span class="source-option-cardinality">{{ getSourceCardinalityDisplay(source) }}</span>
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
+        <app-filterable-field-select
+          class="copy-from-select"
+          [label]="'Quell-Feld (copy_from)'"
+          [placeholder]="'Feld suchen oder auswählen...'"
+          [options]="sourceFieldOptions"
+          [value]="vm.copyFromSource"
+          [showCardinality]="true"
+          [filterZeroCardinality]="true"
+          [hint]="''"
+          (valueChange)="onValueCopyFromChanged(i, $event)">
+        </app-filterable-field-select>
         <span *ngIf="vm.action === 'copy_from'" class="action-badge copy-from">
           copy_from
         </span>

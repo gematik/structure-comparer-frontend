@@ -1,0 +1,46 @@
+.filterable-field-select {
+  display: block;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.option-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.option-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-cardinality {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: #666;
+  background: #e8e8e8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.option-additional {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.no-results {
+  color: #999;
+  font-style: italic;
+}

@@ -1,0 +1,47 @@
+<div class="filterable-field-select">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>{{ label }}</mat-label>
+
+    <input matInput
+           type="text"
+           [placeholder]="placeholder"
+           [(ngModel)]="inputValue"
+           (ngModelChange)="onInputChange($event)"
+           [matAutocomplete]="auto"
+           [required]="required">
+
+    <button mat-icon-button
+            matSuffix
+            aria-label="Auswahl leeren"
+            *ngIf="inputValue"
+            (click)="clear()"
+            type="button">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <mat-autocomplete #auto="matAutocomplete"
+                      (optionSelected)="onOptionSelected($event.option.value)">
+      <mat-option *ngFor="let option of filteredOptions" [value]="option.name">
+        <div class="option-content">
+          <span class="option-name">{{ option.name }}</span>
+          <span class="option-cardinality"
+                *ngIf="showCardinality && hasCardinality(option)">
+            {{ getCardinalityDisplay(option) }}
+          </span>
+        </div>
+        <div class="option-additional" *ngIf="option.additionalInfo">
+          {{ option.additionalInfo }}
+        </div>
+      </mat-option>
+
+      <mat-option *ngIf="filteredOptions.length === 0" disabled>
+        <span class="no-results">Keine Felder gefunden</span>
+      </mat-option>
+    </mat-autocomplete>
+
+    <mat-hint>{{ hint }}</mat-hint>
+    <mat-error *ngIf="required && !inputValue?.trim()">
+      {{ errorMessage }}
+    </mat-error>
+  </mat-form-field>
+</div>

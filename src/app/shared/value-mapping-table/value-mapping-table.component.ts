@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +25,7 @@ import { MatSelectModule } from '@angular/material/select';
 
 import { BaseMappingTableComponent, SourceFieldOption } from '../base-mapping-table/base-mapping-table.component';
 import { FilterBarComponent } from '../filter-bar/filter-bar.component';
+import { FilterableFieldSelectComponent, FilterableFieldOption } from '../filterable-field-select/filterable-field-select.component';
 import { MappingAction } from '../../models/mapping.model';
 
 /**
@@ -58,7 +59,8 @@ export interface ValueMappingRow {
     MatTooltipModule,
     MatFormFieldModule,
     MatSelectModule,
-    FilterBarComponent
+    FilterBarComponent,
+    FilterableFieldSelectComponent
   ],
   templateUrl: './value-mapping-table.component.html',
   styleUrls: ['./value-mapping-table.component.css']
@@ -69,6 +71,31 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
   @Output() copyFromChanged = new EventEmitter<{ index: number; sourceField: string | null }>();
 
   override filteredRows: ValueMappingRow[] = [];
+
+  /** Cached source field options for the filterable select component */
+  sourceFieldOptions: FilterableFieldOption[] = [];
+
+  /**
+   * Override ngOnChanges to update cached options when sourceFields change
+   */
+  override ngOnChanges(changes: SimpleChanges): void {
+    super.ngOnChanges(changes);
+    if (changes['sourceFields']) {
+      this.updateSourceFieldOptions();
+    }
+  }
+
+  /**
+   * Update cached source field options
+   */
+  private updateSourceFieldOptions(): void {
+    this.sourceFieldOptions = this.sourceFields.map(source => ({
+      name: source.name,
+      displayName: source.displayName,
+      cardinalityMin: source.cardinalityMin,
+      cardinalityMax: source.cardinalityMax
+    }));
+  }
 
   /**
    * Get filtered source fields (excludes fields with max cardinality of 0)
@@ -136,12 +163,14 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
     const row = this.findRowByFilteredIndex(index);
     if (!row) return;
 
-    row.copyFromSource = sourceField;
+    row.copyFromSource = sourceField || null;
     if (sourceField) {
       row.action = 'copy_from';
+    } else {
+      row.action = null;
     }
 
-    this.copyFromChanged.emit({ index, sourceField });
+    this.copyFromChanged.emit({ index, sourceField: sourceField || null });
     this.emitRowChanges();
   }
 
