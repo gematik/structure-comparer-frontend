@@ -1,0 +1,83 @@
+<!-- Value Mapping Table Component Template -->
+<div class="value-mapping-table-container">
+  <!-- Filter Bar -->
+  <app-filter-bar
+    [toggleLabel]="'Nur value[x]-Typen anzeigen'"
+    [toggleEnabled]="filterEnabled"
+    [searchLabel]="'Suche in Feldern'"
+    [searchPlaceholder]="'z.B. code, value...'"
+    [searchText]="textFilter"
+    (toggleChange)="onFilterToggleChange($event)"
+    (searchTextChange)="onTextFilterChange($event)">
+  </app-filter-bar>
+
+  <p class="description">
+    Definieren Sie copy_from Zuordnungen für die Werte des Ziel-Profils.
+    Wählen Sie die Quell-Felder aus, von denen die Werte kopiert werden sollen.
+  </p>
+
+  <div *ngIf="filteredRows.length === 0" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>Keine Value-Felder im Ziel-Profil gefunden.</p>
+  </div>
+
+  <!-- Value Mapping Table -->
+  <div *ngIf="filteredRows.length > 0" class="value-mapping-table">
+    <!-- Header -->
+    <div class="table-header">
+      <div class="col target-col value-target-col">
+        <mat-icon class="col-icon">output</mat-icon>
+        Ziel-Feld
+      </div>
+      <div class="col source-col value-source-col">
+        <mat-icon class="col-icon">arrow_back</mat-icon>
+        Copy From (Quell-Feld)
+      </div>
+    </div>
+
+    <!-- Rows -->
+    <div *ngFor="let vm of filteredRows; let i = index"
+         class="table-row value-row"
+         [class.has-copy-from]="vm.copyFromSource"
+         [class.has-children]="vm.hasChildren">
+      <!-- Target Field (fixed) -->
+      <div class="col target-col value-target-col" [ngStyle]="getIndentStyle(vm.depth)">
+        <div class="value-field-name">
+          <mat-icon *ngIf="vm.hasChildren" class="expand-icon">subdirectory_arrow_right</mat-icon>
+          {{ vm.targetName }}
+        </div>
+        <div class="value-field-path">{{ vm.targetPath }}</div>
+      </div>
+
+      <!-- Copy From Source Selection -->
+      <div class="col source-col value-source-col">
+        <mat-form-field appearance="outline" class="copy-from-select">
+          <mat-label>Quell-Feld (copy_from)</mat-label>
+          <mat-select [(ngModel)]="vm.copyFromSource"
+                      (selectionChange)="onValueCopyFromChanged(i, $event.value)">
+            <mat-option [value]="null">-- Kein copy_from --</mat-option>
+            <mat-option *ngFor="let source of sourceFields" [value]="source.name">
+              {{ source.displayName }} ({{ source.name }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <span *ngIf="vm.action === 'copy_from'" class="action-badge copy-from">
+          copy_from
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Button -->
+  <div class="actions-row">
+    <button mat-raised-button color="primary"
+            [disabled]="!hasChanges()"
+            (click)="onSave()">
+      <mat-icon>save</mat-icon>
+      Value-Zuordnungen speichern
+    </button>
+    <span *ngIf="hasChanges()" class="unsaved-hint">
+      Es gibt ungespeicherte Änderungen
+    </span>
+  </div>
+</div>

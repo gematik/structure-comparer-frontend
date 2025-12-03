@@ -86,127 +86,18 @@
           </ng-template>
 
           <div class="tab-content">
-            <!-- Filter Bar Component -->
-            <app-filter-bar
-              [toggleLabel]="'Nur Resource-Typen anzeigen'"
-              [toggleEnabled]="resourceFilterEnabled"
-              [searchLabel]="'Suche in Quell-/Ziel-Ressourcen'"
-              [searchPlaceholder]="'z.B. Medication, entry:...'"
-              [searchText]="resourceTextFilter"
-              (toggleChange)="onResourceFilterToggleChange($event)"
-              (searchTextChange)="onResourceTextFilterChange($event)">
-            </app-filter-bar>
-
-            <p class="description">
-              Ordnen Sie den Ziel-Ressourcen die entsprechenden Quell-Ressourcen und Mappings zu.
-            </p>
-
-            <div *ngIf="filteredResourceMappings.length === 0" class="empty-state">
-              <mat-icon>info</mat-icon>
-              <p>Keine Resource-Felder im Ziel-Profil gefunden.</p>
-            </div>
-
-            <!-- Resource Mapping Table -->
-            <div *ngIf="filteredResourceMappings.length > 0" class="resource-mapping-table">
-              <!-- Header -->
-              <div class="table-header">
-                <div class="col source-col">
-                  <mat-icon class="col-icon">input</mat-icon>
-                  Quell-Ressource(n)
-                </div>
-                <div class="col mapping-col">
-                  <mat-icon class="col-icon">swap_horiz</mat-icon>
-                  Mapping
-                </div>
-                <div class="col target-col">
-                  <mat-icon class="col-icon">output</mat-icon>
-                  Ziel-Ressource
-                </div>
-              </div>
-
-              <!-- Rows -->
-              <div *ngFor="let rm of filteredResourceMappings; let rowIndex = index"
-                   class="table-row"
-                   [class.has-mapping]="hasAnyMapping(rm)">
-
-                <!-- Source Resources (multiple possible) -->
-                <div class="col source-col multi-source">
-                  <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
-                       class="source-entry">
-                    <mat-form-field appearance="outline" class="source-select">
-                      <mat-label>Quell-Ressource {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
-                      <mat-select [ngModel]="sourceEntry.sourceField"
-                                  (selectionChange)="onSourceResourceChanged(rowIndex, sourceIndex, $event.value)">
-                        <mat-option [value]="null">-- Keine Quelle --</mat-option>
-                        <mat-option *ngFor="let source of sourceResourceFields" [value]="source.name">
-                          {{ source.displayName }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    <!-- Remove source button -->
-                    <button mat-icon-button
-                            *ngIf="rm.sourceMappings.length > 1 || sourceEntry.sourceField"
-                            (click)="removeSourceMapping(rowIndex, sourceIndex)"
-                            matTooltip="Quell-Ressource entfernen"
-                            class="remove-source-btn">
-                      <mat-icon>remove_circle_outline</mat-icon>
-                    </button>
-                  </div>
-
-                  <!-- Add source button -->
-                  <button mat-stroked-button
-                          (click)="addSourceMapping(rowIndex)"
-                          class="add-source-btn"
-                          matTooltip="Weitere Quell-Ressource hinzufügen">
-                    <mat-icon>add</mat-icon>
-                    Quelle hinzufügen
-                  </button>
-                </div>
-
-                <!-- Mapping Selection (for each source) -->
-                <div class="col mapping-col multi-mapping">
-                  <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
-                       class="mapping-entry">
-                    <mat-form-field appearance="outline" class="mapping-select">
-                      <mat-label>Mapping {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
-                      <mat-select [ngModel]="sourceEntry.mappingId"
-                                  (selectionChange)="onResourceMappingChanged(rowIndex, sourceIndex, $event.value)"
-                                  [disabled]="!sourceEntry.sourceField">
-                        <mat-option [value]="null">-- Kein Mapping --</mat-option>
-                        <mat-option *ngFor="let m of availableMappings" [value]="m.id">
-                          {{ m.name }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                    <div *ngIf="sourceEntry.mappingId" class="mapping-link">
-                      <button mat-icon-button (click)="viewMapping(sourceEntry.mappingId)" matTooltip="Mapping öffnen">
-                        <mat-icon>open_in_new</mat-icon>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Target Resource (fixed) -->
-                <div class="col target-col">
-                  <div class="resource-name">{{ rm.targetName }}</div>
-                  <div class="resource-path">{{ rm.targetField }}</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Save Button for Resources -->
-            <div class="actions-row">
-              <button mat-raised-button color="primary"
-                      [disabled]="!hasResourceChanges()"
-                      (click)="saveResourceChanges()">
-                <mat-icon>save</mat-icon>
-                Ressourcen-Zuordnungen speichern
-              </button>
-              <span *ngIf="hasResourceChanges()" class="unsaved-hint">
-                Es gibt ungespeicherte Änderungen
-              </span>
-            </div>
+            <app-resource-mapping-table
+              [rows]="resourceMappings"
+              [sourceFields]="sourceResourceFields"
+              [availableMappings]="availableMappings"
+              [filterEnabled]="resourceFilterEnabled"
+              [textFilter]="resourceTextFilter"
+              (filterToggleChange)="onResourceFilterToggleChange($event)"
+              (textFilterChange)="onResourceTextFilterChange($event)"
+              (rowsChange)="onResourceMappingsChange($event)"
+              (saveRequested)="saveResourceChanges()"
+              (viewMappingRequested)="viewMapping($event)">
+            </app-resource-mapping-table>
           </div>
         </mat-tab>
 
@@ -221,86 +112,16 @@
           </ng-template>
 
           <div class="tab-content">
-            <!-- Filter Bar Component -->
-            <app-filter-bar
-              [toggleLabel]="'Nur value[x]-Typen anzeigen'"
-              [toggleEnabled]="valueFilterEnabled"
-              [searchLabel]="'Suche in Feldern'"
-              [searchPlaceholder]="'z.B. code, value...'"
-              [searchText]="valueTextFilter"
-              (toggleChange)="onValueFilterToggleChange($event)"
-              (searchTextChange)="onValueTextFilterChange($event)">
-            </app-filter-bar>
-
-            <p class="description">
-              Definieren Sie copy_from Zuordnungen für die Werte des Ziel-Profils.
-              Wählen Sie die Quell-Felder aus, von denen die Werte kopiert werden sollen.
-            </p>
-
-            <div *ngIf="filteredValueMappings.length === 0" class="empty-state">
-              <mat-icon>info</mat-icon>
-              <p>Keine Value-Felder im Ziel-Profil gefunden.</p>
-            </div>
-
-            <!-- Value Mapping Table -->
-            <div *ngIf="filteredValueMappings.length > 0" class="value-mapping-table">
-              <!-- Header -->
-              <div class="table-header">
-                <div class="col target-col value-target-col">
-                  <mat-icon class="col-icon">output</mat-icon>
-                  Ziel-Feld
-                </div>
-                <div class="col source-col value-source-col">
-                  <mat-icon class="col-icon">arrow_back</mat-icon>
-                  Copy From (Quell-Feld)
-                </div>
-              </div>
-
-              <!-- Rows -->
-              <div *ngFor="let vm of filteredValueMappings; let i = index"
-                   class="table-row value-row"
-                   [class.has-copy-from]="vm.copyFromSource"
-                   [class.has-children]="vm.hasChildren">
-                <!-- Target Field (fixed) -->
-                <div class="col target-col value-target-col" [ngStyle]="getIndentStyle(vm.depth)">
-                  <div class="value-field-name">
-                    <mat-icon *ngIf="vm.hasChildren" class="expand-icon">subdirectory_arrow_right</mat-icon>
-                    {{ vm.targetName }}
-                  </div>
-                  <div class="value-field-path">{{ vm.targetPath }}</div>
-                </div>
-
-                <!-- Copy From Source Selection -->
-                <div class="col source-col value-source-col">
-                  <mat-form-field appearance="outline" class="copy-from-select">
-                    <mat-label>Quell-Feld (copy_from)</mat-label>
-                    <mat-select [(ngModel)]="vm.copyFromSource"
-                                (selectionChange)="onValueCopyFromChanged(i, $event.value)">
-                      <mat-option [value]="null">-- Kein copy_from --</mat-option>
-                      <mat-option *ngFor="let source of sourceValueFields" [value]="source.name">
-                        {{ source.displayName }} ({{ source.name }})
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <span *ngIf="vm.action === 'copy_from'" class="action-badge copy-from">
-                    copy_from
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Save Button for Values -->
-            <div class="actions-row">
-              <button mat-raised-button color="primary"
-                      [disabled]="!hasValueChanges()"
-                      (click)="saveValueChanges()">
-                <mat-icon>save</mat-icon>
-                Value-Zuordnungen speichern
-              </button>
-              <span *ngIf="hasValueChanges()" class="unsaved-hint">
-                Es gibt ungespeicherte Änderungen
-              </span>
-            </div>
+            <app-value-mapping-table
+              [rows]="valueMappings"
+              [sourceFields]="sourceValueFields"
+              [filterEnabled]="valueFilterEnabled"
+              [textFilter]="valueTextFilter"
+              (filterToggleChange)="onValueFilterToggleChange($event)"
+              (textFilterChange)="onValueTextFilterChange($event)"
+              (rowsChange)="onValueMappingsChange($event)"
+              (saveRequested)="saveValueChanges()">
+            </app-value-mapping-table>
           </div>
         </mat-tab>
       </mat-tab-group>

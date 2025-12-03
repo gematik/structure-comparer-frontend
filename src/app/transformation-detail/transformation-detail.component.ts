@@ -21,73 +21,23 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatInputModule } from '@angular/material/input';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { TransformationService } from '../transformation.service';
 import { ProjectService } from '../project.service';
 import { Transformation, TransformationField, MappingReference, TransformationFieldUpdateRequest, TransformationMappingLinkRequest } from '../models/transformation.model';
-import { Mapping, MappingAction } from '../models/mapping.model';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { FilterBarComponent } from '../shared/filter-bar/filter-bar.component';
+import { Mapping } from '../models/mapping.model';
+import { ResourceMappingTableComponent, ResourceMappingRow, SourceMappingEntry } from '../shared/resource-mapping-table/resource-mapping-table.component';
+import { ValueMappingTableComponent, ValueMappingRow } from '../shared/value-mapping-table/value-mapping-table.component';
+import { SourceFieldOption } from '../shared/base-mapping-table/base-mapping-table.component';
 
-/**
- * A single source mapping entry (source resource + mapping)
- */
-interface SourceMappingEntry {
-  sourceField: string | null;
-  sourceName: string | null;
-  mappingId: string | null;
-  mappingName: string | null;
-}
-
-/**
- * UI model for a resource mapping row (target-centric)
- * The target resource is fixed, user can add multiple source resources with mappings
- */
-interface ResourceMappingRow {
-  targetField: string;
-  targetName: string;
-  sourceMappings: SourceMappingEntry[];
-  originalSourceMappings: SourceMappingEntry[];
-  isResourceField: boolean;  // true if this is a .resource field
-}
-
-/**
- * UI model for a value mapping row (target-centric)
- * The target value is fixed, user defines copy_from sources
- */
-interface ValueMappingRow {
-  targetField: string;
-  targetName: string;
-  targetPath: string;
-  action: MappingAction | null;
-  copyFromSource: string | null;  // The source field path for copy_from
-  originalAction: MappingAction | null;
-  originalCopyFromSource: string | null;
-  hasChildren: boolean;
-  depth: number;
-  isValueXField: boolean;  // true if this is a .value[x] field
-}
-
-/**
- * Source field option for dropdowns
- */
-interface SourceFieldOption {
-  name: string;
-  displayName: string;
-  profileKey: string;
-}
+// Re-export for use in template
+export { ResourceMappingRow, ValueMappingRow, SourceMappingEntry, SourceFieldOption };
 
 @Component({
   selector: 'app-transformation-detail',
@@ -98,15 +48,11 @@ interface SourceFieldOption {
     MatButtonModule,
     MatIconModule,
     MatTooltipModule,
-    MatTableModule,
     MatCardModule,
     MatChipsModule,
-    MatSelectModule,
-    MatFormFieldModule,
     MatTabsModule,
-    MatSlideToggleModule,
-    MatInputModule,
-    FilterBarComponent
+    ResourceMappingTableComponent,
+    ValueMappingTableComponent
   ],
   templateUrl: './transformation-detail.component.html',
   styleUrls: ['./transformation-detail.component.css']
@@ -151,7 +97,6 @@ export class TransformationDetailComponent implements OnInit {
     private router: Router,
     private transformationService: TransformationService,
     private projectService: ProjectService,
-    private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {}
 
@@ -664,62 +609,10 @@ export class TransformationDetailComponent implements OnInit {
   // =====================
 
   /**
-   * Called when a source resource is selected for a target row's source entry
+   * Called when resource mappings change from the child component
    */
-  onSourceResourceChanged(rowIndex: number, sourceIndex: number, sourceField: string | null): void {
-    const entry = this.resourceMappings[rowIndex].sourceMappings[sourceIndex];
-    entry.sourceField = sourceField;
-    if (sourceField) {
-      const parts = sourceField.split('.');
-      const entryPart = parts.find(p => p.startsWith('entry:'));
-      entry.sourceName = entryPart ? entryPart.replace('entry:', '') : sourceField;
-    } else {
-      entry.sourceName = null;
-    }
-  }
-
-  /**
-   * Called when a mapping is selected for a source entry
-   */
-  onResourceMappingChanged(rowIndex: number, sourceIndex: number, mappingId: string | null): void {
-    const entry = this.resourceMappings[rowIndex].sourceMappings[sourceIndex];
-    entry.mappingId = mappingId;
-    if (mappingId) {
-      const mapping = this.availableMappings.find(m => m.id === mappingId);
-      entry.mappingName = mapping?.name || null;
-    } else {
-      entry.mappingName = null;
-    }
-  }
-
-  /**
-   * Add a new source mapping entry to a target resource row
-   */
-  addSourceMapping(rowIndex: number): void {
-    this.resourceMappings[rowIndex].sourceMappings.push({
-      sourceField: null,
-      sourceName: null,
-      mappingId: null,
-      mappingName: null
-    });
-  }
-
-  /**
-   * Remove a source mapping entry from a target resource row
-   */
-  removeSourceMapping(rowIndex: number, sourceIndex: number): void {
-    const mappings = this.resourceMappings[rowIndex].sourceMappings;
-    if (mappings.length > 1) {
-      mappings.splice(sourceIndex, 1);
-    } else {
-      // Keep at least one entry, just clear it
-      mappings[0] = {
-        sourceField: null,
-        sourceName: null,
-        mappingId: null,
-        mappingName: null
-      };
-    }
+  onResourceMappingsChange(rows: ResourceMappingRow[]): void {
+    this.resourceMappings = rows;
   }
 
   /**
@@ -874,13 +767,10 @@ export class TransformationDetailComponent implements OnInit {
   // =====================
 
   /**
-   * Called when a copy_from source is selected for a value row
+   * Called when value mappings change from the child component
    */
-  onValueCopyFromChanged(index: number, sourceField: string | null): void {
-    this.valueMappings[index].copyFromSource = sourceField;
-    if (sourceField) {
-      this.valueMappings[index].action = 'copy_from';
-    }
+  onValueMappingsChange(rows: ValueMappingRow[]): void {
+    this.valueMappings = rows;
   }
 
   /**
@@ -964,19 +854,4 @@ export class TransformationDetailComponent implements OnInit {
     this.loadTransformation();
   }
 
-  /**
-   * Check if a resource mapping row has any mapping assigned
-   */
-  hasAnyMapping(row: ResourceMappingRow): boolean {
-    return row.sourceMappings.some(s => s.mappingId !== null);
-  }
-
-  /**
-   * Get indent style for nested value fields
-   */
-  getIndentStyle(depth: number): { [key: string]: string } {
-    return {
-      'padding-left': `${depth * 20}px`
-    };
-  }
 }

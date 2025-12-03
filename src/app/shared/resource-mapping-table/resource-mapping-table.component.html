@@ -1,0 +1,124 @@
+<!-- Resource Mapping Table Component Template -->
+<div class="resource-mapping-table-container">
+  <!-- Filter Bar -->
+  <app-filter-bar
+    [toggleLabel]="'Nur Resource-Typen anzeigen'"
+    [toggleEnabled]="filterEnabled"
+    [searchLabel]="'Suche in Quell-/Ziel-Ressourcen'"
+    [searchPlaceholder]="'z.B. Medication, entry:...'"
+    [searchText]="textFilter"
+    (toggleChange)="onFilterToggleChange($event)"
+    (searchTextChange)="onTextFilterChange($event)">
+  </app-filter-bar>
+
+  <p class="description">
+    Ordnen Sie den Ziel-Ressourcen die entsprechenden Quell-Ressourcen und Mappings zu.
+  </p>
+
+  <div *ngIf="filteredRows.length === 0" class="empty-state">
+    <mat-icon>info</mat-icon>
+    <p>Keine Resource-Felder im Ziel-Profil gefunden.</p>
+  </div>
+
+  <!-- Resource Mapping Table -->
+  <div *ngIf="filteredRows.length > 0" class="resource-mapping-table">
+    <!-- Header -->
+    <div class="table-header">
+      <div class="col source-col">
+        <mat-icon class="col-icon">input</mat-icon>
+        Quell-Ressource(n)
+      </div>
+      <div class="col mapping-col">
+        <mat-icon class="col-icon">swap_horiz</mat-icon>
+        Mapping
+      </div>
+      <div class="col target-col">
+        <mat-icon class="col-icon">output</mat-icon>
+        Ziel-Ressource
+      </div>
+    </div>
+
+    <!-- Rows -->
+    <div *ngFor="let rm of filteredRows; let rowIndex = index"
+         class="table-row"
+         [class.has-mapping]="hasAnyMapping(rm)">
+
+      <!-- Source Resources (multiple possible) -->
+      <div class="col source-col multi-source">
+        <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
+             class="source-entry">
+          <mat-form-field appearance="outline" class="source-select">
+            <mat-label>Quell-Ressource {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
+            <mat-select [ngModel]="sourceEntry.sourceField"
+                        (selectionChange)="onSourceResourceChanged(rowIndex, sourceIndex, $event.value)">
+              <mat-option [value]="null">-- Keine Quelle --</mat-option>
+              <mat-option *ngFor="let source of sourceFields" [value]="source.name">
+                {{ source.displayName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Remove source button -->
+          <button mat-icon-button
+                  *ngIf="rm.sourceMappings.length > 1 || sourceEntry.sourceField"
+                  (click)="removeSourceMapping(rowIndex, sourceIndex)"
+                  matTooltip="Quell-Ressource entfernen"
+                  class="remove-source-btn">
+            <mat-icon>remove_circle_outline</mat-icon>
+          </button>
+        </div>
+
+        <!-- Add source button -->
+        <button mat-stroked-button
+                (click)="addSourceMapping(rowIndex)"
+                class="add-source-btn"
+                matTooltip="Weitere Quell-Ressource hinzufügen">
+          <mat-icon>add</mat-icon>
+          Quelle hinzufügen
+        </button>
+      </div>
+
+      <!-- Mapping Selection (for each source) -->
+      <div class="col mapping-col multi-mapping">
+        <div *ngFor="let sourceEntry of rm.sourceMappings; let sourceIndex = index"
+             class="mapping-entry">
+          <mat-form-field appearance="outline" class="mapping-select">
+            <mat-label>Mapping {{ rm.sourceMappings.length > 1 ? (sourceIndex + 1) : '' }}</mat-label>
+            <mat-select [ngModel]="sourceEntry.mappingId"
+                        (selectionChange)="onResourceMappingChanged(rowIndex, sourceIndex, $event.value)"
+                        [disabled]="!sourceEntry.sourceField">
+              <mat-option [value]="null">-- Kein Mapping --</mat-option>
+              <mat-option *ngFor="let m of availableMappings" [value]="m.id">
+                {{ m.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div *ngIf="sourceEntry.mappingId" class="mapping-link">
+            <button mat-icon-button (click)="viewMapping(sourceEntry.mappingId)" matTooltip="Mapping öffnen">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Target Resource (fixed) -->
+      <div class="col target-col">
+        <div class="resource-name">{{ rm.targetName }}</div>
+        <div class="resource-path">{{ rm.targetField }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Button -->
+  <div class="actions-row">
+    <button mat-raised-button color="primary"
+            [disabled]="!hasChanges()"
+            (click)="onSave()">
+      <mat-icon>save</mat-icon>
+      Ressourcen-Zuordnungen speichern
+    </button>
+    <span *ngIf="hasChanges()" class="unsaved-hint">
+      Es gibt ungespeicherte Änderungen
+    </span>
+  </div>
+</div>
