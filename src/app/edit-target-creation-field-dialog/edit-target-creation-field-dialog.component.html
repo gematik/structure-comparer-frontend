@@ -5,7 +5,7 @@
   <!-- Field Information -->
   <div class="field-info-section">
     <h3>Field Information</h3>
-    
+
     <div class="info-grid">
       <div class="info-item">
         <label>Field Name:</label>
@@ -107,12 +107,12 @@
       <div class="help-content">
         <strong *ngIf="selectedAction === 'manual'">Manual Implementation:</strong>
         <strong *ngIf="selectedAction === 'fixed'">Fixed Value:</strong>
-        
+
         <p *ngIf="selectedAction === 'manual'">
-          This field will need to be implemented manually in your code. 
+          This field will need to be implemented manually in your code.
           Add notes above to document how it should be populated.
         </p>
-        
+
         <p *ngIf="selectedAction === 'fixed'">
           This field will be set to a constant value in the generated resource.
           Enter the exact value that should be used.

@@ -204,7 +204,7 @@
   <div class="pagination-info" *ngIf="filteredFields.length > pageSize">
     Showing {{ pageIndex * pageSize + 1 }} - {{ Math.min((pageIndex + 1) * pageSize, filteredFields.length) }}
     of {{ filteredFields.length }} fields
-    
+
     <div class="pagination-controls">
       <button
         mat-icon-button
@@ -214,9 +214,9 @@
       >
         <mat-icon>chevron_left</mat-icon>
       </button>
-      
+
       <span>Page {{ pageIndex + 1 }} of {{ Math.ceil(filteredFields.length / pageSize) }}</span>
-      
+
       <button
         mat-icon-button
         [disabled]="(pageIndex + 1) * pageSize >= filteredFields.length"

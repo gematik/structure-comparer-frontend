@@ -21,7 +21,7 @@
 
 /**
  * Target Creation Detail Component - Phase 8.2 Implementation
- * 
+ *
  * Displays detailed view of a Target Creation with field table.
  * Similar to MappingDetailComponent but simplified:
  * - No source profiles
@@ -138,17 +138,17 @@ export class TargetCreationDetailComponent implements OnInit {
   // === FILTERING ===
   applyTextFilter(): void {
     const filterValue = this.textFilterValue.toLowerCase();
-    
+
     if (!filterValue) {
       this.filteredFields = [...this.fields];
     } else {
-      this.filteredFields = this.fields.filter(field => 
+      this.filteredFields = this.fields.filter(field =>
         field.name.toLowerCase().includes(filterValue) ||
         field.types.some(t => t.toLowerCase().includes(filterValue)) ||
         (field.description && field.description.toLowerCase().includes(filterValue))
       );
     }
-    
+
     this.totalLength = this.filteredFields.length;
     this.pageIndex = 0;
   }
