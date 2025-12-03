@@ -1,0 +1,233 @@
+/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+ */
+
+/* Target Creation List Component Styles - Phase 8.1 */
+
+/* Section Heading */
+.section-heading {
+  margin: 1.5rem 0 1rem 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Table Styles */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.modern-table th {
+  background-color: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.modern-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.9rem;
+}
+
+/* Column Widths */
+.col-id {
+  width: 10%;
+}
+
+.col-wide {
+  width: 20%;
+}
+
+.col-version {
+  width: 8%;
+}
+
+.col-status {
+  width: 10%;
+}
+
+.col-narrow {
+  width: 8%;
+  text-align: center;
+}
+
+/* Clickable Elements */
+.clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.clickable:hover {
+  background-color: #e8e8e8;
+}
+
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.hover-highlight:hover {
+  background-color: #f8f9fa;
+}
+
+.clickable-row:hover {
+  background-color: #f5f5f5;
+}
+
+.clickable-row:active {
+  background-color: #e8e8e8;
+}
+
+/* Text Styles */
+.text-mono {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* Profile Info */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profile-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.profile-version {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Status Badge */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge--draft {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.badge--active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.badge--deprecated {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Status Count Pills */
+.pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 30px;
+}
+
+.pill--total {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.pill--action-required {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.pill--resolved {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.pill--optional {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
+/* Button Styles */
+.mat-icon-button-sm {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.mat-icon-button-sm mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+}
+
+/* Sort Indicators */
+th span {
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: #666;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .col-wide {
+    width: 15%;
+  }
+
+  .col-narrow {
+    width: 6%;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-table {
+    font-size: 0.8rem;
+  }
+
+  .modern-table th,
+  .modern-table td {
+    padding: 8px;
+  }
+
+  .section-heading {
+    font-size: 1.2rem;
+  }
+}
