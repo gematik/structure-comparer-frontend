@@ -60,6 +60,10 @@ import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overl
 import { Transformation } from '../models/transformation.model';
 import { TransformationService } from '../transformation.service';
 
+// Import Target Creation models and service
+import { TargetCreationListItem } from '../models/target-creation.model';
+import { TargetCreationService } from '../target-creation.service';
+import { TargetCreationListComponent } from '../shared/target-creation-list/target-creation-list.component';
 
 
 
@@ -76,6 +80,7 @@ import { TransformationService } from '../transformation.service';
     ComparisonListComponent,
     MappingListComponent,
     TransformationListComponent,
+    TargetCreationListComponent,
     LoadingOverlayComponent
   ],
   templateUrl: './edit-project.component.html',
@@ -88,6 +93,7 @@ export class EditProjectComponent implements OnInit {
   comparisons: Comparison[] = [];
   mappings: Mapping[] = [];
   transformations: Transformation[] = [];
+  targetCreations: TargetCreationListItem[] = [];
 
   // Project identification
   projectName: string = '';
@@ -151,12 +157,27 @@ export class EditProjectComponent implements OnInit {
     this.refreshProjectData();
   }
 
+  // Target Creation event handlers
+  onTargetCreationViewed(targetCreationId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'target-creation', targetCreationId]);
+  }
+
+  onTargetCreationDeleted(event: { id: string; name: string }): void {
+    this.targetCreations = this.targetCreations.filter(tc => tc.id !== event.id);
+    console.log(`Target Creation ${event.name} deleted`);
+  }
+
+  onTargetCreationCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private projectService: ProjectService,
     private comparisonService: ComparisonService,
     private transformationService: TransformationService,
+    private targetCreationService: TargetCreationService,
     private router: Router,
     private dialog: MatDialog,
     private packageService: PackageService,
@@ -188,6 +209,9 @@ export class EditProjectComponent implements OnInit {
       // Load transformations from API
       this.loadTransformations();
 
+      // Load target creations from API
+      this.loadTargetCreations();
+
       this.hydrateCounts();
     } else {
       console.error('Project data could not be loaded!');
@@ -206,6 +230,22 @@ export class EditProjectComponent implements OnInit {
       error: (err) => {
         console.error('Error loading transformations:', err);
         this.transformations = [];
+      }
+    });
+  }
+
+  /**
+   * Loads target creations for the current project from the API
+   */
+  private loadTargetCreations(): void {
+    this.targetCreationService.getTargetCreations(this.projectKey).subscribe({
+      next: (targetCreations) => {
+        this.targetCreations = targetCreations;
+        console.log('Target Creations loaded:', targetCreations.length);
+      },
+      error: (err) => {
+        console.error('Error loading target creations:', err);
+        this.targetCreations = [];
       }
     });
   }

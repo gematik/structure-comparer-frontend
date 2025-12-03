@@ -1,0 +1,139 @@
+<!-- Edit Target Creation Field Dialog - Phase 8.3 Template -->
+<h2 mat-dialog-title>Edit Target Creation Field</h2>
+
+<mat-dialog-content>
+  <!-- Field Information -->
+  <div class="field-info-section">
+    <h3>Field Information</h3>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <label>Field Name:</label>
+        <span class="field-name">{{ data.field.name }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Types:</label>
+        <span>{{ data.field.types.join(', ') }}</span>
+      </div>
+
+      <div class="info-item">
+        <label>Cardinality:</label>
+        <span [class.mandatory]="isMandatory()">
+          {{ formatCardinality() }}
+          <span *ngIf="isMandatory()" class="mandatory-badge">MANDATORY</span>
+        </span>
+      </div>
+
+      <div class="info-item" *ngIf="data.field.extension">
+        <label>Extension:</label>
+        <span class="extension-url">{{ data.field.extension }}</span>
+      </div>
+
+      <div class="info-item full-width" *ngIf="data.field.description">
+        <label>Description:</label>
+        <span>{{ data.field.description }}</span>
+      </div>
+    </div>
+
+    <!-- Target Profile -->
+    <div class="profile-info">
+      <label>Target Profile:</label>
+      <a [href]="data.target.webUrl || data.target.url" target="_blank">
+        {{ data.target.name }} ({{ data.target.version }})
+      </a>
+    </div>
+
+    <!-- Current Action Display -->
+    <div class="current-action" *ngIf="data.field.action_info">
+      <label>Current Action:</label>
+      <app-mapping-action-display [actionInfo]="data.field.action_info"></app-mapping-action-display>
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Action Selection -->
+  <div class="action-selection-section">
+    <h3>Define Action</h3>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Action</mat-label>
+      <mat-select [(ngModel)]="selectedAction" (ngModelChange)="onActionChange()">
+        <mat-option [value]="null">— No Action —</mat-option>
+        <mat-option value="manual">
+          <div class="action-option">
+            <span class="action-badge action-manual">manual</span>
+            <span class="action-description">Manually implement in code</span>
+          </div>
+        </mat-option>
+        <mat-option value="fixed">
+          <div class="action-option">
+            <span class="action-badge action-fixed">fixed</span>
+            <span class="action-description">Set to fixed value</span>
+          </div>
+        </mat-option>
+      </mat-select>
+      <mat-hint>Choose how this field should be populated</mat-hint>
+    </mat-form-field>
+
+    <!-- Fixed Value Input (only for action=fixed) -->
+    <mat-form-field appearance="outline" class="full-width" *ngIf="selectedAction === 'fixed'">
+      <mat-label>Fixed Value</mat-label>
+      <input
+        matInput
+        [(ngModel)]="fixedValue"
+        placeholder="Enter fixed value for this field"
+        required
+      />
+      <mat-hint>The constant value to set for this field</mat-hint>
+    </mat-form-field>
+
+    <!-- Remark Input (for action=manual) -->
+    <mat-form-field appearance="outline" class="full-width" *ngIf="selectedAction === 'manual'">
+      <mat-label>Implementation Notes</mat-label>
+      <textarea
+        matInput
+        [(ngModel)]="remarkText"
+        placeholder="Optional: Add notes on how to implement this field..."
+        rows="4"
+      ></textarea>
+      <mat-hint>Optional implementation guidance or notes</mat-hint>
+    </mat-form-field>
+
+    <!-- Action Explanation -->
+    <div class="action-help" *ngIf="selectedAction">
+      <mat-icon>info</mat-icon>
+      <div class="help-content">
+        <strong *ngIf="selectedAction === 'manual'">Manual Implementation:</strong>
+        <strong *ngIf="selectedAction === 'fixed'">Fixed Value:</strong>
+        
+        <p *ngIf="selectedAction === 'manual'">
+          This field will need to be implemented manually in your code. 
+          Add notes above to document how it should be populated.
+        </p>
+        
+        <p *ngIf="selectedAction === 'fixed'">
+          This field will be set to a constant value in the generated resource.
+          Enter the exact value that should be used.
+        </p>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="isSaving">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="save()"
+    [disabled]="!canSave() || isSaving"
+  >
+    <mat-icon *ngIf="isSaving">hourglass_empty</mat-icon>
+    <span *ngIf="!isSaving">Save</span>
+    <span *ngIf="isSaving">Saving...</span>
+  </button>
+</mat-dialog-actions>

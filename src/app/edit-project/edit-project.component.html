@@ -177,6 +177,16 @@
   >
   </app-transformation-list>
 
+  <!-- Target Creation List Component -->
+  <app-target-creation-list
+    [targetCreations]="targetCreations"
+    [projectKey]="projectKey"
+    (targetCreationViewed)="onTargetCreationViewed($event)"
+    (targetCreationDeleted)="onTargetCreationDeleted($event)"
+    (targetCreationCreated)="onTargetCreationCreated($event)"
+  >
+  </app-target-creation-list>
+
   <!-- Manual Entries Import Section -->
   <div class="manual-entries-import-card mat-elevation-z2">
     <div class="import-card-header">
