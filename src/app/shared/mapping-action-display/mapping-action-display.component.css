@@ -87,11 +87,16 @@
   border-color: #ff9800;
 }
 
-.detail-badge--manual,
-.detail-badge--extension {
+.detail-badge--manual {
   background-color: #fff9c4;
   color: #f57f17;
   border-color: #ffeb3b;
+}
+
+.detail-badge--extension {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
 }
 
 .detail-badge--system {
@@ -167,6 +172,11 @@
   border-color: #ffeb3b;
 }
 
+.action-chip--extension {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
+}
 
 .action-chip--medication_service {
   background-color: #ffcdd2;

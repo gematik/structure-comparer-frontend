@@ -171,6 +171,16 @@
   background-color: #fff9c4;
 }
 
+.action-button[data-action="extension"] {
+  background-color: #e0f2f1;
+  color: #00695c;
+}
+
+.action-button[data-action="extension"].selected {
+  border-color: #009688;
+  background-color: #b2dfdb;
+}
+
 .action-button[data-action="medication_service"] {
   background-color: #ffebee;
   color: #d32f2f;

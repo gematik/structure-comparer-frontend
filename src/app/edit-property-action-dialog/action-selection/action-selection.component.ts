@@ -69,7 +69,8 @@ export class ActionSelectionComponent {
       'copy_from': 'arrow_back',
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
-      'manual': 'edit'
+      'manual': 'edit',
+      'extension': 'extension'
     };
     return icons[action] || 'help_outline';
   }
@@ -88,7 +89,8 @@ export class ActionSelectionComponent {
       'copy_from': 'COPY_FROM',
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
-      'manual': 'MANUAL'
+      'manual': 'MANUAL',
+      'extension': 'EXTENSION'
     };
     return labels[action] || action.toUpperCase();
   }

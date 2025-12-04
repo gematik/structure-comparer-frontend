@@ -504,7 +504,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Checks if the current action requires a target field
    */
   requiresTargetField(): boolean {
-    return this.selectedAction === 'copy_from' || this.selectedAction === 'copy_to';
+    return this.selectedAction === 'copy_from' || this.selectedAction === 'copy_to' || this.selectedAction === 'extension';
   }
 
   /**

@@ -387,6 +387,12 @@ table {
   color: #1565c0;
 }
 
+.mapping-consolidated[data-action="extension"] .mapping-details {
+  background-color: #e0f2f1;
+  border-left-color: #009688;
+  color: #00695c;
+}
+
 .mapping-consolidated[data-action="fixed"] .mapping-details {
   background-color: #fff3e0;
   border-left-color: #ff9800;

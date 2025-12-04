@@ -231,6 +231,7 @@
         <mat-label>
           <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
           <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
+          <span *ngIf="selectedAction === 'extension'">Zielfeld für Extension</span>
         </mat-label>
 
         <!-- Display selected field with formatting above input -->
@@ -297,6 +298,9 @@
         </span>
         <span *ngIf="selectedAction === 'copy_to'">
           Der Wert wird in das ausgewählte Zielfeld kopiert
+        </span>
+        <span *ngIf="selectedAction === 'extension'">
+          Die Extension wird in das ausgewählte Zielfeld übertragen
         </span>
       </div>
     </div>

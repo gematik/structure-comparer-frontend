@@ -51,6 +51,7 @@ export const ACTION_CSS: Record<string, string> = {
   copy_from: 'row-copy-from',
   copy_to: 'row-copy-to',
   fixed: 'row-fixed',
+  extension: 'row-extension',
   // Special styling for fields with no action selected
   'no-action': 'row-no-action',
 };
@@ -103,6 +104,7 @@ const ACTION_LABELS: Record<ActionType, string> = {
   copy_to: 'copy_to',
   fixed: 'fixed',
   manual: 'manual',
+  extension: 'extension',
   // Note: 'manual' action means user has provided free-text implementation instructions in remark field
   // null action means no action selected yet - user must decide
 };
@@ -124,7 +126,7 @@ export class MappingTextHelper {
       ? ` (vererbt von ${actionInfo.inherited_from})`
       : '';
 
-    if (actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') {
+    if (actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') {
       const target = actionInfo.other_value;
       if (typeof target === 'string' && target.trim().length > 0) {
         return `${base} (${target})${inheritedSuffix}`;
@@ -167,7 +169,7 @@ export class MappingTextHelper {
       return fixed ? `Festwert: ${fixed}` : null;
     }
 
-    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') && actionInfo.other_value) {
       const other = MappingTextHelper.formatValue(actionInfo.other_value);
       return other ? `Referenz: ${other}` : null;
     }
@@ -197,7 +199,7 @@ export class MappingTextHelper {
       }
     }
 
-    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') && actionInfo.other_value) {
       const reference = MappingTextHelper.formatValue(actionInfo.other_value);
       if (reference) {
         lines.push(`Referenz: ${reference}`);
@@ -347,7 +349,7 @@ export class EvaluationHelper {
       // Format user-friendly messages based on message_key
       const classification = reason.details?.['classification'] as string;
       const fieldName = reason.details?.['field'] as string;
-      
+
       switch (reason.message_key) {
         case 'mapping.reason.field.incompatible':
           if (classification === 'incompatible') {
@@ -360,7 +362,7 @@ export class EvaluationHelper {
             return '❌ Datentypen sind inkompatibel\n→ Fügen Sie eine Transform-Aktion hinzu, um den Typ zu konvertieren';
           }
           return '❌ Feld ist inkompatibel\n→ Fügen Sie eine passende Mapping-Aktion hinzu';
-        
+
         case 'mapping.reason.field.warning':
           if (classification === 'removed_from_source') {
             return '⚠️ Feld wurde aus der Quelle entfernt\n→ Prüfen Sie, ob das Mapping noch benötigt wird';
@@ -368,26 +370,26 @@ export class EvaluationHelper {
             return '⚠️ Neues Feld im Ziel hinzugefügt\n→ Prüfen Sie, ob eine Mapping-Aktion erforderlich ist';
           }
           return '⚠️ Feld hat Warnungen\n→ Überprüfen Sie das Feld und erwägen Sie eine Anpassung';
-        
+
         case 'mapping.reason.field.incompatible.resolved':
           const resolvedAction = reason.related_action || 'Mapping-Aktion';
           return `✓ Inkompatibilität gelöst durch: ${resolvedAction}`;
-        
+
         case 'mapping.reason.field.warning.resolved':
           const warningAction = reason.related_action || 'Mapping-Aktion';
           return `✓ Warnung adressiert durch: ${warningAction}`;
-        
+
         case 'mapping.reason.target_required.not_use':
           return `❌ Pflichtfeld im Ziel kann nicht ignoriert werden${fieldName ? ': ' + fieldName : ''}\n→ Entfernen Sie die 'not_use' Aktion oder fügen Sie eine andere Aktion hinzu`;
-        
+
         case 'mapping.reason.parent.inherited_incompatible':
           // This should be filtered out in getFieldStatusTooltip, but just in case
           const childCount = reason.details?.['incompatible_children_count'] as number;
           return `⚠️ Inkompatibilität vererbt von ${childCount} Kind-Feld${childCount === 1 ? '' : 'ern'}\n→ Lösen Sie die Probleme in den Kind-Feldern`;
-        
+
         default:
           // Fallback: Show technical details but more readable
-          const severity = reason.severity === 'error' ? '❌' : 
+          const severity = reason.severity === 'error' ? '❌' :
                           reason.severity === 'warning' ? '⚠️' : 'ℹ️';
           const actionSuffix = reason.related_action ? ` (Aktion: ${reason.related_action})` : '';
           return `${severity} ${reason.message_key}${actionSuffix}`;
@@ -424,70 +426,70 @@ export class StatusHelper {
   static getFieldStatus(field: MappingField): MappingStatus {
     return this.getStatusFromEvaluation(field.evaluation) ?? this.getFallbackStatus(field);
   }
-  
+
   /**
    * Check if a field has inherited incompatibility from its children
    */
   static hasInheritedIncompatibility(field: MappingField): boolean {
     const evaluation = field.evaluation;
     if (!evaluation) return false;
-    
+
     return evaluation.reasons.some(
       reason => reason.code === 'INHERITED_INCOMPATIBLE_FROM_CHILDREN'
     );
   }
-  
+
   /**
    * Get list of incompatible children for a field with inherited incompatibility
    */
   static getIncompatibleChildren(field: MappingField): string[] {
     const evaluation = field.evaluation;
     if (!evaluation) return [];
-    
+
     const inheritedReason = evaluation.reasons.find(
       reason => reason.code === 'INHERITED_INCOMPATIBLE_FROM_CHILDREN'
     );
-    
+
     if (inheritedReason && inheritedReason.details) {
       return (inheritedReason.details['incompatible_children'] as string[]) || [];
     }
-    
+
     return [];
   }
 
   static getLabelForStatus(status: MappingStatus): string {
     return STATUS_META[status]?.label ?? STATUS_META[FALLBACK_STATUS].label;
   }
-  
+
   /**
    * Get label for status with special handling for inherited incompatibility
    */
   static getLabelForField(field: MappingField): string {
     const status = this.getFieldStatus(field);
-    
+
     // Check if this is an inherited incompatibility
     if (status === 'incompatible' && this.hasInheritedIncompatibility(field)) {
       return INHERITED_INCOMPATIBLE_META.label;
     }
-    
+
     return this.getLabelForStatus(status);
   }
 
   static getClassForStatus(status: MappingStatus): string {
     return STATUS_META[status]?.cssClass ?? STATUS_META[FALLBACK_STATUS].cssClass;
   }
-  
+
   /**
    * Get CSS class for status with special handling for inherited incompatibility
    */
   static getClassForField(field: MappingField): string {
     const status = this.getFieldStatus(field);
-    
+
     // Check if this is an inherited incompatibility
     if (status === 'incompatible' && this.hasInheritedIncompatibility(field)) {
       return INHERITED_INCOMPATIBLE_META.cssClass;
     }
-    
+
     return this.getClassForStatus(status);
   }
 
@@ -508,12 +510,12 @@ export class StatusHelper {
     if (this.hasInheritedIncompatibility(field)) {
       const children = this.getIncompatibleChildren(field);
       const lines: string[] = [];
-      
-      const childrenInfo = children.length > 0 
+
+      const childrenInfo = children.length > 0
         ? ` (${children.length} inkompatible${children.length === 1 ? 's' : ''} Kind-Feld${children.length === 1 ? '' : 'er'})`
         : '';
       lines.push(`⚠️ Inkompatibel vererbt von Kind-Feldern${childrenInfo}`);
-      
+
       // Add list of incompatible children that need to be solved
       if (children.length > 0) {
         lines.push(''); // Empty line for separation
@@ -522,16 +524,16 @@ export class StatusHelper {
           lines.push(`  • ${child}`);
         });
       }
-      
+
       return lines;
     }
-    
+
     // For non-inherited incompatibility, show evaluation details
     const evaluationLines = EvaluationHelper.buildEvaluationTooltipLines(field.evaluation);
     if (evaluationLines.length > 0) {
       return evaluationLines;
     }
-    
+
     return [this.getDefaultTooltip(this.getFieldStatus(field))];
   }
 }

@@ -57,6 +57,7 @@ export type MappingAction =
   | 'copy_to'
   | 'fixed'
   | 'manual'
+  | 'extension'
   | null;
 
 /**

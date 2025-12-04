@@ -121,7 +121,8 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'medication_service': 'local_pharmacy'
+      'medication_service': 'local_pharmacy',
+      'extension': 'extension'
     };
     return icons[action!] || 'help_outline';
   }
@@ -139,7 +140,8 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_to': 'COPY_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'medication_service': 'MEDICATION_SERVICE'
+      'medication_service': 'MEDICATION_SERVICE',
+      'extension': 'EXTENSION'
     };
     return labels[action!] || action!.toUpperCase();
   }
