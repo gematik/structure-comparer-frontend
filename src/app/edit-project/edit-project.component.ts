@@ -1,3 +1,23 @@
+﻿/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+ */
 /**
  * Component for editing and managing a specific project
  * Displays project details, packages, mappings, and comparisons
@@ -51,9 +71,9 @@ export class EditProjectComponent implements OnInit {
   isLoading = false;  // Track global loading state
   
   // FontAwesome icons for UI elements
-  faEdit = faEdit;   // Icon für den Edit-Button
-  faPlus = faPlus;   // Icon für den Plus-Button
-  faTrash = faTrash; // Icon für den Delete-Button
+  faEdit = faEdit;   // Icon fÃ¼r den Edit-Button
+  faPlus = faPlus;   // Icon fÃ¼r den Plus-Button
+  faTrash = faTrash; // Icon fÃ¼r den Delete-Button
   
   constructor(
     private route: ActivatedRoute,
@@ -94,7 +114,7 @@ export class EditProjectComponent implements OnInit {
   /**
    * Fallback method to reload project data from server
    * Used when cached data is not available
-   * Diese Methode ist der Fallback, falls das Übertragen der Daten aus dem Aufruf dieser Seite nicht funktioniert hat.
+   * Diese Methode ist der Fallback, falls das Ãœbertragen der Daten aus dem Aufruf dieser Seite nicht funktioniert hat.
    */
   private async reloadProject() {
     const projectKey = this.route.snapshot.paramMap.get('projectKey');
