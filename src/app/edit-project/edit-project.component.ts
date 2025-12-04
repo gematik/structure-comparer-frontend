@@ -194,7 +194,7 @@ export class EditProjectComponent implements OnInit {
   deletePackageWithConfirm(packageId: string, packageName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: `Do you really want to delete the package "${packageName}"?` }
+      data: { message: `Do you really want to delete the package "${packageName}"? IMPORTANT: When deleting this package, all associated data (e.g. the mappings and comparisons) will also be removed.` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.isLoading = true;
