@@ -200,6 +200,49 @@ export class TransformationService {
   }
 
   /**
+   * Links a target creation to a transformation field
+   * @param projectKey The unique identifier of the project
+   * @param transformationId The unique identifier of the transformation
+   * @param fieldName The name of the field
+   * @param targetCreationId The ID of the target creation to link
+   * @returns Observable containing the updated field
+   */
+  linkTargetCreation(
+    projectKey: string,
+    transformationId: string,
+    fieldName: string,
+    targetCreationId: string
+  ): Observable<TransformationField> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedTransformationId = encodeURIComponent(transformationId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    return this.http.post<TransformationField>(
+      `${this.baseUrl}/project/${encodedProjectKey}/transformation/${encodedTransformationId}/field/${encodedFieldName}/link-target-creation`,
+      targetCreationId
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Unlinks a target creation from a transformation field
+   * @param projectKey The unique identifier of the project
+   * @param transformationId The unique identifier of the transformation
+   * @param fieldName The name of the field
+   * @returns Observable containing the updated field
+   */
+  unlinkTargetCreation(
+    projectKey: string,
+    transformationId: string,
+    fieldName: string
+  ): Observable<TransformationField> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedTransformationId = encodeURIComponent(transformationId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    return this.http.delete<TransformationField>(
+      `${this.baseUrl}/project/${encodedProjectKey}/transformation/${encodedTransformationId}/field/${encodedFieldName}/link-target-creation`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
    * Error handler for HTTP requests
    */
   private handleError(error: HttpErrorResponse) {

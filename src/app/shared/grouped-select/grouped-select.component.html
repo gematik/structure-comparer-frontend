@@ -16,7 +16,8 @@
 
   <mat-autocomplete #auto="matAutocomplete"
                     autoActiveFirstOption
-                    class="grouped-autocomplete">
+                    class="grouped-autocomplete"
+                    (optionSelected)="onAutocompleteSelected($event)">
     @for (group of filteredGroups; track trackByGroupName($index, group)) {
       <!-- Group Header (clickable to toggle) -->
       <div class="group-header"
@@ -33,9 +34,8 @@
       <!-- Group Options (only visible when not collapsed) -->
       @if (!isGroupCollapsed(group.name)) {
         @for (option of group.options; track trackByValue($index, option)) {
-          <mat-option [value]="option"
-                      class="grouped-option"
-                      (onSelectionChange)="onOptionSelected(option)">
+          <mat-option [value]="option.value"
+                      class="grouped-option">
             {{ option.label }}
           </mat-option>
         }

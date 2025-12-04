@@ -86,6 +86,8 @@ export interface TransformationField {
   remark?: string;
   map?: string;  // Reference to a child Mapping ID
   map_name?: string;  // Resolved name of the linked mapping
+  target_creation?: string;  // Reference to a Target Creation ID
+  target_creation_name?: string;  // Resolved name of the linked target creation
   source_min?: number | string;
   source_max?: number | string;
   target_min?: number | string;
@@ -165,6 +167,7 @@ export interface TransformationFieldUpdateRequest {
   fixed?: string;
   remark?: string;
   map?: string;
+  target_creation?: string;
 }
 
 /**

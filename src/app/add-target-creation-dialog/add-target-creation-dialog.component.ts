@@ -28,7 +28,6 @@
 
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -51,7 +50,6 @@ export interface AddTargetCreationDialogData {
   imports: [
     CommonModule,
     MatDialogModule,
-    FormsModule,
     MatSelectModule,
     MatFormFieldModule,
     MatButtonModule,
@@ -103,6 +101,10 @@ export class AddTargetCreationDialogComponent implements OnInit {
     }));
   }
 
+  onProfileSelected(profileKey: string | null): void {
+    this.targetProfileKey = profileKey || '';
+  }
+
   canCreate(): boolean {
     return this.targetProfileKey.length > 0 && !this.isCreating;
   }
@@ -126,12 +128,7 @@ export class AddTargetCreationDialogComponent implements OnInit {
     this.isCreating = true;
 
     const input: TargetCreationCreateInput = {
-      targetprofile: {
-        url: selectedProfile.url,
-        version: selectedProfile.version,
-        webUrl: selectedProfile.webUrl,
-        package: selectedProfile.package
-      }
+      target_id: selectedProfile.key
     };
 
     this.targetCreationService.createTargetCreation(this.projectKey, input).subscribe({

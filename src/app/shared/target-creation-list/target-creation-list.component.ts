@@ -35,6 +35,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { TargetCreationListItem } from '../../models/target-creation.model';
+import { AddTargetCreationDialogComponent, AddTargetCreationDialogData } from '../../add-target-creation-dialog/add-target-creation-dialog.component';
 
 type SortState = { col: string; dir: 'asc' | 'desc' };
 
@@ -253,24 +254,23 @@ export class TargetCreationListComponent {
 
   /**
    * Opens dialog to add a new target creation
-   * TODO: Implement AddTargetCreationDialogComponent in Phase 8.4
    */
   openAddTargetCreationDialog(): void {
-    // Placeholder for Phase 8.4 - Add Target Creation Dialog
-    console.log('Add Target Creation dialog - to be implemented in Phase 8.4');
+    const dialogData: AddTargetCreationDialogData = {
+      projectKey: this.projectKey
+    };
 
-    // When implemented, will be:
-    // const dialogRef = this.dialog.open(AddTargetCreationDialogComponent, {
-    //   width: '600px',
-    //   data: { projectKey: this.projectKey }
-    // });
-    //
-    // dialogRef.afterClosed().subscribe(result => {
-    //   if (result) {
-    //     this.targetCreationCreated.emit(result);
-    //     this.changed.emit();
-    //   }
-    // });
+    const dialogRef = this.dialog.open(AddTargetCreationDialogComponent, {
+      width: '600px',
+      data: dialogData
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.targetCreationCreated.emit(result);
+        this.changed.emit();
+      }
+    });
   }
 
   /**

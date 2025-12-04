@@ -12,7 +12,8 @@
     <h3>Select Target Profile</h3>
 
     <app-grouped-select
-      [(ngModel)]="targetProfileKey"
+      [value]="targetProfileKey"
+      (valueChange)="onProfileSelected($event)"
       [options]="profileOptions"
       placeholder="Choose target profile..."
       label="Target Profile"

@@ -45,9 +45,12 @@
     </div>
 
     <!-- Current Action Display -->
-    <div class="current-action" *ngIf="data.field.action_info">
+    <div class="current-action" *ngIf="data.field.action">
       <label>Current Action:</label>
-      <app-mapping-action-display [actionInfo]="data.field.action_info"></app-mapping-action-display>
+      <div class="action-display">
+        <mat-icon>{{ getActionIcon(data.field.action) }}</mat-icon>
+        <span>{{ getActionLabel(data.field.action) }}</span>
+      </div>
     </div>
   </div>
 

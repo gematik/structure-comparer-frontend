@@ -178,7 +178,7 @@ export class GroupedSelectComponent implements OnInit, OnChanges, OnDestroy {
    * Apply text filter to options
    */
   private applyFilter(): void {
-    const query = this.inputValue.trim().toLowerCase();
+    const query = (this.inputValue || '').trim().toLowerCase();
 
     if (!query) {
       // No filter - show all groups with their collapse state
@@ -209,12 +209,14 @@ export class GroupedSelectComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Handle input text change
    */
-  onInputChange(value: string): void {
-    this.inputValue = value;
-    this.inputSubject.next(value);
+  onInputChange(value: string | any): void {
+    // Handle both string input and potential object from mat-autocomplete
+    const stringValue = typeof value === 'string' ? value : '';
+    this.inputValue = stringValue;
+    this.inputSubject.next(stringValue);
 
     // If input is empty, clear the selection
-    if (!value.trim()) {
+    if (!stringValue.trim()) {
       this.valueChange.emit(null);
     }
   }
@@ -225,6 +227,22 @@ export class GroupedSelectComponent implements OnInit, OnChanges, OnDestroy {
   onOptionSelected(option: GroupedSelectOption): void {
     this.inputValue = option.label;
     this.valueChange.emit(option.value);
+  }
+
+  /**
+   * Handle autocomplete selection event (triggered by Enter or mouse click)
+   */
+  onAutocompleteSelected(event: any): void {
+    // The event.option.value contains the option.value (string) we set in [value]
+    const selectedValue = event.option.value;
+    
+    // Find the full option object by value
+    const option = this.options.find(o => o.value === selectedValue);
+    if (option) {
+      this.inputValue = option.label;
+      this.valueChange.emit(option.value);
+      this.cdr.markForCheck();
+    }
   }
 
   /**

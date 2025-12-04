@@ -96,6 +96,12 @@ export interface TargetCreationField {
   description?: string;
   // Allowed actions (always ['manual', 'fixed'] for Target Creation)
   actions_allowed: TargetCreationAction[];
+  // Current action (manual or fixed)
+  action?: TargetCreationAction | null;
+  // Fixed value (when action=fixed)
+  fixed?: string | null;
+  // Remark (when action=manual)
+  remark?: string | null;
   // Detailed action metadata from backend
   action_info?: ActionInfo;
   // Evaluation result from backend
@@ -165,11 +171,11 @@ export interface TargetCreationDetail {
 
 /**
  * Input for creating a new Target Creation
- * Only target profile is required - fields are auto-generated from profile
+ * Only target profile ID is required - fields are auto-generated from profile
  */
 export interface TargetCreationCreateInput {
-  // Target profile to create structure for
-  targetprofile: ProfileReference;
+  // Target profile ID from packages
+  target_id: string;
 }
 
 /**

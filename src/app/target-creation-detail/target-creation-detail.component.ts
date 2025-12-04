@@ -45,8 +45,6 @@ import { catchError, of } from 'rxjs';
 import { TargetCreationService } from '../target-creation.service';
 import { TargetCreationDetail, TargetCreationField, TargetCreationStatusCounts } from '../models/target-creation.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
-import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
-import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
 import { EditTargetCreationFieldDialogComponent, EditTargetCreationFieldDialogData } from '../edit-target-creation-field-dialog/edit-target-creation-field-dialog.component';
 
 @Component({
@@ -60,9 +58,7 @@ import { EditTargetCreationFieldDialogComponent, EditTargetCreationFieldDialogDa
     MatInputModule,
     MatIcon,
     MatTooltip,
-    TreeTableComponent,
-    MappingActionDisplayComponent,
-    MappingStatusDisplayComponent,
+    TreeTableComponent
   ],
   templateUrl: './target-creation-detail.component.html',
   styleUrls: ['./target-creation-detail.component.css'],
@@ -236,5 +232,23 @@ export class TargetCreationDetailComponent implements OnInit {
   exportAsYaml(): void {
     this.snackBar.open('YAML Export wird implementiert', 'OK', { duration: 2000 });
     // TODO: Implement YAML export (manual_entries.yaml format)
+  }
+
+  getActionIcon(action: string | null): string {
+    if (!action) return 'help_outline';
+    const icons: { [key: string]: string } = {
+      'manual': 'edit',
+      'fixed': 'lock'
+    };
+    return icons[action] || 'help_outline';
+  }
+
+  getActionLabel(action: string | null): string {
+    if (!action) return 'No Action';
+    const labels: { [key: string]: string } = {
+      'manual': 'Manual',
+      'fixed': 'Fixed'
+    };
+    return labels[action] || action;
   }
 }

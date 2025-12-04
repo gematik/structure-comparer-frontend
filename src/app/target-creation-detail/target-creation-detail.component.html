@@ -167,20 +167,20 @@
             {{ formatCardinality(field) }}
           </td>
           <td class="field-action">
-            <app-mapping-action-display
-              *ngIf="field.action_info"
-              [actionInfo]="field.action_info"
-            ></app-mapping-action-display>
-            <span *ngIf="!field.action_info" class="no-action">—</span>
+            <div *ngIf="field.action" class="action-display">
+              <mat-icon class="action-icon">{{ getActionIcon(field.action) }}</mat-icon>
+              <span>{{ getActionLabel(field.action) }}</span>
+            </div>
+            <span *ngIf="!field.action" class="no-action">—</span>
           </td>
           <td class="field-value">
-            <span *ngIf="field.action_info?.action === 'fixed'" class="fixed-value">
-              {{ field.action_info.fixed || '—' }}
+            <span *ngIf="field.action === 'fixed'" class="fixed-value">
+              {{ field.fixed || '—' }}
             </span>
-            <span *ngIf="field.action_info?.action === 'manual'" class="manual-remark">
-              {{ field.action_info.remark || '—' }}
+            <span *ngIf="field.action === 'manual'" class="manual-remark">
+              {{ field.remark || '—' }}
             </span>
-            <span *ngIf="!field.action_info">—</span>
+            <span *ngIf="!field.action">—</span>
           </td>
         </tr>
       </tbody>
@@ -189,15 +189,6 @@
     <div *ngIf="filteredFields.length === 0" class="no-results">
       No fields match your filter criteria.
     </div>
-  </div>
-
-  <!-- Fields Table (Tree View) -->
-  <div *ngIf="viewMode === 'tree'">
-    <app-tree-table
-      [fields]="filteredFields"
-      [config]="treeTableConfig"
-      (fieldClick)="openEditFieldDialog($event)"
-    ></app-tree-table>
   </div>
 
   <!-- Pagination -->

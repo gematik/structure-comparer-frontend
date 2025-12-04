@@ -40,7 +40,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { TargetCreationAction, TargetCreationField, TargetCreationFieldUpdate, ProfileInfo } from '../models/target-creation.model';
 import { TargetCreationService } from '../target-creation.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 
 export interface EditTargetCreationFieldDialogData {
   field: TargetCreationField;
@@ -62,8 +61,7 @@ export interface EditTargetCreationFieldDialogData {
     MatSelectModule,
     MatIconModule,
     MatTooltipModule,
-    MatDividerModule,
-    MappingActionDisplayComponent
+    MatDividerModule
   ],
   templateUrl: './edit-target-creation-field-dialog.component.html',
   styleUrl: './edit-target-creation-field-dialog.component.css'
@@ -149,5 +147,23 @@ export class EditTargetCreationFieldDialogComponent {
 
   isMandatory(): boolean {
     return this.data.field.min > 0;
+  }
+
+  getActionIcon(action: TargetCreationAction | null): string {
+    if (!action) return 'help_outline';
+    const icons: { [key: string]: string } = {
+      'manual': 'edit',
+      'fixed': 'lock'
+    };
+    return icons[action] || 'help_outline';
+  }
+
+  getActionLabel(action: TargetCreationAction | null): string {
+    if (!action) return 'No Action';
+    const labels: { [key: string]: string } = {
+      'manual': 'Manual',
+      'fixed': 'Fixed'
+    };
+    return labels[action] || action;
   }
 }
