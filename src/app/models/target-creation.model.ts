@@ -138,8 +138,11 @@ export interface TargetCreationListItem {
   status: string;
   // Target profile information
   target: ProfileInfo;
-  // Status counts for overview
-  status_counts: TargetCreationStatusCounts;
+  // Status counts (as direct fields in list endpoint)
+  total: number;
+  action_required: number;
+  resolved: number;
+  optional_pending: number;
   // Last update timestamp
   last_updated: string;
 }
@@ -163,8 +166,11 @@ export interface TargetCreationDetail {
   target: ProfileInfo;
   // All fields with their actions and evaluations
   fields: TargetCreationField[];
-  // Status counts
-  status_counts: TargetCreationStatusCounts;
+  // Status counts (as direct fields)
+  total: number;
+  action_required: number;
+  resolved: number;
+  optional_pending: number;
   // Last update timestamp
   last_updated: string;
 }

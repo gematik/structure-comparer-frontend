@@ -235,7 +235,7 @@ export class GroupedSelectComponent implements OnInit, OnChanges, OnDestroy {
   onAutocompleteSelected(event: any): void {
     // The event.option.value contains the option.value (string) we set in [value]
     const selectedValue = event.option.value;
-    
+
     // Find the full option object by value
     const option = this.options.find(o => o.value === selectedValue);
     if (option) {

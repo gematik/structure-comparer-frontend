@@ -179,11 +179,20 @@ export class TargetCreationDetailComponent implements OnInit {
 
   // === STATUS HELPERS ===
   getStatusCounts(): TargetCreationStatusCounts {
-    return this.targetCreation?.status_counts || {
-      total: 0,
-      action_required: 0,
-      resolved: 0,
-      optional_pending: 0
+    if (!this.targetCreation) {
+      return {
+        total: 0,
+        action_required: 0,
+        resolved: 0,
+        optional_pending: 0
+      };
+    }
+
+    return {
+      total: this.targetCreation.total,
+      action_required: this.targetCreation.action_required,
+      resolved: this.targetCreation.resolved,
+      optional_pending: this.targetCreation.optional_pending
     };
   }
 

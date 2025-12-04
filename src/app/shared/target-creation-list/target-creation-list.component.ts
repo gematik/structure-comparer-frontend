@@ -136,16 +136,16 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
           </div>
         </td>
         <td>
-          <span class="pill pill--total">{{ targetCreation.status_counts.total }}</span>
+          <span class="pill pill--total">{{ targetCreation.total }}</span>
         </td>
         <td>
-          <span class="pill pill--action-required">{{ targetCreation.status_counts.action_required }}</span>
+          <span class="pill pill--action-required">{{ targetCreation.action_required }}</span>
         </td>
         <td>
-          <span class="pill pill--resolved">{{ targetCreation.status_counts.resolved }}</span>
+          <span class="pill pill--resolved">{{ targetCreation.resolved }}</span>
         </td>
         <td>
-          <span class="pill pill--optional">{{ targetCreation.status_counts.optional_pending }}</span>
+          <span class="pill pill--optional">{{ targetCreation.optional_pending }}</span>
         </td>
         <td (click)="$event.stopPropagation()">
           <button
@@ -240,13 +240,13 @@ export class TargetCreationListComponent {
       case 'target':
         return targetCreation.target?.name || '';
       case 'total':
-        return targetCreation.status_counts.total;
+        return targetCreation.total;
       case 'action_required':
-        return targetCreation.status_counts.action_required;
+        return targetCreation.action_required;
       case 'resolved':
-        return targetCreation.status_counts.resolved;
+        return targetCreation.resolved;
       case 'optional_pending':
-        return targetCreation.status_counts.optional_pending;
+        return targetCreation.optional_pending;
       default:
         return '';
     }
