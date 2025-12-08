@@ -31,6 +31,14 @@
       >
         Elternknoten immer anzeigen
       </mat-checkbox>
+
+      <mat-checkbox
+        [(ngModel)]="settings.hideChildrenOfMaxZeroFields"
+        (change)="onSettingChanged()"
+        matTooltip="Blendet Kinder-Felder aus, wenn das Elternfeld eine maximale Kardinalität von 0 hat (im Zielprofil ausgeschlossen)"
+      >
+        Kinder von max=0 Feldern ausblenden
+      </mat-checkbox>
     </div>
   </div>
 </div>

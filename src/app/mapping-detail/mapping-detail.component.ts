@@ -90,7 +90,8 @@ export class MappingDetailComponent implements OnInit {
 
   // Filter settings
   filterSettings: FilterSettings = {
-    showParentNodes: true
+    showParentNodes: true,
+    hideChildrenOfMaxZeroFields: true
   };
 
   // Profile columns and view settings
@@ -190,8 +191,9 @@ export class MappingDetailComponent implements OnInit {
     this.totalLength = fields.length;
     this.original = mapping;
     this.mapping = mapping;
-    this.filteredFields = fields;
-    this.filtered = { ...mapping, fields: fields.slice(0, this.pageSize) };
+    
+    // Apply filters (including max=0 children filter) on initial load
+    this.applyAllFilters();
   }
 
   private loadFields(projectKey: string, mappingId: string): void {
@@ -387,8 +389,9 @@ export class MappingDetailComponent implements OnInit {
 
     if (allRefs.length <= 1) return false;
 
-    const firstRefs = allRefs[0].sort().join(',');
-    return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+    // Create copies before sorting to avoid mutating original arrays
+    const firstRefs = [...allRefs[0]].sort().join(',');
+    return allRefs.some(refs => [...refs].sort().join(',') !== firstRefs);
   }
 
   hasTypeDifferences(field: any): boolean {
@@ -398,8 +401,9 @@ export class MappingDetailComponent implements OnInit {
 
     if (allTypes.length <= 1) return false;
 
-    const firstTypes = allTypes[0].sort().join(',');
-    return allTypes.some(types => types.sort().join(',') !== firstTypes);
+    // Create copies before sorting to avoid mutating original arrays
+    const firstTypes = [...allTypes[0]].sort().join(',');
+    return allTypes.some(types => [...types].sort().join(',') !== firstTypes);
   }
 
   getFieldTypes(field: any): string {
@@ -440,6 +444,12 @@ export class MappingDetailComponent implements OnInit {
   private applyAllFilters(): void {
     let filteredFields = this.original?.fields ?? [];
     const allFields = [...filteredFields];
+
+    // First, filter out children of parent fields with max=0 (excluded in target profile)
+    // Only apply if the setting is enabled
+    if (this.filterSettings.hideChildrenOfMaxZeroFields) {
+      filteredFields = this.filterChildrenOfMaxZeroParents(filteredFields);
+    }
 
     // Track if any filters are active
     const hasActiveFilters = this.currentQuickFilter !== null ||
@@ -540,6 +550,38 @@ export class MappingDetailComponent implements OnInit {
 
     // Filter allFields to only include the fields we want, preserving original order
     return allFields.filter(field => field.name && fieldsToInclude.has(field.name));
+  }
+
+  /**
+   * Filters out children of parent fields that have max=0 in the target profile.
+   * Fields with max=0 indicate that the element is excluded/prohibited in the target,
+   * so their children don't need to be shown.
+   */
+  private filterChildrenOfMaxZeroParents(fields: MappingField[]): MappingField[] {
+    // First pass: identify all parent fields with max=0 (in target profile)
+    const excludedParents = new Set<string>();
+
+    // Get the target profile key (last profile column is typically the target)
+    const targetProfileKey = this.profileColumns.length > 0
+      ? this.profileColumns[this.profileColumns.length - 1]?.key
+      : undefined;
+
+    for (const field of fields) {
+      if (field.name && CardinalityHelper.hasMaxZeroInTargetProfile(field, targetProfileKey)) {
+        excludedParents.add(field.name);
+      }
+    }
+
+    // If no excluded parents, return original list
+    if (excludedParents.size === 0) {
+      return fields;
+    }
+
+    // Second pass: filter out children of excluded parents
+    return fields.filter(field => {
+      if (!field.name) return true;
+      return !CardinalityHelper.isChildOfExcludedParent(field.name, excludedParents);
+    });
   }
 
   /**
@@ -1154,7 +1196,7 @@ export class MappingDetailComponent implements OnInit {
 
   downloadStructureMap(): void {
     const incompleteCount = this.getIncompleteFieldsCount();
-    
+
     if (incompleteCount > 0) {
       const dialogRef = this.dialog.open(ConfirmDialogComponent, {
         data: {

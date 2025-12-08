@@ -26,6 +26,7 @@ import { FormsModule } from '@angular/forms';
 
 export interface FilterSettings {
   showParentNodes: boolean;
+  hideChildrenOfMaxZeroFields: boolean;
 }
 
 @Component({
@@ -44,7 +45,8 @@ export interface FilterSettings {
 })
 export class FilterSettingsComponent {
   @Input() settings: FilterSettings = {
-    showParentNodes: true
+    showParentNodes: true,
+    hideChildrenOfMaxZeroFields: true
   };
 
   @Output() settingsChanged = new EventEmitter<FilterSettings>();

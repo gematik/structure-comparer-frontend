@@ -13,8 +13,8 @@
       [color]="getIncompleteFieldsCount() > 0 ? 'warn' : 'accent'"
       (click)="downloadStructureMap()"
       aria-label="Download StructureMap"
-      [matTooltip]="getIncompleteFieldsCount() > 0 
-        ? 'Warnung: ' + getIncompleteFieldsCount() + ' Feld(er) ohne Aktion - Export als FHIR StructureMap' 
+      [matTooltip]="getIncompleteFieldsCount() > 0
+        ? 'Warnung: ' + getIncompleteFieldsCount() + ' Feld(er) ohne Aktion - Export als FHIR StructureMap'
         : 'Export als FHIR StructureMap'"
     >
       <mat-icon>file_download</mat-icon>

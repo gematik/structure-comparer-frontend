@@ -748,7 +748,7 @@ export class EditProjectComponent implements OnInit {
   downloadAllStructureMaps(): void {
     const summary = this.getProjectOverallSummary();
     const incompleteCount = summary.incompatible || 0;
-    
+
     if (incompleteCount > 0) {
       const dialogRef = this.dialog.open(ConfirmDialogComponent, {
         data: {

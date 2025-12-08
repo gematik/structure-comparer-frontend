@@ -75,7 +75,7 @@ export interface EditFieldEvent {
 export class TreeTableComponent implements OnInit, OnChanges {
   @Input() fields: MappingField[] = [];
   @Input() config: TreeTableConfig = { profileColumns: [] };
-  @Input() filterSettings: FilterSettings = { showParentNodes: true };
+  @Input() filterSettings: FilterSettings = { showParentNodes: true, hideChildrenOfMaxZeroFields: true };
   @Input() currentQuickFilter: MappingStatus | null = null;
   @Input() currentActionFilter: MappingAction[] = [];
   @Input() currentRecommendationFilter: MappingAction[] = [];
@@ -144,8 +144,14 @@ export class TreeTableComponent implements OnInit, OnChanges {
    * Apply current filter to the tree
    */
   applyFilter(): void {
-    // Build tree from all fields first
-    const fullTree = buildPropertyTree(this.fields);
+    // First, filter out children of parent fields with max=0
+    // Only apply if the setting is enabled
+    const fieldsToUse = this.filterSettings.hideChildrenOfMaxZeroFields
+      ? this.filterChildrenOfMaxZeroParents(this.fields)
+      : this.fields;
+
+    // Build tree from filtered fields
+    const fullTree = buildPropertyTree(fieldsToUse);
 
     // Check if any filters are active
     const hasQuickFilter = !!this.currentQuickFilter;
@@ -318,6 +324,38 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     this.filteredTree.forEach(node => traverse(node));
     this.visibleRows = visibleRows;
+  }
+
+  /**
+   * Filters out children of parent fields that have max=0 in the target profile.
+   * Fields with max=0 indicate that the element is excluded/prohibited in the target,
+   * so their children don't need to be shown.
+   */
+  private filterChildrenOfMaxZeroParents(fields: MappingField[]): MappingField[] {
+    // First pass: identify all parent fields with max=0 (in target profile)
+    const excludedParents = new Set<string>();
+
+    // Get the target profile key (last profile column is typically the target)
+    const targetProfileKey = this.config.profileColumns.length > 0
+      ? this.config.profileColumns[this.config.profileColumns.length - 1]?.key
+      : undefined;
+
+    for (const field of fields) {
+      if (field.name && CardinalityHelper.hasMaxZeroInTargetProfile(field, targetProfileKey)) {
+        excludedParents.add(field.name);
+      }
+    }
+
+    // If no excluded parents, return original list
+    if (excludedParents.size === 0) {
+      return fields;
+    }
+
+    // Second pass: filter out children of excluded parents
+    return fields.filter(field => {
+      if (!field.name) return true;
+      return !CardinalityHelper.isChildOfExcludedParent(field.name, excludedParents);
+    });
   }
 
   /**
@@ -551,8 +589,9 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     if (allRefs.length <= 1) return false;
 
-    const firstRefs = allRefs[0].sort().join(',');
-    return allRefs.some(refs => refs.sort().join(',') !== firstRefs);
+    // Create copies before sorting to avoid mutating original arrays
+    const firstRefs = [...allRefs[0]].sort().join(',');
+    return allRefs.some(refs => [...refs].sort().join(',') !== firstRefs);
   }
 
   /**
@@ -565,8 +604,9 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     if (allTypes.length <= 1) return false;
 
-    const firstTypes = allTypes[0].sort().join(',');
-    return allTypes.some(types => types.sort().join(',') !== firstTypes);
+    // Create copies before sorting to avoid mutating original arrays
+    const firstTypes = [...allTypes[0]].sort().join(',');
+    return allTypes.some(types => [...types].sort().join(',') !== firstTypes);
   }
 
   /**

@@ -35,8 +35,8 @@
         [color]="getProjectOverallSummary().incompatible > 0 ? 'warn' : 'accent'"
         (click)="downloadAllStructureMaps()"
         aria-label="Download all StructureMaps"
-        [matTooltip]="getProjectOverallSummary().incompatible > 0 
-          ? 'Warnung: ' + getProjectOverallSummary().incompatible + ' Feld(er) ohne Aktion - Alle StructureMaps des Projekts herunterladen' 
+        [matTooltip]="getProjectOverallSummary().incompatible > 0
+          ? 'Warnung: ' + getProjectOverallSummary().incompatible + ' Feld(er) ohne Aktion - Alle StructureMaps des Projekts herunterladen'
           : 'Alle StructureMaps des Projekts herunterladen'"
       >
         <mat-icon>file_download</mat-icon>

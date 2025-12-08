@@ -93,6 +93,64 @@ export class CardinalityHelper {
       borderColor: `hsl(${hue}, 65%, 45%)`,
     };
   }
+
+  /**
+   * Checks if a field has max=0 in all its profiles (target profile).
+   * This indicates that the field is excluded and its children should not be shown.
+   * @param field The mapping field to check
+   * @param targetProfileKey Optional: specific profile key to check. If not provided, checks if ANY profile has max=0
+   * @returns true if the field has max=0 in the relevant profile(s)
+   */
+  static hasMaxZeroInTargetProfile(field: MappingField, targetProfileKey?: string): boolean {
+    if (!field.profiles) return false;
+
+    const isMaxZero = (max: number | string | undefined): boolean => {
+      if (max === undefined || max === null) return false;
+      // Handle both number 0 and string "0"
+      return max === 0 || max === '0' || String(max) === '0';
+    };
+
+    // If a specific target profile key is provided, only check that one
+    if (targetProfileKey) {
+      const profile = field.profiles[targetProfileKey];
+      if (!profile) return false;
+      return isMaxZero(profile.max);
+    }
+
+    // Otherwise, check if the field has max=0 in ANY profile
+    const profileKeys = Object.keys(field.profiles);
+    if (profileKeys.length === 0) return false;
+
+    // A field is considered "excluded" if it has max=0 in ANY profile
+    // (typically the target profile, but we check all for safety)
+    return profileKeys.some(key => {
+      const profile = field.profiles![key];
+      return profile && isMaxZero(profile.max);
+    });
+  }
+
+  /**
+   * Checks if a field is a child of a parent with max=0.
+   * @param fieldName The name/path of the field to check
+   * @param excludedParents Set of parent field names that have max=0
+   * @returns true if the field is a child of an excluded parent
+   */
+  static isChildOfExcludedParent(fieldName: string, excludedParents: Set<string>): boolean {
+    if (!fieldName || excludedParents.size === 0) return false;
+
+    // Check each potential parent path
+    const segments = fieldName.split('.');
+    let currentPath = '';
+
+    for (let i = 0; i < segments.length - 1; i++) {
+      currentPath = currentPath ? `${currentPath}.${segments[i]}` : segments[i];
+      if (excludedParents.has(currentPath)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }
 
 const ACTION_LABELS: Record<ActionType, string> = {
