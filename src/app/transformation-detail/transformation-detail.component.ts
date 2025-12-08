@@ -218,6 +218,14 @@ export class TransformationDetailComponent implements OnInit {
   }
 
   /**
+   * Get all source fields (both resource and value fields) for the value mapping dropdown
+   * This allows users to select both .resource fields and regular value fields
+   */
+  get allSourceFields(): SourceFieldOption[] {
+    return [...this.sourceResourceFields, ...this.sourceValueFields];
+  }
+
+  /**
    * Build both resource and value mappings from transformation fields
    * Source fields are already loaded via loadSourceProfileFields()
    */
@@ -426,6 +434,7 @@ export class TransformationDetailComponent implements OnInit {
 
     // Filter target fields (exclude Resource type fields)
     // Use name-based filtering like buildResourceMappings for consistency
+    // Also exclude fields whose parent has a .name sibling (same logic as resources)
     const targetValueFields = this.fields.filter(f => {
       // Must be a target field (starts with target resource type)
       const isTargetField = f.name.startsWith(targetResourceType + '.');
@@ -433,7 +442,28 @@ export class TransformationDetailComponent implements OnInit {
 
       // Exclude Resource type fields (.resource suffix)
       const isResourceField = f.name.toLowerCase().endsWith('.resource');
-      return !isResourceField;
+      if (isResourceField) return false;
+
+      // Get parent path (everything except the last part)
+      const parts = f.name.split('.');
+      if (parts.length < 2) return true; // Safety check
+      const parentPath = parts.slice(0, -1).join('.');
+
+      // Check if parent has a .name sibling
+      const hasNameSibling = this.fields.some(field =>
+        field.name === parentPath + '.name'
+      );
+
+      // Exclude if parent has .name sibling AND this is a generic (non-sliced) field
+      // We identify generic fields by checking if they don't contain ':' (slice notation)
+      const isGenericField = !f.name.includes(':');
+
+      if (hasNameSibling && isGenericField) {
+        console.log('Excluding generic value field with .name sibling:', f.name);
+        return false;
+      }
+
+      return true;
     });
 
     // Build value mapping rows
