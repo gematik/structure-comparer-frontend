@@ -336,6 +336,20 @@
       </div>
     </div>
 
+    <!-- Auto-apply children recommendations for extension action -->
+    <div *ngIf="selectedAction === 'extension'" class="auto-apply-section">
+      <mat-checkbox [(ngModel)]="applyToChildren" color="primary">
+        <span class="checkbox-label">
+          <mat-icon class="checkbox-icon">account_tree</mat-icon>
+          Automatisch alle Kinder-Felder als gelöst markieren
+        </span>
+      </mat-checkbox>
+      <div class="checkbox-explanation">
+        <mat-icon>info_outline</mat-icon>
+        <span>Wendet die Extension-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
+      </div>
+    </div>
+
   </div>
 
   <!-- Dialog Actions -->

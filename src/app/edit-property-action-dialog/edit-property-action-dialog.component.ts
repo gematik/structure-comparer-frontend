@@ -29,6 +29,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ActionOption, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
 import { MappingStatusDisplayComponent } from '../shared/mapping-status-display/mapping-status-display.component';
@@ -59,6 +60,7 @@ export interface EditPropertyActionDialogData {
     MatIconModule,
     MatAutocompleteModule,
     MatTooltipModule,
+    MatCheckboxModule,
     MappingActionDisplayComponent,
     MappingStatusDisplayComponent,
     ActionSelectionComponent
@@ -80,6 +82,9 @@ export class EditPropertyActionDialogComponent implements OnInit {
   // Info panel toggles
   showClassificationInfo: boolean = false;
   showStatusInfo: boolean = false;
+
+  // Auto-apply children recommendations for extension actions
+  applyToChildren: boolean = true; // Default to true for convenience
 
   constructor(
     public dialogRef: MatDialogRef<EditPropertyActionDialogComponent>,
@@ -600,7 +605,13 @@ export class EditPropertyActionDialogComponent implements OnInit {
       }
     }
 
-    this.dialogRef.close(updateRequest);
+    // Return both the update request and the applyToChildren flag for extension actions
+    const result: any = { updateRequest };
+    if (this.selectedAction === 'extension' && this.applyToChildren) {
+      result.applyToChildren = true;
+    }
+
+    this.dialogRef.close(result);
   }
 
   /**

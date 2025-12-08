@@ -142,6 +142,23 @@ export class MappingsService {
   }
 
   /**
+   * Apply all recommendations for all children of a parent field
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param parentFieldName The name of the parent field
+   * @returns Observable containing the list of updated field data
+   */
+  applyAllChildrenRecommendations(projectKey: string, mappingId: string, parentFieldName: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(parentFieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}/apply-all-children-recommendations`;
+
+    return this.http.post(requestUrl, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Retrieves a list of all projects
    * @returns Observable containing the list of projects
    */

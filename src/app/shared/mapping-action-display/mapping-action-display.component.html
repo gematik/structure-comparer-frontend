@@ -91,5 +91,14 @@
       <mat-icon class="detail-icon">info</mat-icon>
       <span class="detail-text">{{ field.action_info!.system_remark }}</span>
     </div>
+
+    <!-- Inherited Badge - shown last -->
+    <div *ngIf="field.action_info?.source === 'inherited' && field.inherited_from"
+         class="inherited-badge"
+         [matTooltip]="'Automatisch geerbt von ' + field.inherited_from"
+         matTooltipPosition="above">
+      <mat-icon class="inherited-icon">auto_awesome</mat-icon>
+      <span class="inherited-text">Geerbt von {{ field.inherited_from }}</span>
+    </div>
   </div>
 </div>

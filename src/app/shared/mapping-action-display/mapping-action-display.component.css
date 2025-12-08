@@ -105,6 +105,34 @@
   border-color: #5c6bc0;
 }
 
+/* Inherited Badge */
+.inherited-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e1f5fe;
+  color: #01579b;
+  border: 1px solid #0288d1;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 500;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.inherited-badge .inherited-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.inherited-badge .inherited-text {
+  font-weight: 500;
+}
+
+
 /* Compact mode */
 .compact .action-chip {
   padding: 6px 12px;

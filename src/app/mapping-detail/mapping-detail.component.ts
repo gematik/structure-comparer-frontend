@@ -8,7 +8,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap, map } from 'rxjs/operators';
 import { MappingsService } from '../mappings.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
@@ -718,9 +718,15 @@ export class MappingDetailComponent implements OnInit {
       disableClose: false
     });
 
-    dialogRef.afterClosed().subscribe((result: MappingFieldUpdateRequest) => {
+    dialogRef.afterClosed().subscribe((result: any) => {
       if (result) {
-        this.updateFieldAction(field.name, result);
+        // Check if result contains both updateRequest and applyToChildren flag
+        if (result.updateRequest) {
+          this.updateFieldAction(field.name, result.updateRequest, result.applyToChildren || false);
+        } else {
+          // Backward compatibility: if result is just the update request
+          this.updateFieldAction(field.name, result, false);
+        }
       }
     });
   }
@@ -825,7 +831,7 @@ export class MappingDetailComponent implements OnInit {
     this.editingIndex = null;
   }
 
-  private updateFieldAction(fieldName: string, updateRequest: MappingFieldUpdateRequest): void {
+  private updateFieldAction(fieldName: string, updateRequest: MappingFieldUpdateRequest, applyToChildren: boolean = false): void {
     // Save tree expansion state before reloading
     if (this.viewMode === 'tree' && this.treeTableComponent) {
       this.savedTreeState = this.treeTableComponent.saveExpansionState();
@@ -839,17 +845,41 @@ export class MappingDetailComponent implements OnInit {
     this.savedPageSize = this.pageSize;
 
     this.mappingsService.updateMappingFieldAction(this.projectKey, this.mappingId, fieldName, updateRequest)
-      .pipe(catchError(error => {
-        console.error('Error updating field action:', error);
-        this.snackBar.open('Fehler beim Speichern der Mapping-Action', 'Schließen', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
-        return of(null);
-      }))
-      .subscribe(response => {
-        if (response) {
-          this.snackBar.open('Mapping-Action erfolgreich gespeichert', 'Schließen', { duration: 3000 });
+      .pipe(
+        catchError(error => {
+          console.error('Error updating field action:', error);
+          this.snackBar.open('Fehler beim Speichern der Mapping-Action', 'Schließen', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+          return of(null);
+        }),
+        // If successful and applyToChildren is true, apply all children recommendations
+        switchMap(response => {
+          if (response && applyToChildren && updateRequest.action === 'extension') {
+            return this.mappingsService.applyAllChildrenRecommendations(this.projectKey, this.mappingId, fieldName)
+              .pipe(
+                catchError(error => {
+                  console.error('Error applying children recommendations:', error);
+                  this.snackBar.open('Warnung: Kinder-Felder konnten nicht automatisch aktualisiert werden', 'Schließen', {
+                    duration: 5000,
+                    panelClass: ['warning-snackbar']
+                  });
+                  return of(null);
+                }),
+                map(childrenResponse => ({ mainResponse: response, childrenResponse }))
+              );
+          }
+          return of({ mainResponse: response, childrenResponse: null });
+        })
+      )
+      .subscribe(({ mainResponse, childrenResponse }) => {
+        if (mainResponse) {
+          let message = 'Mapping-Action erfolgreich gespeichert';
+          if (childrenResponse && Array.isArray(childrenResponse) && childrenResponse.length > 0) {
+            message += ` (${childrenResponse.length} Kinder-Felder automatisch aktualisiert)`;
+          }
+          this.snackBar.open(message, 'Schließen', { duration: 3000 });
           this.loadMapping(this.projectKey, this.mappingId);
         }
       });
