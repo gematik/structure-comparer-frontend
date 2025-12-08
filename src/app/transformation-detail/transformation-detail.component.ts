@@ -92,6 +92,9 @@ export class TransformationDetailComponent implements OnInit {
   private originalResourceMappings: string = '';
   private originalValueMappings: string = '';
 
+  // Cache for available profiles in the project
+  private availableProfiles: Map<string, any> = new Map();
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -145,61 +148,24 @@ export class TransformationDetailComponent implements OnInit {
     this.sourceResourceFields = [];
     this.sourceValueFields = [];
 
-    for (const source of this.transformation.sources) {
+    // First, load the list of all available profiles in the project
+    await this.loadAvailableProfiles();
+
+    // Sort sources to load Bundle profiles first
+    const sortedSources = [...this.transformation.sources].sort((a, b) => {
+      const aIsBundle = a.name?.toLowerCase().includes('bundle') || a.id?.toLowerCase().includes('bundle');
+      const bIsBundle = b.name?.toLowerCase().includes('bundle') || b.id?.toLowerCase().includes('bundle');
+      if (aIsBundle && !bIsBundle) return -1;
+      if (!aIsBundle && bIsBundle) return 1;
+      return 0;
+    });
+
+    for (const source of sortedSources) {
       const profileId = source.id;
       if (!profileId) continue;
 
       try {
-        const profile = await this.projectService.getProfileDetails(this.projectKey, profileId).toPromise();
-        if (profile && profile.fields) {
-          // Process each field from the source profile
-          Object.keys(profile.fields).forEach(fieldPath => {
-            const fieldInfo = profile.fields[fieldPath];
-            const types = fieldInfo.types || [];
-
-            // Extract cardinality from field info
-            const cardinalityMin = fieldInfo.min ?? null;
-            const cardinalityMax = fieldInfo.max ?? null;
-
-            // Check if it's a resource field
-            const isResource = types.some((t: string) => t === 'Resource' || t.endsWith('Resource')) ||
-                              fieldPath.toLowerCase().endsWith('.resource');
-
-            // Create display name
-            let displayName = fieldPath;
-            if (fieldPath.startsWith('.')) {
-              displayName = fieldPath.substring(1); // Remove leading dot
-            }
-
-            // For entry resources, extract friendly name
-            if (isResource) {
-              const match = fieldPath.match(/\.entry:([^.]+)\.resource/);
-              if (match) {
-                displayName = match[1] + '.resource';
-              }
-
-              this.sourceResourceFields.push({
-                name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
-                displayName: displayName,
-                profileKey: source.key || profileId,
-                cardinalityMin: cardinalityMin,
-                cardinalityMax: cardinalityMax
-              });
-            } else {
-              // For value fields
-              const parts = fieldPath.split('.');
-              displayName = parts[parts.length - 1].replace(/:\w+$/, '');
-
-              this.sourceValueFields.push({
-                name: fieldPath.startsWith('.') ? fieldPath.substring(1) : fieldPath,
-                displayName: displayName,
-                profileKey: source.key || profileId,
-                cardinalityMin: cardinalityMin,
-                cardinalityMax: cardinalityMax
-              });
-            }
-          });
-        }
+        await this.loadProfileFieldsRecursive(profileId, source.key || profileId, '');
       } catch (error) {
         console.error('Error loading source profile:', profileId, error);
       }
@@ -213,8 +179,154 @@ export class TransformationDetailComponent implements OnInit {
       a.findIndex(t => t.name === v.name) === i
     );
 
-    console.log('Source resource fields loaded:', this.sourceResourceFields.length);
-    console.log('Source resource fields:', this.sourceResourceFields);
+   }
+
+  /**
+   * Load all available profiles in the project to enable smart lookup of referenced profiles
+   */
+  private async loadAvailableProfiles(): Promise<void> {
+    try {
+      const response: any = await this.projectService.getProjectProfiles(this.projectKey).toPromise();
+      if (response && response.profiles) {
+        response.profiles.forEach((profile: any) => {
+          // Store by ID for quick lookup
+          this.availableProfiles.set(profile.id, profile);
+
+          // Also store by resource type name for lookup by FHIR resource type
+          // Extract resource type from profile name with various patterns:
+          // - KBV_PR_ERP_Prescription -> Prescription, MedicationRequest
+          // - GEM_ERP_PR_Medication -> Medication
+          if (profile.name) {
+            const patterns = [
+              /_PR_[A-Z]+_(.+)$/, // KBV_PR_ERP_Prescription -> Prescription
+              /_PR_(.+)$/         // GEM_ERP_PR_Medication -> Medication
+            ];
+
+            for (const pattern of patterns) {
+              const match = profile.name.match(pattern);
+              if (match) {
+                const resourceType = match[1].replace(/_/g, ''); // Remove underscores
+
+                // Special cases: Prescription profile is for MedicationRequest resource type
+                if (resourceType === 'Prescription') {
+                  this.availableProfiles.set('MedicationRequest', profile);
+                }
+
+                // Store by the extracted name
+                if (!this.availableProfiles.has(resourceType)) {
+                  this.availableProfiles.set(resourceType, profile);
+                }
+                break;
+              }
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error loading available profiles:', error);
+    }
+  }
+
+  /**
+   * Recursively load profile fields and referenced profiles
+   */
+  private async loadProfileFieldsRecursive(
+    profileId: string,
+    profileKey: string,
+    pathPrefix: string,
+    visited: Set<string> = new Set(),
+    rootResourceType: string = ''
+  ): Promise<void> {
+    // Prevent infinite recursion
+    if (visited.has(profileId)) {
+      return;
+    }
+    visited.add(profileId);
+
+    // Determine root resource type from profileId if not set
+    if (!rootResourceType && profileId) {
+      const match = profileId.match(/-(Bundle|Composition)/);
+      if (match) {
+        rootResourceType = match[1];
+      }
+    }
+
+    try {
+      const profile = await this.projectService.getProfileDetails(this.projectKey, profileId).toPromise();
+      if (!profile || !profile.fields) return;
+
+      // Process each field from the source profile
+      const fieldEntries = Object.entries(profile.fields);
+
+      for (const [fieldPath, fieldInfo] of fieldEntries) {
+        const types = (fieldInfo as any).types || [];
+        const cardinalityMin = (fieldInfo as any).min ?? null;
+        const cardinalityMax = (fieldInfo as any).max ?? null;
+
+        // Build full path with prefix
+        let fullPath = pathPrefix ? pathPrefix + fieldPath : fieldPath;
+
+        // Remove leading dot if present
+        if (fullPath.startsWith('.')) {
+          fullPath = fullPath.substring(1);
+        }
+
+        // Prepend root resource type if not already present
+        if (rootResourceType && !fullPath.startsWith(rootResourceType + '.')) {
+          fullPath = rootResourceType + '.' + fullPath;
+        }
+
+        // Check if it's a resource field (ends with .resource exactly)
+        const isResourceField = fieldPath.toLowerCase().endsWith('.resource');
+
+        // Create display name
+        let displayName = fullPath;
+
+        // For entry resources, keep the full path (e.g., Bundle.entry:VerordnungArzneimittel.resource)
+        if (isResourceField) {
+          this.sourceResourceFields.push({
+            name: displayName,
+            displayName: displayName,
+            profileKey: profileKey,
+            cardinalityMin: cardinalityMin,
+            cardinalityMax: cardinalityMax
+          });
+
+          // Load referenced profile fields
+          if (types.length > 0) {
+            const resourceType = types[0]; // e.g., "MedicationRequest"
+
+            // Look up the profile for this resource type from available profiles
+            let referencedProfile = this.availableProfiles.get(resourceType);
+
+            if (referencedProfile) {
+              // Recursively load the referenced profile with the current path as prefix
+              await this.loadProfileFieldsRecursive(
+                referencedProfile.id,
+                profileKey,
+                displayName, // Use the resource field path as prefix (dot will be added via fieldPath which starts with .)
+                visited,
+                rootResourceType // Pass along the root resource type
+              );
+            }
+          }
+        }
+
+        // Add ALL fields to sourceValueFields (including children of .resource fields)
+        const parts = fullPath.split('.');
+        let simpleDisplayName = parts[parts.length - 1].replace(/:\w+$/, '');
+
+        this.sourceValueFields.push({
+          name: displayName,
+          displayName: simpleDisplayName,
+          profileKey: profileKey,
+          cardinalityMin: cardinalityMin,
+          cardinalityMax: cardinalityMax
+        });
+      }
+    } catch (error) {
+      // Silently fail for referenced profiles that don't exist
+    }
   }
 
   /**
@@ -320,7 +432,6 @@ export class TransformationDetailComponent implements OnInit {
       const isGenericField = !f.name.includes(':');
 
       if (hasNameSibling && isGenericField) {
-        console.log('Excluding generic field with .name sibling:', f.name);
         return false;
       }
 
@@ -459,7 +570,6 @@ export class TransformationDetailComponent implements OnInit {
       const isGenericField = !f.name.includes(':');
 
       if (hasNameSibling && isGenericField) {
-        console.log('Excluding generic value field with .name sibling:', f.name);
         return false;
       }
 

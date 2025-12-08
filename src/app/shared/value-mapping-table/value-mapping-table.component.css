@@ -140,13 +140,14 @@
 
 /* Columns */
 .value-target-col {
-  min-width: 300px;
+  min-width: 400px;
 }
 
 .value-source-col {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  min-width: 400px;
 }
 
 .target-col {
