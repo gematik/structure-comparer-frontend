@@ -274,8 +274,10 @@
     <app-mapping-action-statistics
       [fields]="original?.fields || []"
       [selectedActions]="currentActionFilter"
+      [selectedRecommendations]="currentRecommendationFilter"
       [textFilterValue]="textFilterValue"
       (actionsSelected)="applyActionFilter($event)"
+      (recommendationsSelected)="applyRecommendationFilter($event)"
       (textFilterChanged)="onTextFilterChanged($event)"
     >
       <!-- Filter Settings projected into the statistics component -->
@@ -458,6 +460,7 @@
       [filterSettings]="filterSettings"
       [currentQuickFilter]="currentQuickFilter"
       [currentActionFilter]="currentActionFilter"
+      [currentRecommendationFilter]="currentRecommendationFilter"
       [textFilter]="textFilterValue"
       [availableFields]="availableFields"
       [classifications]="classifications"

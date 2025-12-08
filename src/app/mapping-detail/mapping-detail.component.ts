@@ -36,7 +36,7 @@ import {
   ACTION_CSS,
   StatusSummary,
 } from './mapping-detail-helpers';
-import { MappingStatus } from '../models/mapping-evaluation.model';
+import { MappingStatus, ActionInfo } from '../models/mapping-evaluation.model';
 
 export interface IProfile {
   name?: string;
@@ -83,6 +83,7 @@ export class MappingDetailComponent implements OnInit {
   filtered: any;
   currentQuickFilter: MappingStatus | null = null;
   currentActionFilter: MappingAction[] = [];
+  currentRecommendationFilter: MappingAction[] = [];
   filteredFields: MappingField[] = [];
   textFilterValue: string = '';
 
@@ -101,6 +102,7 @@ export class MappingDetailComponent implements OnInit {
   private savedTreeState: Record<string, boolean> | null = null;
   private savedQuickFilter: MappingStatus | null = null;
   private savedActionFilter: MappingAction[] = [];
+  private savedRecommendationFilter: MappingAction[] = [];
   private savedTextFilter: string = '';
   private savedPageIndex: number = 0;
   private savedPageSize: number = 200;
@@ -428,12 +430,20 @@ export class MappingDetailComponent implements OnInit {
     this.clearTextFilter();
   }
 
+  applyRecommendationFilter(recommendations: MappingAction[]): void {
+    this.currentRecommendationFilter = recommendations;
+    this.applyAllFilters();
+    this.clearTextFilter();
+  }
+
   private applyAllFilters(): void {
     let filteredFields = this.original?.fields ?? [];
     const allFields = [...filteredFields];
 
     // Track if any filters are active
-    const hasActiveFilters = this.currentQuickFilter !== null || this.currentActionFilter.length > 0;
+    const hasActiveFilters = this.currentQuickFilter !== null ||
+                            this.currentActionFilter.length > 0 ||
+                            this.currentRecommendationFilter.length > 0;
 
     if (this.currentQuickFilter) {
       filteredFields = filteredFields.filter((field: MappingField) => {
@@ -442,9 +452,52 @@ export class MappingDetailComponent implements OnInit {
       });
     }
 
-    if (this.currentActionFilter.length > 0) {
+    if (this.currentActionFilter.length > 0 || this.currentRecommendationFilter.length > 0) {
+      // Action and Recommendation filters work as OR between categories
+      // (show fields matching action filter OR fields matching recommendation filter)
       filteredFields = filteredFields.filter((field: MappingField) => {
-        return field.action && this.currentActionFilter.includes(field.action);
+        const fieldAction = field.action ?? null;
+
+        // Check Action filter match
+        let matchesActionFilter = false;
+        if (this.currentActionFilter.length > 0) {
+          // Check if null is in the filter (for CHOOSE_ACTION - fields without action AND without recommendations)
+          if (this.currentActionFilter.includes(null) && fieldAction === null) {
+            const hasRecommendation = RecommendationHelper.hasRecommendation(field);
+            if (!hasRecommendation) {
+              matchesActionFilter = true;
+            }
+          }
+          // Check if the field's action is in the filter
+          if (fieldAction !== null && this.currentActionFilter.includes(fieldAction)) {
+            matchesActionFilter = true;
+          }
+        }
+
+        // Check Recommendation filter match
+        let matchesRecommendationFilter = false;
+        if (this.currentRecommendationFilter.length > 0) {
+          // Field must have no action set and have at least one matching recommendation
+          if (!field.action) {
+            const recommendations = RecommendationHelper.getRecommendations(field);
+            if (recommendations.length > 0) {
+              const firstRecommendation = recommendations[0];
+              if (firstRecommendation.action &&
+                  this.currentRecommendationFilter.includes(firstRecommendation.action as MappingAction)) {
+                matchesRecommendationFilter = true;
+              }
+            }
+          }
+        }
+
+        // OR logic: match if either filter matches (or if only one filter type is active)
+        if (this.currentActionFilter.length > 0 && this.currentRecommendationFilter.length > 0) {
+          return matchesActionFilter || matchesRecommendationFilter;
+        } else if (this.currentActionFilter.length > 0) {
+          return matchesActionFilter;
+        } else {
+          return matchesRecommendationFilter;
+        }
       });
     }
 
@@ -509,6 +562,10 @@ export class MappingDetailComponent implements OnInit {
       this.applyActionFilter(this.savedActionFilter);
     }
 
+    if (this.savedRecommendationFilter && this.savedRecommendationFilter.length > 0) {
+      this.applyRecommendationFilter(this.savedRecommendationFilter);
+    }
+
     if (this.savedTextFilter) {
       this.textFilterValue = this.savedTextFilter;
       this.handleFiltering({ target: { value: this.savedTextFilter } } as any);
@@ -527,6 +584,7 @@ export class MappingDetailComponent implements OnInit {
 
     this.savedQuickFilter = null;
     this.savedActionFilter = [];
+    this.savedRecommendationFilter = [];
     this.savedTextFilter = '';
     this.savedPageIndex = 0;
     this.savedPageSize = 200;
@@ -775,6 +833,7 @@ export class MappingDetailComponent implements OnInit {
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
     this.savedActionFilter = [...this.currentActionFilter];
+    this.savedRecommendationFilter = [...this.currentRecommendationFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -818,6 +877,7 @@ export class MappingDetailComponent implements OnInit {
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
     this.savedActionFilter = [...this.currentActionFilter];
+    this.savedRecommendationFilter = [...this.currentRecommendationFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -840,6 +900,7 @@ export class MappingDetailComponent implements OnInit {
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
     this.savedActionFilter = [...this.currentActionFilter];
+    this.savedRecommendationFilter = [...this.currentRecommendationFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;
@@ -1055,6 +1116,7 @@ export class MappingDetailComponent implements OnInit {
     // Save filter state
     this.savedQuickFilter = this.currentQuickFilter;
     this.savedActionFilter = [...this.currentActionFilter];
+    this.savedRecommendationFilter = [...this.currentRecommendationFilter];
     this.savedTextFilter = this.textFilterValue;
     this.savedPageIndex = this.pageIndex;
     this.savedPageSize = this.pageSize;

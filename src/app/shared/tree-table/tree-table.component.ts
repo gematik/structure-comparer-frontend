@@ -31,6 +31,7 @@ import {
   MappingTextHelper,
   StatusHelper,
   CardinalityHelper,
+  RecommendationHelper,
   ACTION_CSS,
 } from '../../mapping-detail/mapping-detail-helpers';
 import { MappingStatus } from '../../models/mapping-evaluation.model';
@@ -77,6 +78,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   @Input() filterSettings: FilterSettings = { showParentNodes: true };
   @Input() currentQuickFilter: MappingStatus | null = null;
   @Input() currentActionFilter: MappingAction[] = [];
+  @Input() currentRecommendationFilter: MappingAction[] = [];
   @Input() availableFields: any[] = [];
   @Input() classifications: any[] = [];
   @Input() editingIndex: number | null = null;
@@ -101,7 +103,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['fields'] || changes['currentQuickFilter'] || changes['currentActionFilter'] || changes['textFilter'] || changes['filterSettings']) {
+    if (changes['fields'] || changes['currentQuickFilter'] || changes['currentActionFilter'] || changes['currentRecommendationFilter'] || changes['textFilter'] || changes['filterSettings']) {
       this.buildTree();
       this.applyFilter();
     }
@@ -148,8 +150,9 @@ export class TreeTableComponent implements OnInit, OnChanges {
     // Check if any filters are active
     const hasQuickFilter = !!this.currentQuickFilter;
     const hasActionFilter = this.currentActionFilter.length > 0;
+    const hasRecommendationFilter = this.currentRecommendationFilter.length > 0;
     const hasTextFilter = this.textFilter && this.textFilter.trim().length > 0;
-    const hasAnyFilter = hasQuickFilter || hasActionFilter || hasTextFilter;
+    const hasAnyFilter = hasQuickFilter || hasActionFilter || hasRecommendationFilter || hasTextFilter;
 
     if (!hasAnyFilter) {
       // No filters active - show full tree
@@ -173,10 +176,55 @@ export class TreeTableComponent implements OnInit, OnChanges {
         }
       }
 
-      // Apply action filter
-      if (hasActionFilter) {
-        if (!field.action || !this.currentActionFilter.includes(field.action)) {
-          return false;
+      // Apply action and recommendation filters (OR logic between categories)
+      if (hasActionFilter || hasRecommendationFilter) {
+        const fieldAction = field.action ?? null;
+
+        // Check Action filter match
+        let matchesActionFilter = false;
+        if (hasActionFilter) {
+          // Check if null is in the filter (for CHOOSE_ACTION - fields without action AND without recommendations)
+          if (this.currentActionFilter.includes(null) && fieldAction === null) {
+            const hasRecommendation = RecommendationHelper.hasRecommendation(field);
+            if (!hasRecommendation) {
+              matchesActionFilter = true;
+            }
+          }
+          // Check if the field's action is in the filter
+          if (fieldAction !== null && this.currentActionFilter.includes(fieldAction)) {
+            matchesActionFilter = true;
+          }
+        }
+
+        // Check Recommendation filter match
+        let matchesRecommendationFilter = false;
+        if (hasRecommendationFilter) {
+          // Field must have no action set and have at least one matching recommendation
+          if (!field.action) {
+            const recommendations = RecommendationHelper.getRecommendations(field);
+            if (recommendations.length > 0) {
+              const firstRecommendation = recommendations[0];
+              if (firstRecommendation.action &&
+                  this.currentRecommendationFilter.includes(firstRecommendation.action as MappingAction)) {
+                matchesRecommendationFilter = true;
+              }
+            }
+          }
+        }
+
+        // OR logic: match if either filter matches (or if only one filter type is active)
+        if (hasActionFilter && hasRecommendationFilter) {
+          if (!matchesActionFilter && !matchesRecommendationFilter) {
+            return false;
+          }
+        } else if (hasActionFilter) {
+          if (!matchesActionFilter) {
+            return false;
+          }
+        } else {
+          if (!matchesRecommendationFilter) {
+            return false;
+          }
         }
       }
 
@@ -201,8 +249,8 @@ export class TreeTableComponent implements OnInit, OnChanges {
 
     // Determine whether to include parent nodes:
     // - Only include if showParentNodes is enabled
-    // - AND we have status/action filters (not for text filter)
-    const includeParents = this.filterSettings.showParentNodes && (hasQuickFilter || hasActionFilter);
+    // - AND we have status/action/recommendation filters (not for text filter)
+    const includeParents = this.filterSettings.showParentNodes && (hasQuickFilter || hasActionFilter || hasRecommendationFilter);
 
     // Apply filter with or without parent nodes
     this.filteredTree = filterTreeWithParents(
@@ -212,7 +260,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
     );
 
     // Expand nodes based on filter type
-    if (hasTextFilter || hasQuickFilter || hasActionFilter) {
+    if (hasTextFilter || hasQuickFilter || hasActionFilter || hasRecommendationFilter) {
       // Expand all nodes to show filtered results
       this.expandNodesRecursive(this.filteredTree);
     } else {
@@ -528,7 +576,7 @@ export class TreeTableComponent implements OnInit, OnChanges {
     const allTypes = this.config.profileColumns
       .map(p => field.profiles?.[p.key]?.types || [])
       .filter(types => types.length > 0);
-    
+
     if (allTypes.length === 0) return '';
     return allTypes[0].join(', ');
   }
