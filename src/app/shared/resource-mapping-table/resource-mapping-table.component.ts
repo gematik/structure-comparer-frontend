@@ -47,6 +47,7 @@ export interface ResourceMappingRow {
   sourceMappings: SourceMappingEntry[];
   originalSourceMappings: SourceMappingEntry[];
   isResourceField: boolean;
+  isValueXField?: boolean;
   targetCardinalityMin?: number | string | null;
   targetCardinalityMax?: number | string | null;
 }

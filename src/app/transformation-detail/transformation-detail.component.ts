@@ -286,9 +286,37 @@ export class TransformationDetailComponent implements OnInit {
     });
 
     // Find ALL TARGET fields for display (filter will narrow down)
+    // Include fields ending with .resource or .value[x]
+    // Exclude fields whose parent has a .name sibling (e.g., Parameters.parameter.resource)
     const allTargetFields = this.fields.filter(f => {
       const isTargetField = f.name.startsWith(targetResourceType + '.');
-      return isTargetField;
+      if (!isTargetField) return false;
+
+      // Only include .resource or .value[x] fields
+      const isResourceOrValueField = f.name.toLowerCase().endsWith('.resource') ||
+                                      f.name.toLowerCase().endsWith('.value[x]');
+      if (!isResourceOrValueField) return false;
+
+      // Get parent path (everything except the last part)
+      const parts = f.name.split('.');
+      if (parts.length < 2) return true; // Safety check
+      const parentPath = parts.slice(0, -1).join('.');
+
+      // Check if parent has a .name sibling
+      const hasNameSibling = this.fields.some(field =>
+        field.name === parentPath + '.name'
+      );
+
+      // Exclude if parent has .name sibling AND this is a generic (non-sliced) field
+      // We identify generic fields by checking if they don't contain ':' (slice notation)
+      const isGenericField = !f.name.includes(':');
+
+      if (hasNameSibling && isGenericField) {
+        console.log('Excluding generic field with .name sibling:', f.name);
+        return false;
+      }
+
+      return true;
     });
 
     console.log('All target fields:', allTargetFields.length);
@@ -333,6 +361,7 @@ export class TransformationDetailComponent implements OnInit {
       const paramPart = parts.find(p => p.startsWith('parameter:'));
       const partPart = parts.find(p => p.startsWith('part:'));
       const isResourceField = field.name.toLowerCase().endsWith('.resource');
+      const isValueXField = field.name.toLowerCase().endsWith('.value[x]');
 
       let targetDisplayName = field.name;
       if (paramPart) {
@@ -365,6 +394,7 @@ export class TransformationDetailComponent implements OnInit {
         sourceMappings: sourceMappings,
         originalSourceMappings: JSON.parse(JSON.stringify(sourceMappings)),
         isResourceField: isResourceField,
+        isValueXField: isValueXField,
         targetCardinalityMin: targetCardinalityMin,
         targetCardinalityMax: targetCardinalityMax
       };
@@ -458,7 +488,7 @@ export class TransformationDetailComponent implements OnInit {
 
   /**
    * Apply resource type filter
-   * When enabled: Only show rows that are Resource type fields (.resource)
+   * When enabled: Only show rows that are Resource type fields (.resource) or Value[x] fields (.value[x])
    * When disabled: Show all target fields
    * Also applies text filter for source and target resources
    */
@@ -467,8 +497,8 @@ export class TransformationDetailComponent implements OnInit {
 
     // Apply type filter
     if (this.resourceFilterEnabled) {
-      // Filter to only show Resource type fields
-      filtered = filtered.filter(row => row.isResourceField);
+      // Filter to only show Resource type fields or Value[x] fields
+      filtered = filtered.filter(row => row.isResourceField || row.isValueXField);
     }
 
     // Apply text filter
