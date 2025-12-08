@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { EditMappingDialogComponent, EditMappingDialogData, EditMappingDialogResult } from '../edit-mapping-dialog/edit-mapping-dialog.component';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ActionOption as ActionOptionModel, MappingAction, MappingField, MappingFieldUpdateRequest } from '../models/mapping.model';
 import { TreeTableComponent, TreeTableConfig } from '../shared/tree-table/tree-table.component';
 import { MappingActionDisplayComponent } from '../shared/mapping-action-display/mapping-action-display.component';
@@ -1152,6 +1153,29 @@ export class MappingDetailComponent implements OnInit {
   }
 
   downloadStructureMap(): void {
+    const incompleteCount = this.getIncompleteFieldsCount();
+    
+    if (incompleteCount > 0) {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        data: {
+          title: 'Unvollständiges Mapping',
+          message: `Achtung: Das Mapping ist noch nicht vollständig! ${incompleteCount} Feld(er) haben noch keine gesetzte Aktion. Möchten Sie die StructureMap trotzdem herunterladen?`,
+          confirmText: 'Trotzdem herunterladen',
+          cancelText: 'Abbrechen'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          this.performStructureMapDownload();
+        }
+      });
+    } else {
+      this.performStructureMapDownload();
+    }
+  }
+
+  private performStructureMapDownload(): void {
     const filenameBase = this.sanitizeFilename(this.filtered?.name || this.mappingId);
     const filename = `${filenameBase}_structuremaps.zip`;
 
@@ -1170,6 +1194,14 @@ export class MappingDetailComponent implements OnInit {
           this.snackBar.open('StructureMap-Datei erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
         }
       });
+  }
+
+  /**
+   * Returns the count of fields without a set action
+   */
+  getIncompleteFieldsCount(): number {
+    if (!this.original?.fields) return 0;
+    return this.original.fields.filter((field: MappingField) => field.action === null || field.action === undefined).length;
   }  private saveFile(blob: Blob, filename: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');

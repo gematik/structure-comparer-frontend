@@ -23,6 +23,13 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button'; 
 
+export interface ConfirmDialogData {
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  title?: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-confirm-dialog',
@@ -32,7 +39,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class ConfirmDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<ConfirmDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { message: string }
+    @Inject(MAT_DIALOG_DATA) public data: ConfirmDialogData
   ) {}
 
   confirm(): void {

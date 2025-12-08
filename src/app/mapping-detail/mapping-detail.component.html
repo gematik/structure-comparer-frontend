@@ -10,13 +10,16 @@
     </button>
     <button
       mat-raised-button
-      color="accent"
+      [color]="getIncompleteFieldsCount() > 0 ? 'warn' : 'accent'"
       (click)="downloadStructureMap()"
       aria-label="Download StructureMap"
-      matTooltip="Export als FHIR StructureMap"
+      [matTooltip]="getIncompleteFieldsCount() > 0 
+        ? 'Warnung: ' + getIncompleteFieldsCount() + ' Feld(er) ohne Aktion - Export als FHIR StructureMap' 
+        : 'Export als FHIR StructureMap'"
     >
       <mat-icon>file_download</mat-icon>
       StructureMap
+      <span *ngIf="getIncompleteFieldsCount() > 0" class="incomplete-badge">!</span>
     </button>
   </div>  <!-- Unified Mapping Status Overview -->
   <div class="mapping-overview">
@@ -288,7 +291,7 @@
       ></app-filter-settings>
     </app-mapping-action-statistics>
   </div>
-  <div style="overflow: auto">
+  <div style="overflow: auto; margin-top: 10px;">
     <!-- Flat Table View -->
     <table
       id="resultsTable"
@@ -485,4 +488,8 @@
     aria-label="Select page"
   >
   </mat-paginator>
+
+  <!-- Spacer for bottom margin -->
+  <div style="height: 40px;"></div>
+
 </div>

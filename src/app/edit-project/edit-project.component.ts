@@ -743,8 +743,36 @@ export class EditProjectComponent implements OnInit {
 
   /**
    * Downloads all StructureMaps for all mappings in the project
+   * Shows a warning dialog if there are incomplete mappings
    */
   downloadAllStructureMaps(): void {
+    const summary = this.getProjectOverallSummary();
+    const incompleteCount = summary.incompatible || 0;
+    
+    if (incompleteCount > 0) {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        data: {
+          title: 'Unvollständige Mappings',
+          message: `Achtung: Das Projekt enthält noch ${incompleteCount} unvollständige Feld(er) ohne gesetzte Aktion. Möchten Sie die StructureMaps trotzdem herunterladen?`,
+          confirmText: 'Trotzdem herunterladen',
+          cancelText: 'Abbrechen'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          this.performAllStructureMapsDownload();
+        }
+      });
+    } else {
+      this.performAllStructureMapsDownload();
+    }
+  }
+
+  /**
+   * Performs the actual download of all StructureMaps
+   */
+  private performAllStructureMapsDownload(): void {
     this.mappingsService.downloadProjectStructureMaps(this.projectKey)
       .pipe(catchError(err => {
         console.error('Error downloading project StructureMaps', err);

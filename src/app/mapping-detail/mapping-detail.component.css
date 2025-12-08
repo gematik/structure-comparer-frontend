@@ -1616,4 +1616,19 @@ table {
   font-weight: 600;
 }
 
+/* Incomplete mapping badge for StructureMap button */
+.incomplete-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  color: #f44336;
+  border-radius: 50%;
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
 
