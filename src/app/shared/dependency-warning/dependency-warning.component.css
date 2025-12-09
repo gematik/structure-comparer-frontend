@@ -1,0 +1,257 @@
+/* Dependency Warning Component Styles */
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  color: #666;
+}
+
+/* Error Card */
+.error-card {
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  margin-bottom: 16px;
+}
+
+.error-card mat-icon {
+  color: #f44336;
+}
+
+/* Warning Card */
+.warning-card {
+  background-color: #fff3e0;
+  border-left: 4px solid #ff9800;
+  margin-bottom: 16px;
+}
+
+.warning-card mat-card-header {
+  cursor: pointer;
+  padding: 16px;
+}
+
+.clickable-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.clickable-header:hover {
+  background-color: rgba(255, 152, 0, 0.1);
+}
+
+.warning-icon {
+  color: #ff9800 !important;
+  font-size: 28px;
+  width: 40px;
+  height: 40px;
+}
+
+.issue-count {
+  font-size: 14px;
+  font-weight: normal;
+  color: #666;
+  margin-left: 8px;
+}
+
+.expand-icon {
+  margin-left: auto;
+  color: #666;
+}
+
+/* Dependencies Section */
+.dependencies-section {
+  padding: 0 16px 16px;
+}
+
+.dependencies-section h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.section-description {
+  color: #666;
+  font-size: 13px;
+  margin: 0 0 16px 0;
+}
+
+/* Dependency List */
+.dependency-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dependency-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e0e0e0;
+}
+
+.dependency-item.direct {
+  border-left: 3px solid #f44336;
+}
+
+.dependency-item.transitive {
+  border-left: 3px solid #ff9800;
+}
+
+.dependency-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dependency-icon {
+  color: #666;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.package-key {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.direct-chip {
+  background-color: #ffcdd2 !important;
+  color: #c62828 !important;
+  font-size: 11px !important;
+}
+
+.transitive-chip {
+  background-color: #ffe0b2 !important;
+  color: #e65100 !important;
+  font-size: 11px !important;
+}
+
+.required-by {
+  font-size: 12px;
+  color: #666;
+  padding-left: 28px;
+  cursor: help;
+}
+
+.required-by-label {
+  font-weight: 500;
+}
+
+/* Version Mismatch Panel */
+.version-mismatch-panel {
+  margin-top: 16px;
+  background-color: #fff8e1;
+}
+
+.mismatch-icon {
+  color: #f57c00;
+  margin-right: 8px;
+}
+
+.mismatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mismatch-item {
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 4px;
+  border: 1px solid #ffe0b2;
+}
+
+.mismatch-header {
+  margin-bottom: 8px;
+}
+
+.available-version {
+  color: #2e7d32;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+.not-loaded {
+  color: #c62828;
+  font-size: 13px;
+  margin-left: 8px;
+}
+
+.version-requirements {
+  font-size: 13px;
+  color: #666;
+}
+
+.requirement-label {
+  font-weight: 500;
+}
+
+.version-requirements ul {
+  margin: 4px 0 0 0;
+  padding-left: 20px;
+}
+
+.version-requirements li {
+  margin: 4px 0;
+}
+
+/* Multiline Tooltip */
+::ng-deep .multiline-tooltip {
+  white-space: pre-line;
+  max-width: 400px;
+}
+
+/* Download Buttons */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.section-header h4 {
+  margin: 0 0 8px 0;
+}
+
+.download-all-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  justify-content: center;
+}
+
+.download-all-button mat-icon,
+.download-all-button mat-spinner {
+  flex-shrink: 0;
+}
+
+.download-button {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.download-button mat-spinner {
+  margin: 0;
+}
+
+/* Adjust dependency-main for download button */
+.dependency-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.dependency-main .package-key {
+  flex-grow: 1;
+}

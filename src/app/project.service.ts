@@ -29,6 +29,14 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ImportManualEntriesResponse } from './models/manual-entries-import.model';
+import {
+  DependencyAnalysisResult,
+  PackageDependencyInfo,
+  PackageDownloadRequest,
+  PackageDownloadResult,
+  BatchDownloadRequest,
+  BatchDownloadResult,
+} from './models/package-dependency.model';
 import { ResolvedProfileFieldsResponse } from './models/profile.model';
 import { Project, ProjectInput } from './models/project.model';
 
@@ -146,6 +154,65 @@ export class ProjectService {
 
     return this.http.post<ImportManualEntriesResponse>(url, formData)
       .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Analyzes package dependencies recursively for a project.
+   * Parses dependencies from each package's package.json, resolves transitive dependencies,
+   * and identifies missing packages and version conflicts.
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing the dependency analysis result
+   */
+  analyzeDependencies(projectKey: string): Observable<DependencyAnalysisResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get<DependencyAnalysisResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/dependencies/analyze`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Gets dependency information for a single package.
+   * @param projectKey The unique identifier of the project
+   * @param packageId The package identifier (name#version)
+   * @returns Observable containing the package's dependency information
+   */
+  getPackageDependencies(projectKey: string, packageId: string): Observable<PackageDependencyInfo> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedPackageId = encodeURIComponent(packageId);
+    return this.http.get<PackageDependencyInfo>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}/dependencies`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Download a single package from FHIR registries
+   * @param projectKey The unique identifier of the project
+   * @param packageName The name of the package to download
+   * @param version The version of the package to download
+   * @returns Observable containing the download result
+   */
+  downloadPackage(projectKey: string, packageName: string, version: string): Observable<PackageDownloadResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const request: PackageDownloadRequest = { package_name: packageName, version };
+    return this.http.post<PackageDownloadResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/download`,
+      request
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Download multiple packages from FHIR registries
+   * @param projectKey The unique identifier of the project
+   * @param packages List of packages to download (each with name and version)
+   * @returns Observable containing the batch download result
+   */
+  downloadPackages(projectKey: string, packages: PackageDownloadRequest[]): Observable<BatchDownloadResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const request: BatchDownloadRequest = { packages };
+    return this.http.post<BatchDownloadResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/download-batch`,
+      request
+    ).pipe(catchError(this.handleError));
   }
 
   /**

@@ -64,6 +64,7 @@ import { TransformationService } from '../transformation.service';
 import { TargetCreationListItem } from '../models/target-creation.model';
 import { TargetCreationService } from '../target-creation.service';
 import { TargetCreationListComponent } from '../shared/target-creation-list/target-creation-list.component';
+import { DependencyWarningComponent } from '../shared/dependency-warning/dependency-warning.component';
 
 
 
@@ -81,7 +82,8 @@ import { TargetCreationListComponent } from '../shared/target-creation-list/targ
     MappingListComponent,
     TransformationListComponent,
     TargetCreationListComponent,
-    LoadingOverlayComponent
+    LoadingOverlayComponent,
+    DependencyWarningComponent
   ],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
@@ -509,6 +511,16 @@ export class EditProjectComponent implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /**
+   * Called when packages are downloaded from the dependency warning component.
+   * Reloads the project data to reflect the newly added packages.
+   */
+  async onPackagesDownloaded(): Promise<void> {
+    console.log('Packages downloaded, reloading project data...');
+    this.isLoading = true;
+    await this.refreshProjectData();
   }
 
   /**

@@ -1,0 +1,133 @@
+<!-- Dependency Warning Component -->
+
+<!-- Loading Spinner -->
+<div *ngIf="isLoading" class="loading-container">
+  <mat-spinner diameter="24"></mat-spinner>
+  <span>Analysiere Abhängigkeiten...</span>
+</div>
+
+<!-- Error Message -->
+<mat-card *ngIf="errorMessage && !isLoading" class="error-card">
+  <mat-card-header>
+    <mat-icon mat-card-avatar color="warn">error</mat-icon>
+    <mat-card-title>Fehler</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p>{{ errorMessage }}</p>
+  </mat-card-content>
+</mat-card>
+
+<!-- Warning Banner -->
+<mat-card *ngIf="hasIssues && !isLoading" class="warning-card">
+  <mat-card-header (click)="isExpanded = !isExpanded" class="clickable-header">
+    <mat-icon mat-card-avatar class="warning-icon">warning</mat-icon>
+    <mat-card-title>
+      Fehlende Package-Abhängigkeiten
+      <span class="issue-count">({{ missingDependencies.length }} Packages)</span>
+    </mat-card-title>
+    <mat-card-subtitle>
+      <span *ngIf="directMissingCount > 0">{{ directMissingCount }} direkte</span>
+      <span *ngIf="directMissingCount > 0 && transitiveMissingCount > 0">, </span>
+      <span *ngIf="transitiveMissingCount > 0">{{ transitiveMissingCount }} transitive</span>
+      Abhängigkeiten fehlen
+    </mat-card-subtitle>
+    <mat-icon class="expand-icon">{{ isExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </mat-card-header>
+
+  <mat-card-content *ngIf="isExpanded">
+    <!-- Missing Dependencies Section -->
+    <div class="dependencies-section" *ngIf="missingDependencies.length > 0">
+      <div class="section-header">
+        <div>
+          <h4>Fehlende Packages</h4>
+          <p class="section-description">
+            Diese Packages werden von anderen Packages referenziert, sind aber nicht im Projekt geladen.
+          </p>
+        </div>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="downloadAllMissing(); $event.stopPropagation()"
+          [disabled]="isAnyDownloadInProgress"
+          class="download-all-button"
+        >
+          <mat-icon *ngIf="!isDownloading">cloud_download</mat-icon>
+          <mat-spinner *ngIf="isDownloading" diameter="20"></mat-spinner>
+          <span *ngIf="!isDownloading">Alle herunterladen</span>
+          <span *ngIf="isDownloading">Wird heruntergeladen...</span>
+        </button>
+      </div>
+
+      <div class="dependency-list">
+        <div
+          *ngFor="let dep of missingDependencies"
+          class="dependency-item"
+          [class.direct]="dep.is_direct_dependency"
+          [class.transitive]="!dep.is_direct_dependency"
+        >
+          <div class="dependency-main">
+            <mat-icon class="dependency-icon">{{ dep.is_direct_dependency ? 'link_off' : 'subdirectory_arrow_right' }}</mat-icon>
+            <span class="package-key">{{ dep.package_key }}</span>
+            <mat-chip
+              [class.direct-chip]="dep.is_direct_dependency"
+              [class.transitive-chip]="!dep.is_direct_dependency"
+            >
+              {{ dep.is_direct_dependency ? 'direkt' : 'transitiv' }}
+            </mat-chip>
+            <button
+              mat-icon-button
+              color="primary"
+              (click)="downloadPackage(dep); $event.stopPropagation()"
+              [disabled]="isPackageDownloading(dep.package_key) || isDownloading"
+              [matTooltip]="'Package von FHIR Registry herunterladen'"
+              class="download-button"
+            >
+              <mat-icon *ngIf="!isPackageDownloading(dep.package_key)">cloud_download</mat-icon>
+              <mat-spinner *ngIf="isPackageDownloading(dep.package_key)" diameter="18"></mat-spinner>
+            </button>
+          </div>
+          <div
+            class="required-by"
+            [matTooltip]="getRequiredByTooltip(dep.required_by)"
+            matTooltipClass="multiline-tooltip"
+          >
+            <span class="required-by-label">Benötigt von:</span>
+            {{ formatRequiredBy(dep.required_by) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version Mismatches Section -->
+    <mat-expansion-panel *ngIf="versionMismatches.length > 0" class="version-mismatch-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon class="mismatch-icon">sync_problem</mat-icon>
+          Version-Konflikte ({{ versionMismatches.length }})
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="mismatch-list">
+        <div *ngFor="let mismatch of versionMismatches" class="mismatch-item">
+          <div class="mismatch-header">
+            <strong>{{ mismatch.package_name }}</strong>
+            <span *ngIf="mismatch.available_version" class="available-version">
+              (geladen: {{ mismatch.available_version }})
+            </span>
+            <span *ngIf="!mismatch.available_version" class="not-loaded">
+              (nicht geladen)
+            </span>
+          </div>
+          <div class="version-requirements">
+            <span class="requirement-label">Benötigte Versionen:</span>
+            <ul>
+              <li *ngFor="let req of mismatch.required_versions">
+                <strong>{{ req.version }}</strong> von {{ req.required_by }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-card-content>
+</mat-card>
