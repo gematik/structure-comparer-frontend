@@ -1191,8 +1191,43 @@ export class TransformationDetailComponent implements OnInit {
       v.action !== v.originalAction || v.copyFromSource !== v.originalCopyFromSource
     );
 
+    console.log('=== saveValueChanges DEBUG ===');
+    console.log('Total valueMappings:', this.valueMappings.length);
+    console.log('Changed rows:', changedRows.length);
+    changedRows.forEach((row, idx) => {
+      console.log(`Row ${idx}:`, {
+        targetField: row.targetField,
+        action: row.action,
+        actionType: typeof row.action,
+        actionIsNull: row.action === null,
+        actionIsUndefined: row.action === undefined,
+        copyFromSource: row.copyFromSource,
+        originalAction: row.originalAction,
+        originalCopyFromSource: row.originalCopyFromSource
+      });
+    });
+
     if (changedRows.length === 0) {
       this.snackBar.open('Keine Änderungen zum Speichern', 'OK', { duration: 2000 });
+      return;
+    }
+
+    // Validate rows before saving
+    const invalidRows = changedRows.filter(row => {
+      // copy_from and copy_to require a source/target field
+      if ((row.action === 'copy_from' || row.action === 'copy_to') && !row.copyFromSource) {
+        console.log('Invalid row (copy_from/copy_to without source):', row.targetField);
+        return true;
+      }
+      return false;
+    });
+
+    if (invalidRows.length > 0) {
+      this.snackBar.open(
+        `${invalidRows.length} Feld(er) mit "copy_from"/"copy_to" benötigen ein Quellfeld`,
+        'OK',
+        { duration: 5000 }
+      );
       return;
     }
 
@@ -1201,9 +1236,11 @@ export class TransformationDetailComponent implements OnInit {
 
     changedRows.forEach(row => {
       const updateRequest: TransformationFieldUpdateRequest = {
-        action: row.action || 'copy_from',
+        action: row.action,
         other: row.copyFromSource || undefined
       };
+
+      console.log('Sending updateRequest for', row.targetField, ':', JSON.stringify(updateRequest));
 
       this.transformationService.updateTransformationField(
         this.projectKey,
@@ -1211,14 +1248,15 @@ export class TransformationDetailComponent implements OnInit {
         row.targetField,
         updateRequest
       ).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log('Success for', row.targetField, ':', response);
           savedCount++;
           if (savedCount + errorCount === changedRows.length) {
             this.onSaveComplete(savedCount, errorCount);
           }
         },
         error: (err: unknown) => {
-          console.error('Error saving value mapping', err);
+          console.error('Error saving value mapping for', row.targetField, ':', err);
           errorCount++;
           if (savedCount + errorCount === changedRows.length) {
             this.onSaveComplete(savedCount, errorCount);
