@@ -93,8 +93,19 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
       name: source.name,
       displayName: source.displayName,
       cardinalityMin: source.cardinalityMin,
-      cardinalityMax: source.cardinalityMax
+      cardinalityMax: source.cardinalityMax,
+      additionalInfo: source.unresolvedReference
+        ? `⚠️ Nicht aufgelöstes Profil: ${this.extractProfileName(source.unresolvedReference)}`
+        : undefined
     }));
+  }
+
+  /**
+   * Extract a readable profile name from a URL
+   */
+  private extractProfileName(url: string): string {
+    const parts = url.split('/');
+    return parts[parts.length - 1] || url;
   }
 
   /**

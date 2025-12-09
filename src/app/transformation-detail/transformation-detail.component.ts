@@ -95,6 +95,21 @@ export class TransformationDetailComponent implements OnInit {
   // Cache for available profiles in the project
   private availableProfiles: Map<string, any> = new Map();
 
+  // Loading state for profile fields (Phase 2: UI-Verbesserungen)
+  loadingSourceFields = false;
+
+  // Unresolved references from profile resolution (Phase 2: UI-Verbesserungen)
+  unresolvedReferences: string[] = [];
+
+  // Cache for resolved profile fields per transformation (Phase 2: Caching)
+  private static resolvedFieldsCache: Map<string, {
+    resourceFields: SourceFieldOption[];
+    valueFields: SourceFieldOption[];
+    unresolvedRefs: string[];
+    timestamp: number;
+  }> = new Map();
+  private static CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -140,19 +155,111 @@ export class TransformationDetailComponent implements OnInit {
   }
 
   /**
-   * Load fields from all source profiles
+   * Load fields from all source profiles using the backend's recursive resolution.
+   * The backend handles fixedUri/fixedCanonical resolution and categorization.
+   * Implements caching to avoid redundant API calls (Phase 2: Caching).
    */
   private async loadSourceProfileFields(): Promise<void> {
     if (!this.transformation?.sources?.length) return;
 
     this.sourceResourceFields = [];
     this.sourceValueFields = [];
+    this.unresolvedReferences = [];
 
+    // Collect profile IDs from transformation sources
+    const profileIds = this.transformation.sources
+      .map(source => source.id)
+      .filter((id): id is string => !!id);
+
+    if (profileIds.length === 0) {
+      return;
+    }
+
+    // Generate cache key from project and profile IDs
+    const cacheKey = `${this.projectKey}:${profileIds.sort().join(',')}`;
+
+    // Check cache first (Phase 2: Caching)
+    const cached = TransformationDetailComponent.resolvedFieldsCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < TransformationDetailComponent.CACHE_TTL_MS) {
+      this.sourceResourceFields = [...cached.resourceFields];
+      this.sourceValueFields = [...cached.valueFields];
+      this.unresolvedReferences = [...cached.unresolvedRefs];
+      return;
+    }
+
+    this.loadingSourceFields = true;
+
+    try {
+      // Use the new backend endpoint that handles recursive resolution
+      const response = await this.projectService
+        .getResolvedProfileFields(this.projectKey, profileIds)
+        .toPromise();
+
+      if (!response) {
+        this.loadingSourceFields = false;
+        return;
+      }
+
+      // Convert backend response to SourceFieldOption format
+      // Resource fields
+      for (const field of response.resource_fields) {
+        this.sourceResourceFields.push({
+          name: field.full_path,
+          displayName: field.full_path,
+          profileKey: field.source_profile_key || field.source_profile_id,
+          cardinalityMin: field.min,
+          cardinalityMax: field.max,
+          unresolvedReference: field.unresolved_reference || null
+        });
+      }
+
+      // Value fields
+      for (const field of response.value_fields) {
+        const parts = field.full_path.split('.');
+        const simpleDisplayName = parts[parts.length - 1].replace(/:\w+$/, '');
+
+        this.sourceValueFields.push({
+          name: field.full_path,
+          displayName: simpleDisplayName,
+          profileKey: field.source_profile_key || field.source_profile_id,
+          cardinalityMin: field.min,
+          cardinalityMax: field.max,
+          unresolvedReference: field.unresolved_reference || null
+        });
+      }
+
+      // Store unresolved references for UI display
+      this.unresolvedReferences = response.unresolved_references;
+      if (this.unresolvedReferences.length > 0) {
+        console.warn('Unresolved profile references:', this.unresolvedReferences);
+      }
+
+      // Update cache (Phase 2: Caching)
+      TransformationDetailComponent.resolvedFieldsCache.set(cacheKey, {
+        resourceFields: [...this.sourceResourceFields],
+        valueFields: [...this.sourceValueFields],
+        unresolvedRefs: [...this.unresolvedReferences],
+        timestamp: Date.now()
+      });
+
+    } catch (error) {
+      console.error('Error loading resolved profile fields:', error);
+      // Fallback: try the old method if the new endpoint fails
+      await this.loadSourceProfileFieldsLegacy();
+    } finally {
+      this.loadingSourceFields = false;
+    }
+  }
+
+  /**
+   * Legacy method for loading profile fields (fallback if new endpoint fails)
+   */
+  private async loadSourceProfileFieldsLegacy(): Promise<void> {
     // First, load the list of all available profiles in the project
     await this.loadAvailableProfiles();
 
     // Sort sources to load Bundle profiles first
-    const sortedSources = [...this.transformation.sources].sort((a, b) => {
+    const sortedSources = [...(this.transformation?.sources || [])].sort((a, b) => {
       const aIsBundle = a.name?.toLowerCase().includes('bundle') || a.id?.toLowerCase().includes('bundle');
       const bIsBundle = b.name?.toLowerCase().includes('bundle') || b.id?.toLowerCase().includes('bundle');
       if (aIsBundle && !bIsBundle) return -1;
@@ -178,8 +285,7 @@ export class TransformationDetailComponent implements OnInit {
     this.sourceValueFields = this.sourceValueFields.filter((v, i, a) =>
       a.findIndex(t => t.name === v.name) === i
     );
-
-   }
+  }
 
   /**
    * Load all available profiles in the project to enable smart lookup of referenced profiles
@@ -191,6 +297,16 @@ export class TransformationDetailComponent implements OnInit {
         response.profiles.forEach((profile: any) => {
           // Store by ID for quick lookup
           this.availableProfiles.set(profile.id, profile);
+
+          // Store by URL for lookup by fixedUri/fixedCanonical references
+          if (profile.url) {
+            this.availableProfiles.set(profile.url, profile);
+            // Also store without version (e.g., "https://...#1.0" -> "https://...")
+            const urlWithoutVersion = profile.url.split('|')[0];
+            if (!this.availableProfiles.has(urlWithoutVersion)) {
+              this.availableProfiles.set(urlWithoutVersion, profile);
+            }
+          }
 
           // Also store by resource type name for lookup by FHIR resource type
           // Extract resource type from profile name with various patterns:
@@ -228,7 +344,66 @@ export class TransformationDetailComponent implements OnInit {
   }
 
   /**
+   * Resolve a fixedUri or fixedCanonical reference to a profile
+   * Returns the profile if found, null otherwise
+   */
+  private resolveProfileByUrl(url: string): any | null {
+    // Direct lookup
+    if (this.availableProfiles.has(url)) {
+      return this.availableProfiles.get(url);
+    }
+
+    // Try without version
+    const urlWithoutVersion = url.split('|')[0];
+    if (this.availableProfiles.has(urlWithoutVersion)) {
+      return this.availableProfiles.get(urlWithoutVersion);
+    }
+
+    // Extract the last part of the URL path for name-based lookup
+    // e.g., "https://gematik.de/fhir/erp/NamingSystem/GEM_ERP_NS_PrescriptionId" -> "GEM_ERP_NS_PrescriptionId"
+    const urlParts = url.split('/');
+    const lastPart = urlParts[urlParts.length - 1];
+    if (lastPart && this.availableProfiles.has(lastPart)) {
+      return this.availableProfiles.get(lastPart);
+    }
+
+    // Try to find by partial name match
+    for (const [key, profile] of this.availableProfiles.entries()) {
+      if (profile.name && url.includes(profile.name)) {
+        return profile;
+      }
+      if (profile.id && url.includes(profile.id)) {
+        return profile;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if a URL refers to a non-recursive FHIR resource type
+   * (NamingSystem, CodeSystem, ValueSet, etc. don't have fields to load)
+   */
+  private isNonRecursiveReference(url: string): boolean {
+    const nonRecursivePatterns = [
+      '/NamingSystem/',
+      '/CodeSystem/',
+      '/ValueSet/',
+      '/ConceptMap/',
+      '/SearchParameter/',
+      '/OperationDefinition/',
+      '/CapabilityStatement/',
+      '/ImplementationGuide/',
+      'NamingSystem',
+      'CodeSystem',
+      'ValueSet'
+    ];
+    return nonRecursivePatterns.some(pattern => url.includes(pattern));
+  }
+
+  /**
    * Recursively load profile fields and referenced profiles
+   * Handles both type-based references (.resource fields) and fixedUri/fixedCanonical references
    */
   private async loadProfileFieldsRecursive(
     profileId: string,
@@ -262,6 +437,8 @@ export class TransformationDetailComponent implements OnInit {
         const types = (fieldInfo as any).types || [];
         const cardinalityMin = (fieldInfo as any).min ?? null;
         const cardinalityMax = (fieldInfo as any).max ?? null;
+        const fixedValue = (fieldInfo as any).fixed_value ?? null;
+        const fixedValueType = (fieldInfo as any).fixed_value_type ?? null;
 
         // Build full path with prefix
         let fullPath = pathPrefix ? pathPrefix + fieldPath : fieldPath;
@@ -282,6 +459,36 @@ export class TransformationDetailComponent implements OnInit {
         // Create display name
         let displayName = fullPath;
 
+        // Check if this field has a fixedUri or fixedCanonical that references another profile
+        let unresolvedReference: string | null = null;
+        if (fixedValue && (fixedValueType === 'fixedUri' || fixedValueType === 'fixedCanonical')) {
+          const fixedUrl = String(fixedValue);
+
+          // Only try to resolve StructureDefinition references (profiles/extensions)
+          // Skip NamingSystem, CodeSystem, ValueSet, etc. as they don't have recursive fields
+          const isStructureDefinitionRef = fixedUrl.includes('StructureDefinition') ||
+                                            fixedUrl.includes('/fhir/') && !this.isNonRecursiveReference(fixedUrl);
+
+          if (isStructureDefinitionRef && (fixedUrl.startsWith('http://') || fixedUrl.startsWith('https://'))) {
+            const referencedProfile = this.resolveProfileByUrl(fixedUrl);
+
+            if (referencedProfile) {
+              // Recursively load the referenced profile fields
+              await this.loadProfileFieldsRecursive(
+                referencedProfile.id,
+                profileKey,
+                displayName, // Use the current field path as prefix
+                visited,
+                rootResourceType
+              );
+            } else {
+              // Mark as unresolved reference for UI feedback (only for StructureDefinitions)
+              unresolvedReference = fixedUrl;
+              console.warn(`Could not resolve profile reference: ${fixedUrl} for field ${displayName}`);
+            }
+          }
+        }
+
         // For entry resources, keep the full path (e.g., Bundle.entry:VerordnungArzneimittel.resource)
         if (isResourceField) {
           this.sourceResourceFields.push({
@@ -289,10 +496,11 @@ export class TransformationDetailComponent implements OnInit {
             displayName: displayName,
             profileKey: profileKey,
             cardinalityMin: cardinalityMin,
-            cardinalityMax: cardinalityMax
+            cardinalityMax: cardinalityMax,
+            unresolvedReference: unresolvedReference
           });
 
-          // Load referenced profile fields
+          // Load referenced profile fields based on type
           if (types.length > 0) {
             const resourceType = types[0]; // e.g., "MedicationRequest"
 
@@ -321,7 +529,8 @@ export class TransformationDetailComponent implements OnInit {
           displayName: simpleDisplayName,
           profileKey: profileKey,
           cardinalityMin: cardinalityMin,
-          cardinalityMax: cardinalityMax
+          cardinalityMax: cardinalityMax,
+          unresolvedReference: unresolvedReference
         });
       }
     } catch (error) {

@@ -27,6 +27,8 @@ export interface SourceFieldOption {
   cardinalityMin?: number | string | null;
   /** Source cardinality max value */
   cardinalityMax?: number | string | null;
+  /** If set, indicates a reference that could not be resolved (the URL that wasn't found) */
+  unresolvedReference?: string | null;
 }
 
 /**

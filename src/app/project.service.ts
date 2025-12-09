@@ -29,6 +29,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ImportManualEntriesResponse } from './models/manual-entries-import.model';
+import { ResolvedProfileFieldsResponse } from './models/profile.model';
 import { Project, ProjectInput } from './models/project.model';
 
 @Injectable({
@@ -87,6 +88,23 @@ export class ProjectService {
     const encodedProfileId = encodeURIComponent(profileId);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/profile/${encodedProfileId}`)
       .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Fetches profile fields with recursive resolution of fixedUri/fixedCanonical references.
+   * This method loads the specified profiles and recursively follows references to
+   * StructureDefinitions, categorizing fields into resource fields and value fields.
+   *
+   * @param projectKey The unique identifier of the project
+   * @param profileIds Array of profile IDs to load (typically source profiles)
+   * @returns Observable containing resolved fields categorized as resource/value fields
+   */
+  getResolvedProfileFields(projectKey: string, profileIds: string[]): Observable<ResolvedProfileFieldsResponse> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<ResolvedProfileFieldsResponse>(
+      `${this.baseUrl}/project/${encodedProjectKey}/profile/resolve-fields`,
+      profileIds
+    ).pipe(catchError(this.handleError));
   }
 
   /**

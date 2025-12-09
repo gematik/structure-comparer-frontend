@@ -105,8 +105,19 @@ export class ResourceMappingTableComponent extends BaseMappingTableComponent<Res
     this.sourceFieldOptions = this.sourceFields.map(source => ({
       value: source.name,
       label: source.displayName || source.name,
-      secondaryLabel: source.name !== source.displayName ? source.name : undefined
+      secondaryLabel: source.name !== source.displayName ? source.name : undefined,
+      additionalInfo: source.unresolvedReference
+        ? `⚠️ Nicht aufgelöstes Profil: ${this.extractProfileName(source.unresolvedReference)}`
+        : undefined
     }));
+  }
+
+  /**
+   * Extract a readable profile name from a URL
+   */
+  private extractProfileName(url: string): string {
+    const parts = url.split('/');
+    return parts[parts.length - 1] || url;
   }
 
   /**

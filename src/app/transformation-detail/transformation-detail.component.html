@@ -72,6 +72,27 @@
       </mat-card-content>
     </mat-card>
 
+    <!-- Warning Banner for Unresolved References (Phase 2: UI-Verbesserungen) -->
+    <div *ngIf="unresolvedReferences.length > 0" class="unresolved-references-warning">
+      <mat-icon>warning</mat-icon>
+      <div class="warning-content">
+        <strong>{{ unresolvedReferences.length }} Profil-Referenz(en) konnten nicht aufgelöst werden</strong>
+        <p class="warning-subtitle">Einige fixedUri/fixedCanonical Referenzen verweisen auf Profile, die nicht im Projekt geladen sind.</p>
+        <details class="unresolved-details">
+          <summary>Details anzeigen</summary>
+          <ul class="unresolved-list">
+            <li *ngFor="let ref of unresolvedReferences">{{ ref }}</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <!-- Loading Indicator for Source Fields (Phase 2: UI-Verbesserungen) -->
+    <div *ngIf="loadingSourceFields" class="source-fields-loading">
+      <mat-icon class="spin">sync</mat-icon>
+      <span>Lade Quell-Profil-Felder...</span>
+    </div>
+
     <!-- Tabs for Resources and Values -->
     <mat-card class="mappings-card">
       <mat-tab-group [(selectedIndex)]="activeTabIndex" animationDuration="200ms">
