@@ -26,13 +26,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { Package } from '../../models/package.model';
 import { PackageUploadDialogComponent } from '../../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../../update-package-name-dialog/update-package-name-dialog.component';
+import { MissingDependenciesListComponent } from '../missing-dependencies-list/missing-dependencies-list.component';
 
 type SortState = { col: string; dir: 'asc' | 'desc' };
 
 @Component({
   selector: 'app-package-list',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, MatButtonModule, MatIcon, MissingDependenciesListComponent],
   template: `
     <h2 class="section-heading">List of Packages</h2>
     <table class="modern-table">
@@ -83,6 +84,12 @@ type SortState = { col: string; dir: 'asc' | 'desc' };
         </td>
       </tr>
     </table>
+
+    <!-- Missing Dependencies Section -->
+    <app-missing-dependencies-list
+      [projectKey]="projectKey"
+      (projectReload)="onProjectReload()"
+    ></app-missing-dependencies-list>
   `,
   styleUrls: ['./package-list.component.css']
 })
@@ -92,6 +99,7 @@ export class PackageListComponent {
 
   @Output() packageDeleted = new EventEmitter<{ id: string; name: string }>();
   @Output() packageUpdated = new EventEmitter<Package>();
+  @Output() projectReloadRequested = new EventEmitter<void>();
 
   sortState: SortState = { col: 'displayName', dir: 'asc' };
 
@@ -150,5 +158,12 @@ export class PackageListComponent {
       id: pkg.id,
       name: pkg.display || pkg.name
     });
+  }
+
+  /**
+   * Called when packages are downloaded and project needs to be reloaded
+   */
+  onProjectReload(): void {
+    this.projectReloadRequested.emit();
   }
 }

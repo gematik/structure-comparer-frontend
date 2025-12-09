@@ -7,12 +7,6 @@
 
 <div class="m-20">
 
-  <!-- Dependency Warning Banner -->
-  <app-dependency-warning
-    [projectKey]="projectKey"
-    (projectReload)="onPackagesDownloaded()"
-  ></app-dependency-warning>
-
   <!-- Project Progress Overview -->
   <div class="project-progress-overview">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -153,6 +147,7 @@
     [projectKey]="projectKey"
     (packageDeleted)="onPackageDeleted($event)"
     (packageUpdated)="onPackageUpdated($event)"
+    (projectReloadRequested)="onPackagesDownloaded()"
   >
   </app-package-list>
 
