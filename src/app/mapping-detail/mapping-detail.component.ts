@@ -96,7 +96,7 @@ export class MappingDetailComponent implements OnInit {
 
   // Profile columns and view settings
   profileColumns: Array<{ key: string; name: string; url?: string }> = [];
-  viewMode: 'flat' | 'tree' = 'flat';
+  viewMode: 'flat' | 'tree' = 'tree';
   treeTableConfig: TreeTableConfig = { profileColumns: [] };
 
   // Reference to the tree table component
@@ -191,7 +191,7 @@ export class MappingDetailComponent implements OnInit {
     this.totalLength = fields.length;
     this.original = mapping;
     this.mapping = mapping;
-    
+
     // Apply filters (including max=0 children filter) on initial load
     this.applyAllFilters();
   }
