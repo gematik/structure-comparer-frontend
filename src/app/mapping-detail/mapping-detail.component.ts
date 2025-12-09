@@ -1182,18 +1182,6 @@ export class MappingDetailComponent implements OnInit {
   }
 
   // === FILE & TREE OPERATIONS ===
-  getStaticMappings(): void {
-    const filenameBase = this.sanitizeFilename(this.filtered.name);
-    const filename = `${filenameBase}.html`;
-
-    this.mappingsService.getStaticMapping(this.projectKey, this.mappingId, true, true)
-      .pipe(catchError(err => {
-        console.error('Error loading static mappings', err);
-        return of(new Blob());
-      }))
-      .subscribe(data => this.saveFile(data, filename));
-  }
-
   downloadStructureMap(): void {
     const incompleteCount = this.getIncompleteFieldsCount();
 

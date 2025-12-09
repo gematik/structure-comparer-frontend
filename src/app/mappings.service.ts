@@ -253,24 +253,6 @@ export class MappingsService {
   }
 
   /**
-   * Retrieves a static HTML representation of a mapping
-   * @param projectKey The unique identifier of the project
-   * @param mappingId The unique identifier of the mapping
-   * @param showRemarks Whether to include remarks in the output
-   * @param showWarnings Whether to include warnings in the output
-   * @returns Observable containing the HTML blob response
-   */
-  getStaticMapping(projectKey: string, mappingId: string, showRemarks: boolean, showWarnings: boolean): Observable<any> {
-    const encodedProjectKey = encodeURIComponent(projectKey);
-    const encodedMappingId = encodeURIComponent(mappingId);
-    let params = new HttpParams()
-      .set('show_remarks', showRemarks.toString())
-      .set('show_warnings', showWarnings.toString());
-    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/html`, { params, responseType: 'blob' })
-      .pipe(catchError(this.handleError));
-  }
-
-  /**
    * Retrieves mapping evaluation summary with counts for different categories
    * @param projectKey The unique identifier of the project
    * @param mappingId The unique identifier of the mapping
