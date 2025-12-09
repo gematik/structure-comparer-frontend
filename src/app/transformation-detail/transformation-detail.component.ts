@@ -1191,22 +1191,6 @@ export class TransformationDetailComponent implements OnInit {
       v.action !== v.originalAction || v.copyFromSource !== v.originalCopyFromSource
     );
 
-    console.log('=== saveValueChanges DEBUG ===');
-    console.log('Total valueMappings:', this.valueMappings.length);
-    console.log('Changed rows:', changedRows.length);
-    changedRows.forEach((row, idx) => {
-      console.log(`Row ${idx}:`, {
-        targetField: row.targetField,
-        action: row.action,
-        actionType: typeof row.action,
-        actionIsNull: row.action === null,
-        actionIsUndefined: row.action === undefined,
-        copyFromSource: row.copyFromSource,
-        originalAction: row.originalAction,
-        originalCopyFromSource: row.originalCopyFromSource
-      });
-    });
-
     if (changedRows.length === 0) {
       this.snackBar.open('Keine Änderungen zum Speichern', 'OK', { duration: 2000 });
       return;
@@ -1216,7 +1200,6 @@ export class TransformationDetailComponent implements OnInit {
     const invalidRows = changedRows.filter(row => {
       // copy_from and copy_to require a source/target field
       if ((row.action === 'copy_from' || row.action === 'copy_to') && !row.copyFromSource) {
-        console.log('Invalid row (copy_from/copy_to without source):', row.targetField);
         return true;
       }
       return false;
@@ -1240,16 +1223,13 @@ export class TransformationDetailComponent implements OnInit {
         other: row.copyFromSource || undefined
       };
 
-      console.log('Sending updateRequest for', row.targetField, ':', JSON.stringify(updateRequest));
-
       this.transformationService.updateTransformationField(
         this.projectKey,
         this.transformationId,
         row.targetField,
         updateRequest
       ).subscribe({
-        next: (response) => {
-          console.log('Success for', row.targetField, ':', response);
+        next: () => {
           savedCount++;
           if (savedCount + errorCount === changedRows.length) {
             this.onSaveComplete(savedCount, errorCount);
