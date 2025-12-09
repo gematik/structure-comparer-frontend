@@ -38,6 +38,7 @@ export class MappingActionDisplayComponent {
   @Input() compact: boolean = false; // Für kompakte Darstellung in der Tabelle
   @Input() allFields?: MappingField[]; // Optional: Alle Felder für Typ-Lookup bei copy_from/copy_to
   @Output() applyRecommendation = new EventEmitter<{ field: MappingField; index: number; event: Event }>();
+  @Output() editField = new EventEmitter<{ field: MappingField; event: Event }>();
 
   /**
    * Gets the icon for an action
@@ -194,6 +195,15 @@ export class MappingActionDisplayComponent {
     event.stopPropagation();
     event.preventDefault();
     this.applyRecommendation.emit({ field: this.field, index, event });
+  }
+
+  /**
+   * Handle edit button click to open the edit dialog
+   */
+  onEditField(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.editField.emit({ field: this.field, event });
   }
 
   /**

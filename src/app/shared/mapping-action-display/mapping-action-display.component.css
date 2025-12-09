@@ -233,6 +233,43 @@
   flex-wrap: wrap;
 }
 
+/* Choose Action Button - styled exactly like recommendation-chip */
+.choose-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed #999;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.choose-action-btn:hover {
+  background-color: #e8e8e8;
+  border-color: #666;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.choose-action-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.choose-action-btn .btn-label {
+  white-space: nowrap;
+}
+
 .recommendation-chip {
   display: inline-flex;
   align-items: center;

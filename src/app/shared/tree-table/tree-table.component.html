@@ -156,7 +156,8 @@
             [field]="row.field"
             [compact]="true"
             [allFields]="fields"
-            (applyRecommendation)="onApplyRecommendation($event)">
+            (applyRecommendation)="onApplyRecommendation($event)"
+            (editField)="onEditPropertyAction($event.field, i)">
           </app-mapping-action-display>
         </div>
 

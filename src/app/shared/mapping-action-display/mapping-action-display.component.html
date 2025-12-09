@@ -26,6 +26,15 @@
             </ng-container>
           </span>
         </div>
+
+        <!-- Choose Action Button -->
+        <button class="choose-action-btn"
+                [matTooltip]="'Mapping-Aktion bearbeiten'"
+                matTooltipPosition="above"
+                (click)="onEditField($event)">
+          <mat-icon>help_outline</mat-icon>
+          <span class="btn-label">CHOOSE_ACTION</span>
+        </button>
       </ng-container>
     </div>
 
@@ -54,7 +63,7 @@
          matTooltip="Es wurde noch keine Mapping-Aktion festgelegt"
          matTooltipPosition="above">
       <mat-icon>help_outline</mat-icon>
-      <span class="chip-label">CHOOSE_ACTION</span>
+      <span class="chip-label">choose_action</span>
     </div>
 
     <!-- Detail Badges (same style as action chip) -->
