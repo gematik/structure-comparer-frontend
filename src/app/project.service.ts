@@ -127,6 +127,18 @@ export class ProjectService {
   }
 
   /**
+   * Reloads a project from disk on the server side to reflect file system changes.
+   * Use this after manually adding or removing package files.
+   * @param projectKey The unique identifier of the project to reload
+   * @returns Observable containing the reloaded project data
+   */
+  reloadProjectFromDisk(projectKey: string): Observable<Project> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<Project>(`${this.baseUrl}/project/${encodedProjectKey}/reload`, {})
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
    * Updates project metadata (version and status)
    * @param projectKey The unique identifier of the project to update
    * @param projectInput The project data to update (name, version, status)

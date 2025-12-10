@@ -205,10 +205,18 @@ export class MissingDependenciesListComponent implements OnInit, OnChanges {
             'OK',
             { duration: 5000 }
           );
-          // Emit event to reload project
-          this.projectReload.emit();
-          // Refresh analysis
-          this.loadDependencyAnalysis();
+          // Reload project from disk on server side, then refresh analysis
+          this.projectService.reloadProjectFromDisk(this.projectKey).subscribe({
+            next: () => {
+              this.projectReload.emit();
+              this.loadDependencyAnalysis();
+            },
+            error: () => {
+              // Even if reload fails, try to refresh analysis
+              this.projectReload.emit();
+              this.loadDependencyAnalysis();
+            }
+          });
         } else {
           this.snackBar.open(`Fehler: ${result.message}`, 'OK', { duration: 5000 });
         }
@@ -253,10 +261,18 @@ export class MissingDependenciesListComponent implements OnInit, OnChanges {
         this.snackBar.open(message, 'OK', { duration: 5000 });
 
         if (result.successful > 0) {
-          // Emit event to reload project
-          this.projectReload.emit();
-          // Refresh analysis
-          this.loadDependencyAnalysis();
+          // Reload project from disk on server side, then refresh analysis
+          this.projectService.reloadProjectFromDisk(this.projectKey).subscribe({
+            next: () => {
+              this.projectReload.emit();
+              this.loadDependencyAnalysis();
+            },
+            error: () => {
+              // Even if reload fails, try to refresh analysis
+              this.projectReload.emit();
+              this.loadDependencyAnalysis();
+            }
+          });
         }
 
         // Show failed downloads if any
@@ -296,5 +312,22 @@ export class MissingDependenciesListComponent implements OnInit, OnChanges {
    */
   refresh(): void {
     this.loadDependencyAnalysis();
+  }
+
+  /**
+   * Refresh the dependency analysis with server-side project reload.
+   * This ensures file system changes are reflected.
+   */
+  refreshAnalysis(): void {
+    this.isLoading = true;
+    this.projectService.reloadProjectFromDisk(this.projectKey).subscribe({
+      next: () => {
+        this.loadDependencyAnalysis();
+      },
+      error: () => {
+        // Even if reload fails, try to load analysis
+        this.loadDependencyAnalysis();
+      }
+    });
   }
 }

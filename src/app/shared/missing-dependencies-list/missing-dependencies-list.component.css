@@ -67,6 +67,21 @@
   color: #666;
 }
 
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-button {
+  color: #e65100;
+}
+
+.refresh-button:hover {
+  background-color: rgba(230, 81, 0, 0.1);
+}
+
 /* Download All Button */
 .download-all-button {
   display: flex;

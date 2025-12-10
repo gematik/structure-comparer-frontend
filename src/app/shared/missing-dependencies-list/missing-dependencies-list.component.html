@@ -20,18 +20,29 @@
       Fehlende Package-Abhängigkeiten
       <span class="count-badge">({{ missingDependencies.length }})</span>
     </h3>
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="downloadAllMissing()"
-      [disabled]="isAnyDownloadInProgress"
-      class="download-all-button"
-    >
-      <mat-icon *ngIf="!isDownloading">cloud_download</mat-icon>
-      <mat-spinner *ngIf="isDownloading" diameter="18"></mat-spinner>
-      <span *ngIf="!isDownloading">Alle herunterladen</span>
-      <span *ngIf="isDownloading">Wird heruntergeladen...</span>
-    </button>
+    <div class="header-actions">
+      <button
+        mat-icon-button
+        (click)="refreshAnalysis()"
+        [disabled]="isLoading || isDownloading"
+        matTooltip="Abhängigkeiten neu laden"
+        class="refresh-button"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="downloadAllMissing()"
+        [disabled]="isAnyDownloadInProgress"
+        class="download-all-button"
+      >
+        <mat-icon *ngIf="!isDownloading">cloud_download</mat-icon>
+        <mat-spinner *ngIf="isDownloading" diameter="18"></mat-spinner>
+        <span *ngIf="!isDownloading">Alle herunterladen</span>
+        <span *ngIf="isDownloading">Wird heruntergeladen...</span>
+      </button>
+    </div>
   </div>
 
   <table class="missing-table">
