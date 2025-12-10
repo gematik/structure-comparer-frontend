@@ -53,18 +53,18 @@ export type MappingAction =
   | 'use_recursive'
   | 'not_use'
   | 'empty'
-  | 'copy_from'
-  | 'copy_to'
+  | 'copy_value_from'
+  | 'copy_value_to'
   | 'fixed'
   | 'manual'
-  | 'extension'
+  | 'copy_node_to'
   | null;
 
 /**
  * Interface representing an action option with metadata
  */
 export interface ActionOption {
-  // The action value (e.g., "use", "copy_from")
+  // The action value (e.g., "use", "copy_value_from")
   value: MappingAction;
   // Human-readable description of the action
   description: string;

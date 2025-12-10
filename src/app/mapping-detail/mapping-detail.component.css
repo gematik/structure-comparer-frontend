@@ -296,10 +296,15 @@ table {
 .mapping-result:has(.mapping-result-content:contains("Manuell")),
 
 /* Fallback styles using different approach */
-.mapping-result[data-action="copy_from"],
-.mapping-result[data-action="copy_to"] {
+.mapping-result[data-action="copy_value_from"],
+.mapping-result[data-action="copy_value_to"] {
   background-color: #e3f2fd;
   border-left-color: #2196f3;
+}
+
+.mapping-result[data-action="copy_node_to"] {
+  background-color: #e0f2f1;
+  border-left-color: #009688;
 }
 
 .mapping-result[data-action="fixed"] {
@@ -321,11 +326,11 @@ table {
 .mapping-result[data-action="manual"],
 
 /* Different styles for different mapping types */
-.mapping-result .copy-from {
+.mapping-result .copy-value-from {
   color: #0d6efd;
 }
 
-.mapping-result .copy-to {
+.mapping-result .copy-value-to {
   color: #198754;
 }
 
@@ -380,14 +385,14 @@ table {
 }
 
 /* Action-specific styling for consolidated display */
-.mapping-consolidated[data-action="copy_from"] .mapping-details,
-.mapping-consolidated[data-action="copy_to"] .mapping-details {
+.mapping-consolidated[data-action="copy_value_from"] .mapping-details,
+.mapping-consolidated[data-action="copy_value_to"] .mapping-details {
   background-color: #e3f2fd;
   border-left-color: #2196f3;
   color: #1565c0;
 }
 
-.mapping-consolidated[data-action="extension"] .mapping-details {
+.mapping-consolidated[data-action="copy_node_to"] .mapping-details {
   background-color: #e0f2f1;
   border-left-color: #009688;
   color: #00695c;
@@ -1390,11 +1395,17 @@ table {
   border-color: #9c27b0;
 }
 
-.recommendation-chip--copy_from,
-.recommendation-chip--copy_to {
+.recommendation-chip--copy_value_from,
+.recommendation-chip--copy_value_to {
   background-color: #bbdefb;
   color: #1565c0;
   border-color: #2196f3;
+}
+
+.recommendation-chip--copy_node_to {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
 }
 
 .recommendation-chip--fixed {
@@ -1471,11 +1482,17 @@ table {
 }
 
 /* Color variations for detail badges - matching active badges */
-.recommendation-detail-badge--copy_from,
-.recommendation-detail-badge--copy_to {
+.recommendation-detail-badge--copy_value_from,
+.recommendation-detail-badge--copy_value_to {
   background-color: #bbdefb;
   color: #1565c0;
   border-color: #2196f3;
+}
+
+.recommendation-detail-badge--copy_node_to {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
 }
 
 .recommendation-detail-badge--fixed {
@@ -1631,4 +1648,44 @@ table {
   margin-left: 6px;
 }
 
+/* Row styling based on action type */
+.row-use {
+  background-color: #e8f5e9 !important;
+}
 
+.row-use-recursive {
+  background-color: #c8e6c9 !important;
+}
+
+.row-not-use {
+  background-color: #ffebee !important;
+}
+
+.row-empty {
+  background-color: #fce4ec !important;
+}
+
+.row-manual {
+  background-color: #fff8e1 !important;
+}
+
+.row-copy-value-from,
+.row-copy-value-to {
+  background-color: #e3f2fd !important;
+}
+
+.row-copy-node-to {
+  background-color: #e0f2f1 !important;
+}
+
+.row-fixed {
+  background-color: #fff3e0 !important;
+}
+
+.row-no-action {
+  background-color: #f5f5f5 !important;
+}
+
+.row-unknown {
+  background-color: #eceff1 !important;
+}

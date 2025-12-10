@@ -328,8 +328,8 @@ export class MappingDetailComponent implements OnInit {
       'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
-      'copy_from': 'arrow_back',
-      'copy_to': 'arrow_forward',
+      'copy_value_from': 'arrow_back',
+      'copy_value_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit'
     };
@@ -347,8 +347,8 @@ export class MappingDetailComponent implements OnInit {
       'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
-      'copy_from': 'COPY_FROM',
-      'copy_to': 'COPY_TO',
+      'copy_value_from': 'COPY_VALUE_FROM',
+      'copy_value_to': 'COPY_VALUE_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL'
     };
@@ -903,8 +903,8 @@ export class MappingDetailComponent implements OnInit {
     const updateData: any = {};
 
     switch (field.action) {
-      case 'copy_from':
-      case 'copy_to':
+      case 'copy_value_from':
+      case 'copy_value_to':
         updateData.targetField = field.targetField;
         break;
       case 'fixed':
@@ -960,7 +960,7 @@ export class MappingDetailComponent implements OnInit {
         }),
         // If successful and applyToChildren is true, apply all children recommendations
         switchMap(response => {
-          if (response && applyToChildren && updateRequest.action === 'extension') {
+          if (response && applyToChildren && updateRequest.action === 'copy_node_to') {
             return this.mappingsService.applyAllChildrenRecommendations(this.projectKey, this.mappingId, fieldName)
               .pipe(
                 catchError(error => {
@@ -1045,7 +1045,7 @@ export class MappingDetailComponent implements OnInit {
   }
 
   /**
-   * Get the other_value from the first recommendation (for copy_from/copy_to)
+   * Get the other_value from the first recommendation (for copy_value_from/copy_value_to)
    */
   getRecommendationOtherValue(field: MappingField): string | null {
     const recommendation = RecommendationHelper.getFirstRecommendation(field);
@@ -1053,8 +1053,8 @@ export class MappingDetailComponent implements OnInit {
       return null;
     }
 
-    // Only show for copy_from/copy_to actions
-    if (recommendation.action !== 'copy_from' && recommendation.action !== 'copy_to') {
+    // Only show for copy_value_from/copy_value_to actions
+    if (recommendation.action !== 'copy_value_from' && recommendation.action !== 'copy_value_to') {
       return null;
     }
 

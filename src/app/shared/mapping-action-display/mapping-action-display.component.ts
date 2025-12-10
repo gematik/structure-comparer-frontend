@@ -36,7 +36,7 @@ import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helper
 export class MappingActionDisplayComponent {
   @Input() field!: MappingField;
   @Input() compact: boolean = false; // Für kompakte Darstellung in der Tabelle
-  @Input() allFields?: MappingField[]; // Optional: Alle Felder für Typ-Lookup bei copy_from/copy_to
+  @Input() allFields?: MappingField[]; // Optional: Alle Felder für Typ-Lookup bei copy_value_from/copy_value_to
   @Output() applyRecommendation = new EventEmitter<{ field: MappingField; index: number; event: Event }>();
   @Output() editField = new EventEmitter<{ field: MappingField; event: Event }>();
 
@@ -51,8 +51,9 @@ export class MappingActionDisplayComponent {
       'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
-      'copy_from': 'arrow_back',
-      'copy_to': 'arrow_forward',
+      'copy_value_from': 'arrow_back',
+      'copy_value_to': 'arrow_forward',
+      'copy_node_to': 'swap_horiz',
       'fixed': 'lock',
       'manual': 'edit',
       'medication_service': 'local_pharmacy'
@@ -71,8 +72,9 @@ export class MappingActionDisplayComponent {
       'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
-      'copy_from': 'COPY_FROM',
-      'copy_to': 'COPY_TO',
+      'copy_value_from': 'COPY_VALUE_FROM',
+      'copy_value_to': 'COPY_VALUE_TO',
+      'copy_node_to': 'COPY_NODE_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
       'medication_service': 'MEDICATION_SERVICE'
@@ -91,8 +93,9 @@ export class MappingActionDisplayComponent {
       'use_recursive': 'Feld und alle Kindelemente werden verwendet',
       'not_use': 'Feld wird nicht verwendet',
       'empty': 'Feld wird geleert',
-      'copy_from': 'Wert wird aus anderem Feld kopiert',
-      'copy_to': 'Wert wird in anderes Feld kopiert',
+      'copy_value_from': 'Wert wird aus anderem Feld kopiert',
+      'copy_value_to': 'Wert wird in anderes Feld kopiert',
+      'copy_node_to': 'Knoten wird in anderes Feld kopiert',
       'fixed': 'Fester Wert wird gesetzt',
       'manual': 'Manuelle Bearbeitung erforderlich',
       'medication_service': 'Medication Service Mapping'
@@ -148,11 +151,11 @@ export class MappingActionDisplayComponent {
   }
 
   /**
-   * Get the other_value from a recommendation (for copy_from/copy_to)
+   * Get the other_value from a recommendation (for copy_value_from/copy_value_to/copy_node_to)
    */
   getRecommendationOtherValue(recommendation: ActionInfo): string | null {
-    // Only show for copy_from/copy_to actions
-    if (recommendation.action !== 'copy_from' && recommendation.action !== 'copy_to') {
+    // Only show for copy_value_from/copy_value_to/copy_node_to actions
+    if (recommendation.action !== 'copy_value_from' && recommendation.action !== 'copy_value_to' && recommendation.action !== 'copy_node_to') {
       return null;
     }
 

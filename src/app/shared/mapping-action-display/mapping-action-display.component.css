@@ -74,8 +74,8 @@
 }
 
 /* Detail badge colors matching action chips */
-.detail-badge--copy_from,
-.detail-badge--copy_to {
+.detail-badge--copy_value_from,
+.detail-badge--copy_value_to {
   background-color: #bbdefb;
   color: #1565c0;
   border-color: #2196f3;
@@ -93,7 +93,7 @@
   border-color: #ffeb3b;
 }
 
-.detail-badge--extension {
+.detail-badge--copy_node_to {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -181,8 +181,8 @@
   border-color: #9c27b0;
 }
 
-.action-chip--copy_from,
-.action-chip--copy_to {
+.action-chip--copy_value_from,
+.action-chip--copy_value_to {
   background-color: #bbdefb;
   color: #1565c0;
   border-color: #2196f3;
@@ -200,7 +200,7 @@
   border-color: #ffeb3b;
 }
 
-.action-chip--extension {
+.action-chip--copy_node_to {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -322,8 +322,8 @@
   opacity: 0.8;
 }
 
-.recommendation-detail-badge--copy_from,
-.recommendation-detail-badge--copy_to {
+.recommendation-detail-badge--copy_value_from,
+.recommendation-detail-badge--copy_value_to {
   background-color: #e3f2fd;
   color: #1565c0;
   border-color: #90caf9;
@@ -354,8 +354,8 @@
   border-color: #ce93d8;
 }
 
-.recommendation-chip--copy_from,
-.recommendation-chip--copy_to {
+.recommendation-chip--copy_value_from,
+.recommendation-chip--copy_value_to {
   background-color: #e3f2fd;
   color: #1565c0;
   border-color: #90caf9;

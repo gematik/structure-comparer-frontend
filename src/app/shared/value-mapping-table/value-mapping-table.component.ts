@@ -168,7 +168,7 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
   }
 
   /**
-   * Called when a copy_from source is selected for a value row
+   * Called when a copy_value_from source is selected for a value row
    */
   onValueCopyFromChanged(index: number, sourceField: string | null): void {
     const row = this.findRowByFilteredIndex(index);
@@ -176,7 +176,7 @@ export class ValueMappingTableComponent extends BaseMappingTableComponent<ValueM
 
     row.copyFromSource = sourceField || null;
     if (sourceField) {
-      row.action = 'copy_from';
+      row.action = 'copy_value_from';
     } else {
       row.action = null;
     }

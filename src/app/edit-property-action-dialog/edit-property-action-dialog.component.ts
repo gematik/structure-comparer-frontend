@@ -39,7 +39,7 @@ export interface EditPropertyActionDialogData {
   field: MappingField;
   availableActions: ActionOption[];
   availableFields: { name: string }[];
-  allFields?: MappingField[]; // Optional: All fields for type lookup in copy_from/copy_to
+  allFields?: MappingField[]; // Optional: All fields for type lookup in copy_value_from/copy_value_to
   projectKey: string;
   mappingId: string;
   sources: { name: string }[];
@@ -83,7 +83,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
   showClassificationInfo: boolean = false;
   showStatusInfo: boolean = false;
 
-  // Auto-apply children recommendations for extension actions
+  // Auto-apply children recommendations for copy_node_to actions
   applyToChildren: boolean = true; // Default to true for convenience
 
   constructor(
@@ -127,14 +127,14 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   /**
    * Gets the list of profile names that should be used for filtering available fields
-   * For copy_from: if current field is in target, show fields from source profiles
-   * For copy_to: if current field is in source, show fields from target profile
+   * For copy_value_from: if current field is in target, show fields from source profiles
+   * For copy_value_to: if current field is in source, show fields from target profile
    */
   private getRelevantProfileNames(): string[] {
-    if (this.selectedAction === 'copy_from') {
+    if (this.selectedAction === 'copy_value_from') {
       // Current field is in target, so we want to copy FROM source fields
       return this.data.sources.map(s => (s as any).key || s.name);
-    } else if (this.selectedAction === 'copy_to') {
+    } else if (this.selectedAction === 'copy_value_to') {
       // Current field is in source, so we want to copy TO target fields
       return [(this.data.target as any).key || this.data.target.name];
     }
@@ -255,8 +255,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
     const profileNames: string[] = [];
 
-    // Get relevant profiles based on copy_from/copy_to action
-    if (this.selectedAction === 'copy_from') {
+    // Get relevant profiles based on copy_value_from/copy_value_to action
+    if (this.selectedAction === 'copy_value_from') {
       // Show source profiles
       this.data.sources.forEach(source => {
         const profileKey = (source as any).key || source.name;
@@ -266,7 +266,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
           profileNames.push(displayName);
         }
       });
-    } else if (this.selectedAction === 'copy_to') {
+    } else if (this.selectedAction === 'copy_value_to') {
       // Show target profile
       const targetKey = (this.data.target as any).key || this.data.target.name;
       if (field.profiles![targetKey]) {
@@ -447,7 +447,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
     this.filteredFields = available.filter(field => {
       const fieldNameLower = field.name.toLowerCase();
 
-      // Profile-based filtering for copy_from/copy_to actions
+      // Profile-based filtering for copy_value_from/copy_value_to actions
       if (this.requiresTargetField() && relevantProfileNames.length > 0) {
         // Check if this field exists in any of the relevant profiles
         // The field object should already have profiles information
@@ -509,7 +509,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Checks if the current action requires a target field
    */
   requiresTargetField(): boolean {
-    return this.selectedAction === 'copy_from' || this.selectedAction === 'copy_to' || this.selectedAction === 'extension';
+    return this.selectedAction === 'copy_value_from' || this.selectedAction === 'copy_value_to' || this.selectedAction === 'copy_node_to';
   }
 
   /**
@@ -550,7 +550,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
     this.selectedAction = action;
     this.onActionChange();
 
-    // Re-extract suffix when copy_from or copy_to is selected
+    // Re-extract suffix when copy_value_from or copy_value_to is selected
     if (this.requiresTargetField()) {
       this.extractSuffixFromFieldName();
     }
@@ -605,9 +605,9 @@ export class EditPropertyActionDialogComponent implements OnInit {
       }
     }
 
-    // Return both the update request and the applyToChildren flag for extension actions
+    // Return both the update request and the applyToChildren flag for copy_node_to actions
     const result: any = { updateRequest };
-    if (this.selectedAction === 'extension' && this.applyToChildren) {
+    if (this.selectedAction === 'copy_node_to' && this.applyToChildren) {
       result.applyToChildren = true;
     }
 
@@ -634,9 +634,9 @@ export class EditPropertyActionDialogComponent implements OnInit {
       return '';
     }
 
-    if (this.selectedAction === 'copy_from') {
+    if (this.selectedAction === 'copy_value_from') {
       return `Nur Felder aus Source-Profil(en): ${relevantProfileNames.join(', ')}`;
-    } else if (this.selectedAction === 'copy_to') {
+    } else if (this.selectedAction === 'copy_value_to') {
       return `Nur Felder aus Target-Profil: ${relevantProfileNames.join(', ')}`;
     }
 

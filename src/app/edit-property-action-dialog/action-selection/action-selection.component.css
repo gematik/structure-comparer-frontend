@@ -139,14 +139,14 @@
   background-color: #e1bee7;
 }
 
-.action-button[data-action="copy_from"],
-.action-button[data-action="copy_to"] {
+.action-button[data-action="copy_value_from"],
+.action-button[data-action="copy_value_to"] {
   background-color: #e3f2fd;
   color: #1565c0;
 }
 
-.action-button[data-action="copy_from"].selected,
-.action-button[data-action="copy_to"].selected {
+.action-button[data-action="copy_value_from"].selected,
+.action-button[data-action="copy_value_to"].selected {
   border-color: #2196f3;
   background-color: #bbdefb;
 }
@@ -171,12 +171,12 @@
   background-color: #fff9c4;
 }
 
-.action-button[data-action="extension"] {
+.action-button[data-action=\"copy_node_to\"] {
   background-color: #e0f2f1;
   color: #00695c;
 }
 
-.action-button[data-action="extension"].selected {
+.action-button[data-action=\"copy_node_to\"].selected {
   border-color: #009688;
   background-color: #b2dfdb;
 }

@@ -190,9 +190,15 @@
   margin-left: 8px;
 }
 
-.action-badge.copy-from {
+.action-badge.copy-value-from,
+.action-badge.copy-value-to {
   background: #e3f2fd;
   color: #1565c0;
+}
+
+.action-badge.copy-node-to {
+  background: #e0f2f1;
+  color: #00695c;
 }
 
 /* Actions Row */

@@ -12,7 +12,7 @@
   </app-filter-bar>
 
   <p class="description">
-    Definieren Sie copy_from Zuordnungen für die Werte des Ziel-Profils.
+    Definieren Sie copy_value_from Zuordnungen für die Werte des Ziel-Profils.
     Wählen Sie die Quell-Felder aus, von denen die Werte kopiert werden sollen.
   </p>
 
@@ -44,7 +44,7 @@
       <div class="col source-col value-source-col">
         <app-filterable-field-select
           class="copy-from-select"
-          [label]="'Quell-Feld (copy_from)'"
+          [label]="'Quell-Feld (copy_value_from)'"
           [placeholder]="'Feld suchen oder auswählen...'"
           [options]="sourceFieldOptions"
           [value]="vm.copyFromSource"
@@ -53,8 +53,8 @@
           [hint]="''"
           (valueChange)="onValueCopyFromChanged(i, $event)">
         </app-filterable-field-select>
-        <span *ngIf="vm.action === 'copy_from'" class="action-badge copy-from">
-          copy_from
+        <span *ngIf="vm.action === 'copy_value_from'" class="action-badge copy-value-from">
+          copy_value_from
         </span>
       </div>
 

@@ -175,7 +175,7 @@
             </option>
           </select>
 
-          <div *ngIf="row.field.action === 'copy_from'">
+          <div *ngIf="row.field.action === 'copy_value_from'">
             <span>Wird aus&nbsp;</span>
             <select [(ngModel)]="row.field.targetField">
               <option
@@ -188,7 +188,7 @@
             <span>&nbsp;übernommen</span>
           </div>
 
-          <div *ngIf="row.field.action === 'copy_to'">
+          <div *ngIf="row.field.action === 'copy_value_to'">
             <span>Wird in&nbsp;</span>
             <select [(ngModel)]="row.field.targetField">
               <option

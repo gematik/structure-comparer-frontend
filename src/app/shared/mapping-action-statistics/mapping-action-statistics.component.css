@@ -196,8 +196,8 @@
   border-color: #9c27b0;
 }
 
-.action-badge.action-chip--copy_from,
-.action-badge.action-chip--copy_to {
+.action-badge.action-chip--copy_value_from,
+.action-badge.action-chip--copy_value_to {
   background-color: #bbdefb;
   color: #1565c0;
   border-color: #2196f3;
@@ -222,7 +222,7 @@
   border-color: #f44336;
 }
 
-.action-badge.action-chip--extension {
+.action-badge.action-chip--copy_node_to {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -348,8 +348,8 @@
   border-color: #9c27b0;
 }
 
-.recommendation-badge.recommendation-chip--copy_from,
-.recommendation-badge.recommendation-chip--copy_to {
+.recommendation-badge.recommendation-chip--copy_value_from,
+.recommendation-badge.recommendation-chip--copy_value_to {
   background-color: #e3f2fd;
   color: #1976d2;
   border-color: #2196f3;
@@ -367,7 +367,7 @@
   border-color: #ffeb3b;
 }
 
-.recommendation-badge.recommendation-chip--extension {
+.recommendation-badge.recommendation-chip--copy_node_to {
   background-color: #e0f2f1;
   color: #00796b;
   border-color: #009688;

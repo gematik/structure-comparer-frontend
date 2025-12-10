@@ -25,11 +25,11 @@ export type ActionType =
   | 'use_recursive'
   | 'not_use'
   | 'empty'
-  | 'copy_from'
-  | 'copy_to'
+  | 'copy_value_from'
+  | 'copy_value_to'
   | 'fixed'
   | 'manual'
-  | 'extension';
+  | 'copy_node_to';
 // Note: null action value indicates no action has been selected yet (user must decide).
 
 export type ActionSource = 'manual' | 'inherited' | 'system_default';

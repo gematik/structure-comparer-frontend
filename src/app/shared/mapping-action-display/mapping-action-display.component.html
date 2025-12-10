@@ -15,10 +15,10 @@
           </span>
         </div>
 
-        <!-- Detail Badge for copy_from/copy_to recommendations -->
+        <!-- Detail Badge for copy_value_from/copy_value_to/copy_node_to recommendations -->
         <div *ngIf="getRecommendationOtherValue(recommendation)"
              [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction(recommendation)">
-          <mat-icon class="detail-icon">{{ getRecommendationAction(recommendation) === 'copy_from' ? 'input' : 'output' }}</mat-icon>
+          <mat-icon class="detail-icon">{{ getRecommendationAction(recommendation) === 'copy_value_from' ? 'input' : getRecommendationAction(recommendation) === 'copy_node_to' ? 'swap_horiz' : 'output' }}</mat-icon>
           <span class="detail-text">
             {{ getRecommendationOtherValue(recommendation) }}
             <ng-container *ngIf="formatTypes(getFieldTypes(getRecommendationOtherValue(recommendation)!)) as formattedTypes">
@@ -67,9 +67,9 @@
     </div>
 
     <!-- Detail Badges (same style as action chip) -->
-    <div *ngIf="field.action_info?.other_value && (field.action === 'copy_from' || field.action === 'copy_to' || field.action === 'extension')"
+    <div *ngIf="field.action_info?.other_value && (field.action === 'copy_value_from' || field.action === 'copy_value_to' || field.action === 'copy_node_to')"
          [class]="'detail-badge detail-badge--' + field.action">
-      <mat-icon class="detail-icon">{{ field.action === 'copy_from' ? 'input' : field.action === 'extension' ? 'extension' : 'output' }}</mat-icon>
+      <mat-icon class="detail-icon">{{ field.action === 'copy_value_from' ? 'input' : field.action === 'copy_node_to' ? 'swap_horiz' : 'output' }}</mat-icon>
       <span class="detail-text">
         {{ field.action_info!.other_value }}
         <ng-container *ngIf="formatTypes(getFieldTypes(field.action_info!.other_value?.toString() || '')) as formattedTypes">

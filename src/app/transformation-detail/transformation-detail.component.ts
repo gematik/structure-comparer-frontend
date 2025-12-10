@@ -803,7 +803,7 @@ export class TransformationDetailComponent implements OnInit {
         f.name !== field.name && f.name.startsWith(field.name + '.')
       );
 
-      // Get existing copy_from source
+      // Get existing copy_value_from source
       const copyFromSource = field.other || null;
 
       // Extract cardinality from field (use source_min/max as these represent the target field's cardinality)
@@ -1198,8 +1198,8 @@ export class TransformationDetailComponent implements OnInit {
 
     // Validate rows before saving
     const invalidRows = changedRows.filter(row => {
-      // copy_from and copy_to require a source/target field
-      if ((row.action === 'copy_from' || row.action === 'copy_to') && !row.copyFromSource) {
+      // copy_value_from and copy_value_to require a source/target field
+      if ((row.action === 'copy_value_from' || row.action === 'copy_value_to') && !row.copyFromSource) {
         return true;
       }
       return false;
@@ -1207,7 +1207,7 @@ export class TransformationDetailComponent implements OnInit {
 
     if (invalidRows.length > 0) {
       this.snackBar.open(
-        `${invalidRows.length} Feld(er) mit "copy_from"/"copy_to" benötigen ein Quellfeld`,
+        `${invalidRows.length} Feld(er) mit "copy_value_from"/"copy_value_to" benötigen ein Quellfeld`,
         'OK',
         { duration: 5000 }
       );

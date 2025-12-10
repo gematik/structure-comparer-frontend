@@ -23,7 +23,7 @@
  * Edit Target Creation Field Dialog - Phase 8.3 Implementation
  *
  * Simplified version of EditPropertyActionDialog for Target Creations.
- * Only supports manual and fixed actions (no copy_from, copy_to, etc.)
+ * Only supports manual and fixed actions (no copy_value_from, copy_value_to, etc.)
  */
 
 import { Component, Inject } from '@angular/core';

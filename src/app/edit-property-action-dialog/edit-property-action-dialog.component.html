@@ -194,7 +194,7 @@
 
     <!-- Conditional Fields -->
 
-    <!-- Target Field Selection (for copy_from / copy_to) -->
+    <!-- Target Field Selection (for copy_value_from / copy_value_to) -->
     <div *ngIf="requiresTargetField()" class="conditional-field">
       <!-- Quick Filters Container -->
       <div class="quick-filters-container">
@@ -229,9 +229,9 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>
-          <span *ngIf="selectedAction === 'copy_from'">Quellfeld</span>
-          <span *ngIf="selectedAction === 'copy_to'">Zielfeld</span>
-          <span *ngIf="selectedAction === 'extension'">Zielfeld für Extension</span>
+          <span *ngIf="selectedAction === 'copy_value_from'">Quellfeld</span>
+          <span *ngIf="selectedAction === 'copy_value_to'">Zielfeld</span>
+          <span *ngIf="selectedAction === 'copy_node_to'">Zielfeld für Node</span>
         </mat-label>
 
         <!-- Display selected field with formatting above input -->
@@ -293,14 +293,14 @@
 
       <div class="action-explanation">
         <mat-icon>info</mat-icon>
-        <span *ngIf="selectedAction === 'copy_from'">
+        <span *ngIf="selectedAction === 'copy_value_from'">
           Der Wert wird aus dem ausgewählten Quellfeld übernommen
         </span>
-        <span *ngIf="selectedAction === 'copy_to'">
+        <span *ngIf="selectedAction === 'copy_value_to'">
           Der Wert wird in das ausgewählte Zielfeld kopiert
         </span>
-        <span *ngIf="selectedAction === 'extension'">
-          Die Extension wird in das ausgewählte Zielfeld übertragen
+        <span *ngIf="selectedAction === 'copy_node_to'">
+          Der Knoten wird in das ausgewählte Zielfeld übertragen
         </span>
       </div>
     </div>
@@ -336,8 +336,8 @@
       </div>
     </div>
 
-    <!-- Auto-apply children recommendations for extension action -->
-    <div *ngIf="selectedAction === 'extension'" class="auto-apply-section">
+    <!-- Auto-apply children recommendations for copy_node_to action -->
+    <div *ngIf="selectedAction === 'copy_node_to'" class="auto-apply-section">
       <mat-checkbox [(ngModel)]="applyToChildren" color="primary">
         <span class="checkbox-label">
           <mat-icon class="checkbox-icon">account_tree</mat-icon>
@@ -346,7 +346,7 @@
       </mat-checkbox>
       <div class="checkbox-explanation">
         <mat-icon>info_outline</mat-icon>
-        <span>Wendet die Extension-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
+        <span>Wendet die Copy-Node-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
       </div>
     </div>
 

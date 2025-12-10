@@ -23,7 +23,7 @@
  * Target Creation Models - Phase 6 Implementation
  *
  * Target Creations represent profile structures that are created WITHOUT source data.
- * Only 'manual' and 'fixed' actions are allowed (no use, copy_from, etc.)
+ * Only 'manual' and 'fixed' actions are allowed (no use, copy_value_from, etc.)
  *
  * Key Differences from Mappings:
  * - No source profiles

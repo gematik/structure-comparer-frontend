@@ -48,10 +48,10 @@ export const ACTION_CSS: Record<string, string> = {
   not_use: 'row-not-use',
   empty: 'row-empty',
   manual: 'row-manual',
-  copy_from: 'row-copy-from',
-  copy_to: 'row-copy-to',
+  copy_value_from: 'row-copy-value-from',
+  copy_value_to: 'row-copy-value-to',
   fixed: 'row-fixed',
-  extension: 'row-extension',
+  copy_node_to: 'row-copy-node-to',
   // Special styling for fields with no action selected
   'no-action': 'row-no-action',
 };
@@ -158,11 +158,11 @@ const ACTION_LABELS: Record<ActionType, string> = {
   use_recursive: 'use_recursive',
   not_use: 'not_use',
   empty: 'empty',
-  copy_from: 'copy_from',
-  copy_to: 'copy_to',
+  copy_value_from: 'copy_value_from',
+  copy_value_to: 'copy_value_to',
   fixed: 'fixed',
   manual: 'manual',
-  extension: 'extension',
+  copy_node_to: 'copy_node_to',
   // Note: 'manual' action means user has provided free-text implementation instructions in remark field
   // null action means no action selected yet - user must decide
 };
@@ -184,7 +184,7 @@ export class MappingTextHelper {
       ? ` (vererbt von ${actionInfo.inherited_from})`
       : '';
 
-    if (actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') {
+    if (actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') {
       const target = actionInfo.other_value;
       if (typeof target === 'string' && target.trim().length > 0) {
         return `${base} (${target})${inheritedSuffix}`;
@@ -227,7 +227,7 @@ export class MappingTextHelper {
       return fixed ? `Festwert: ${fixed}` : null;
     }
 
-    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') && actionInfo.other_value) {
       const other = MappingTextHelper.formatValue(actionInfo.other_value);
       return other ? `Referenz: ${other}` : null;
     }
@@ -257,7 +257,7 @@ export class MappingTextHelper {
       }
     }
 
-    if ((actionInfo.action === 'copy_from' || actionInfo.action === 'copy_to' || actionInfo.action === 'extension') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') && actionInfo.other_value) {
       const reference = MappingTextHelper.formatValue(actionInfo.other_value);
       if (reference) {
         lines.push(`Referenz: ${reference}`);
@@ -312,7 +312,7 @@ export class RecommendationHelper {
    *
    * Note: We do NOT filter by actions_allowed here because:
    * 1. The backend already validates recommendations before creating them
-   * 2. Greedy inheritance may create valid recommendations (e.g., copy_to for child fields)
+   * 2. Greedy inheritance may create valid recommendations (e.g., copy_value_to for child fields)
    *    even if the field's actions_allowed doesn't include that action
    * 3. actions_allowed is for MANUAL actions, not for system-generated recommendations
    */
@@ -366,9 +366,9 @@ export class RecommendationHelper {
 
     // Add other_value information for copy actions
     if (recommendation.other_value && typeof recommendation.other_value === 'string') {
-      if (recommendation.action === 'copy_from') {
+      if (recommendation.action === 'copy_value_from') {
         lines.push(`Quelle: ${recommendation.other_value}`);
-      } else if (recommendation.action === 'copy_to') {
+      } else if (recommendation.action === 'copy_value_to') {
         lines.push(`Ziel: ${recommendation.other_value}`);
       }
     }

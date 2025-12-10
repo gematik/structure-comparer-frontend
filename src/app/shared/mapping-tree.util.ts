@@ -141,10 +141,12 @@ function getMappingDescription(field: any): string | undefined {
   switch (field.action) {
     case 'use':
       return 'Wird direkt übernommen';
-    case 'copy_from':
+    case 'copy_value_from':
       return `Wird aus ${field.targetField} übernommen`;
-    case 'copy_to':
+    case 'copy_value_to':
       return `Wird in ${field.targetField} übernommen`;
+    case 'copy_node_to':
+      return `Knoten wird in ${field.targetField} kopiert`;
     case 'fixed':
       return `Wird fix auf ${field.fixedValue} gesetzt`;
     case 'manual':

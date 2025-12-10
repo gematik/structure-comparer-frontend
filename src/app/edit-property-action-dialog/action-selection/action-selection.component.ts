@@ -66,11 +66,11 @@ export class ActionSelectionComponent {
       'use_recursive': 'account_tree',
       'not_use': 'cancel',
       'empty': 'remove_circle_outline',
-      'copy_from': 'arrow_back',
-      'copy_to': 'arrow_forward',
+      'copy_value_from': 'arrow_back',
+      'copy_value_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'extension': 'extension'
+      'copy_node_to': 'swap_horiz'
     };
     return icons[action] || 'help_outline';
   }
@@ -86,11 +86,11 @@ export class ActionSelectionComponent {
       'use_recursive': 'USE_RECURSIVE',
       'not_use': 'NOT_USE',
       'empty': 'EMPTY',
-      'copy_from': 'COPY_FROM',
-      'copy_to': 'COPY_TO',
+      'copy_value_from': 'COPY_VALUE_FROM',
+      'copy_value_to': 'COPY_VALUE_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'extension': 'EXTENSION'
+      'copy_node_to': 'COPY_NODE_TO'
     };
     return labels[action] || action.toUpperCase();
   }

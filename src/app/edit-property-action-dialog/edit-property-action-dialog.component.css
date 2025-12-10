@@ -476,16 +476,26 @@
   background-color: #e1bee7;
 }
 
-.action-button[data-action="copy_from"],
-.action-button[data-action="copy_to"] {
+.action-button[data-action="copy_value_from"],
+.action-button[data-action="copy_value_to"] {
   background-color: #e3f2fd;
   color: #1565c0;
 }
 
-.action-button[data-action="copy_from"].selected,
-.action-button[data-action="copy_to"].selected {
+.action-button[data-action="copy_value_from"].selected,
+.action-button[data-action="copy_value_to"].selected {
   border-color: #2196f3;
   background-color: #bbdefb;
+}
+
+.action-button[data-action="copy_node_to"] {
+  background-color: #e0f2f1;
+  color: #00695c;
+}
+
+.action-button[data-action="copy_node_to"].selected {
+  border-color: #009688;
+  background-color: #b2dfdb;
 }
 
 .action-button[data-action="fixed"] {
@@ -778,11 +788,17 @@
   border: 1px solid #9c27b0;
 }
 
-.pill--copy_from,
-.pill--copy_to {
+.pill--copy_value_from,
+.pill--copy_value_to {
   background-color: #e3f2fd;
   color: #1565c0;
   border: 1px solid #2196f3;
+}
+
+.pill--copy_node_to {
+  background-color: #e0f2f1;
+  color: #00695c;
+  border: 1px solid #009688;
 }
 
 .pill--fixed {

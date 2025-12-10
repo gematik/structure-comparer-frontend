@@ -134,14 +134,19 @@
   color: #495057;
 }
 
-.pill--copy_from {
+.pill--copy_value_from {
   background-color: #D6EAF8;
   color: #004466;
 }
 
-.pill--copy_to {
+.pill--copy_value_to {
   background-color: #D1F2EB;
   color: #1e4620;
+}
+
+.pill--copy_node_to {
+  background-color: #e0f2f1;
+  color: #00695c;
 }
 
 .pill--fixed {

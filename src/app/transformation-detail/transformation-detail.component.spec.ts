@@ -111,7 +111,7 @@ describe('TransformationDetailComponent', () => {
 
     it('should show snackbar when no changes exist', () => {
       component.valueMappings = [
-        createValueMappingRow({ action: 'copy_from', originalAction: 'copy_from' })
+        createValueMappingRow({ action: 'copy_value_from', originalAction: 'copy_value_from' })
       ];
 
       component.saveValueChanges();
@@ -124,11 +124,11 @@ describe('TransformationDetailComponent', () => {
       expect(transformationServiceSpy.updateTransformationField).not.toHaveBeenCalled();
     });
 
-    it('should reject copy_from action without source field', () => {
+    it('should reject copy_value_from action without source field', () => {
       component.valueMappings = [
         createValueMappingRow({
           targetField: 'Parameters.parameter:rxPrescription.part:authoredOn.value[x]',
-          action: 'copy_from',
+          action: 'copy_value_from',
           copyFromSource: null,  // No source selected!
           originalAction: null,
           originalCopyFromSource: null
@@ -138,18 +138,18 @@ describe('TransformationDetailComponent', () => {
       component.saveValueChanges();
 
       expect(snackBarSpy.open).toHaveBeenCalledWith(
-        jasmine.stringContaining('copy_from'),
+        jasmine.stringContaining('copy_value_from'),
         'OK',
         { duration: 5000 }
       );
       expect(transformationServiceSpy.updateTransformationField).not.toHaveBeenCalled();
     });
 
-    it('should reject copy_to action without target field', () => {
+    it('should reject copy_value_to action without target field', () => {
       component.valueMappings = [
         createValueMappingRow({
           targetField: 'TestField',
-          action: 'copy_to',
+          action: 'copy_value_to',
           copyFromSource: null,  // No target selected!
           originalAction: null
         })
@@ -158,7 +158,7 @@ describe('TransformationDetailComponent', () => {
       component.saveValueChanges();
 
       expect(snackBarSpy.open).toHaveBeenCalledWith(
-        jasmine.stringContaining('copy_from'),
+        jasmine.stringContaining('copy_value_from'),
         'OK',
         { duration: 5000 }
       );
@@ -173,7 +173,7 @@ describe('TransformationDetailComponent', () => {
           targetField: 'TestField',
           action: null,  // User cleared the action
           copyFromSource: null,
-          originalAction: 'copy_from',  // Was copy_from before
+          originalAction: 'copy_value_from',  // Was copy_value_from before
           originalCopyFromSource: 'SourceField'
         })
       ];
@@ -200,13 +200,13 @@ describe('TransformationDetailComponent', () => {
       );
     }));
 
-    it('should send copy_from with valid source field', fakeAsync(() => {
+    it('should send copy_value_from with valid source field', fakeAsync(() => {
       component.projectKey = 'test-project';
       component.transformationId = 'test-transformation';
       component.valueMappings = [
         createValueMappingRow({
           targetField: 'Parameters.parameter:rxPrescription.part:authoredOn.value[x]',
-          action: 'copy_from',
+          action: 'copy_value_from',
           copyFromSource: 'MedicationRequest.authoredOn',
           originalAction: null,
           originalCopyFromSource: null
@@ -216,7 +216,7 @@ describe('TransformationDetailComponent', () => {
       transformationServiceSpy.updateTransformationField.and.returnValue(of({
         name: 'Parameters.parameter:rxPrescription.part:authoredOn.value[x]',
         path: 'Parameters.parameter:rxPrescription.part:authoredOn.value[x]',
-        action: 'copy_from',
+        action: 'copy_value_from',
         other: 'MedicationRequest.authoredOn',
         actions_allowed: [],
         recommendations: []
@@ -230,7 +230,7 @@ describe('TransformationDetailComponent', () => {
         'test-transformation',
         'Parameters.parameter:rxPrescription.part:authoredOn.value[x]',
         {
-          action: 'copy_from',
+          action: 'copy_value_from',
           other: 'MedicationRequest.authoredOn'
         }
       );
