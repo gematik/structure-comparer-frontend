@@ -84,6 +84,38 @@ export class MappingsService {
   }
 
   /**
+   * Retrieves mapping fields with recursive resolution of profile references.
+   *
+   * This method returns all fields in a mapping, including fields from profiles
+   * that are referenced via fixedUri, fixedCanonical, type[].profile[], or
+   * type[].targetProfile[]. References are followed recursively up to the
+   * specified maxDepth.
+   *
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param maxDepth Maximum recursion depth for resolving references (default: 3)
+   * @param includeReferences Whether to resolve references (default: true)
+   * @returns Observable containing the resolved fields response
+   */
+  getResolvedMappingFields(
+    projectKey: string,
+    mappingId: string,
+    maxDepth: number = 3,
+    includeReferences: boolean = true
+  ): Observable<any> {
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const params = new HttpParams()
+      .set('max_depth', maxDepth.toString())
+      .set('include_references', includeReferences.toString());
+
+    return this.http.get(
+      `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/resolved-fields`,
+      { params }
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
    * Updates a specific field in a mapping with an action and data
    * @param projectKey The unique identifier of the project
    * @param mappingId The unique identifier of the mapping

@@ -242,6 +242,29 @@
     "
   >
     <div style="display: flex; gap: 10px; align-items: center">
+      <!-- Recursive Resolution Toggle -->
+      <div class="resolution-controls" style="display: flex; align-items: center; gap: 12px; margin-right: 16px;">
+        <mat-slide-toggle
+          [(ngModel)]="showResolvedFields"
+          (change)="toggleResolvedView()"
+          [disabled]="isLoadingResolved"
+          color="primary">
+          Referenzen auflösen
+        </mat-slide-toggle>
+
+        <mat-form-field *ngIf="showResolvedFields" appearance="outline" style="width: 100px; margin: 0;">
+          <mat-label>Max. Tiefe</mat-label>
+          <mat-select [(ngModel)]="maxResolutionDepth" (selectionChange)="loadResolvedFields()">
+            <mat-option [value]="1">1</mat-option>
+            <mat-option [value]="2">2</mat-option>
+            <mat-option [value]="3">3</mat-option>
+            <mat-option [value]="5">5</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-spinner *ngIf="isLoadingResolved" diameter="20"></mat-spinner>
+      </div>
+
       <!-- View Mode Toggle -->
       <div class="view-mode-toggle">
         <button
@@ -283,6 +306,48 @@
       ></app-filter-settings>
     </app-mapping-action-statistics>
   </div>
+
+  <!-- Unresolved References Warning -->
+  <mat-card *ngIf="showResolvedFields && unresolvedReferences.length > 0" class="warning-card" style="margin-top: 16px; background-color: #fff3e0;">
+    <mat-card-header>
+      <mat-icon style="color: #ff9800; margin-right: 8px;">warning</mat-icon>
+      <mat-card-title style="font-size: 16px;">Nicht aufgelöste Referenzen</mat-card-title>
+    </mat-card-header>
+    <mat-card-content style="margin-top: 12px;">
+      <p style="margin-bottom: 8px;">Einige Profil-Referenzen konnten nicht aufgelöst werden:</p>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li *ngFor="let ref of unresolvedReferences.slice(0, 5)" style="margin-bottom: 4px;">
+          <code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px;">{{ ref.field_path }}</code>
+          → <span style="color: #666;">{{ ref.reference_url }}</span>
+          <span style="color: #999; font-size: 12px;">({{ ref.reference_type }})</span>
+        </li>
+        <li *ngIf="unresolvedReferences.length > 5" style="color: #666;">
+          ... und {{ unresolvedReferences.length - 5 }} weitere
+        </li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Resolution Statistics -->
+  <div *ngIf="showResolvedFields && resolutionStats" class="resolution-stats" style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: #666;">
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">layers</mat-icon>
+      {{ resolutionStats.total_fields }} Felder
+    </span>
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px; color: #4caf50;">link</mat-icon>
+      {{ resolutionStats.resolved_references }} aufgelöst
+    </span>
+    <span *ngIf="resolutionStats.unresolved_references > 0" style="display: flex; align-items: center; gap: 4px; color: #ff9800;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">link_off</mat-icon>
+      {{ resolutionStats.unresolved_references }} nicht aufgelöst
+    </span>
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">folder_open</mat-icon>
+      {{ resolutionStats.profiles_loaded?.length || 0 }} Profile geladen
+    </span>
+  </div>
+
   <div style="overflow: auto; margin-top: 10px;">
     <!-- Flat Table View -->
     <table

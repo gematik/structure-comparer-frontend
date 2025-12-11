@@ -15,6 +15,10 @@ import { MatIcon } from '@angular/material/icon';
 import { MatTooltip } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCardModule } from '@angular/material/card';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { EditPropertyActionDialogComponent, EditPropertyActionDialogData } from '../edit-property-action-dialog/edit-property-action-dialog.component';
 import { EditMappingDialogComponent, EditMappingDialogData, EditMappingDialogResult } from '../edit-mapping-dialog/edit-mapping-dialog.component';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
@@ -61,6 +65,10 @@ export interface IProfile {
     MatButtonModule,
     MatTooltip,
     MatIcon,
+    MatSlideToggleModule,
+    MatSelectModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
     TreeTableComponent,
     MappingActionDisplayComponent,
     MappingActionStatisticsComponent,
@@ -114,6 +122,14 @@ export class MappingDetailComponent implements OnInit {
   pageSize: number = 200;
   pageIndex: number = 0;
   pageSizeOptions: number[] = [10, 50, 100, 200, 500];
+
+  // Recursive field resolution properties
+  resolvedFields: any[] = [];
+  unresolvedReferences: any[] = [];
+  resolutionStats: any = null;
+  isLoadingResolved: boolean = false;
+  showResolvedFields: boolean = false;
+  maxResolutionDepth: number = 3;
 
   // Debug configuration
   private readonly DEBUG = false;
@@ -212,6 +228,71 @@ export class MappingDetailComponent implements OnInit {
         return of([]);
       }))
       .subscribe(data => this.classifications = data.actions);
+  }
+
+  // === RECURSIVE FIELD RESOLUTION ===
+
+  /**
+   * Toggle between normal and resolved field view
+   */
+  toggleResolvedView(): void {
+    this.showResolvedFields = !this.showResolvedFields;
+    if (this.showResolvedFields && this.resolvedFields.length === 0) {
+      this.loadResolvedFields();
+    }
+  }
+
+  /**
+   * Load fields with recursive resolution of profile references
+   */
+  loadResolvedFields(): void {
+    if (!this.projectKey || !this.mappingId) {
+      return;
+    }
+
+    this.isLoadingResolved = true;
+    this.mappingsService.getResolvedMappingFields(
+      this.projectKey,
+      this.mappingId,
+      this.maxResolutionDepth
+    ).pipe(
+      catchError(err => {
+        console.error('Error loading resolved fields:', err);
+        this.snackBar.open('Fehler beim Laden der aufgelösten Felder', 'OK', {
+          duration: 5000
+        });
+        return of(null);
+      })
+    ).subscribe(response => {
+      this.isLoadingResolved = false;
+      if (response) {
+        this.resolvedFields = response.fields || [];
+        this.unresolvedReferences = response.unresolved_references || [];
+        this.resolutionStats = response.resolution_stats || null;
+
+        if (this.unresolvedReferences.length > 0) {
+          console.warn('Unresolved profile references:', this.unresolvedReferences);
+        }
+      }
+    });
+  }
+
+  /**
+   * Change the maximum resolution depth and reload
+   */
+  onResolutionDepthChange(newDepth: number): void {
+    this.maxResolutionDepth = newDepth;
+    if (this.showResolvedFields) {
+      this.loadResolvedFields();
+    }
+  }
+
+  /**
+   * Check if a field has expandable references
+   */
+  hasExpandableReferences(field: any): boolean {
+    return field.source_resolution_info?.can_be_expanded ||
+           field.target_resolution_info?.can_be_expanded || false;
   }
 
   // === SUMMARY & STATUS METHODS (delegated to helpers) ===
