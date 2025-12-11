@@ -140,6 +140,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_value_from': 'arrow_back',
       'copy_value_to': 'arrow_forward',
       'copy_node_to': 'swap_horiz',
+      'copy_node_from': 'swap_horiz',
       'fixed': 'lock',
       'manual': 'edit',
       'medication_service': 'local_pharmacy'
@@ -162,6 +163,7 @@ export class MappingActionStatisticsComponent implements OnChanges {
       'copy_value_from': 'COPY_VALUE_FROM',
       'copy_value_to': 'COPY_VALUE_TO',
       'copy_node_to': 'COPY_NODE_TO',
+      'copy_node_from': 'COPY_NODE_FROM',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
       'medication_service': 'MEDICATION_SERVICE'
@@ -278,7 +280,12 @@ export class MappingActionStatisticsComponent implements OnChanges {
 
     // Create statistics array
     this.recommendationStatistics = [];
-    const actionsToDisplay: MappingAction[] = ['use', 'use_recursive', 'not_use', 'empty', 'copy_value_from', 'copy_value_to', 'copy_node_to', 'fixed', 'manual'];
+    const actionsToDisplay: MappingAction[] = [
+      'use', 'use_recursive', 'not_use', 'empty',
+      'copy_value_from', 'copy_value_to',
+      'copy_node_to', 'copy_node_from',
+      'fixed', 'manual'
+    ];
 
     actionsToDisplay.forEach(action => {
       const count = recommendationCounts.get(action) || 0;

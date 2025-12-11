@@ -70,7 +70,8 @@ export class ActionSelectionComponent {
       'copy_value_to': 'arrow_forward',
       'fixed': 'lock',
       'manual': 'edit',
-      'copy_node_to': 'swap_horiz'
+      'copy_node_to': 'swap_horiz',
+      'copy_node_from': 'swap_horiz'
     };
     return icons[action] || 'help_outline';
   }
@@ -90,7 +91,8 @@ export class ActionSelectionComponent {
       'copy_value_to': 'COPY_VALUE_TO',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
-      'copy_node_to': 'COPY_NODE_TO'
+      'copy_node_to': 'COPY_NODE_TO',
+      'copy_node_from': 'COPY_NODE_FROM'
     };
     return labels[action] || action.toUpperCase();
   }

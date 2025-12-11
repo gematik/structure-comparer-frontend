@@ -345,7 +345,8 @@ button.cancel:hover {
   color: #f57c00;
 }
 
-.mapping-consolidated[data-action="copy_node_to"] .mapping-details {
+.mapping-consolidated[data-action="copy_node_to"] .mapping-details,
+.mapping-consolidated[data-action="copy_node_from"] .mapping-details {
   background-color: #e0f2f1;
   border-left-color: #009688;
   color: #00695c;

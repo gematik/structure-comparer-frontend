@@ -147,6 +147,8 @@ function getMappingDescription(field: any): string | undefined {
       return `Wird in ${field.targetField} übernommen`;
     case 'copy_node_to':
       return `Knoten wird in ${field.targetField} kopiert`;
+    case 'copy_node_from':
+      return `Knoten wird von ${field.targetField} empfangen`;
     case 'fixed':
       return `Wird fix auf ${field.fixedValue} gesetzt`;
     case 'manual':

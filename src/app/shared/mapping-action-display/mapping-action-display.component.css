@@ -93,7 +93,8 @@
   border-color: #ffeb3b;
 }
 
-.detail-badge--copy_node_to {
+.detail-badge--copy_node_to,
+.detail-badge--copy_node_from {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -200,7 +201,8 @@
   border-color: #ffeb3b;
 }
 
-.action-chip--copy_node_to {
+.action-chip--copy_node_to,
+.action-chip--copy_node_from {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;

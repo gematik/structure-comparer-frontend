@@ -171,12 +171,14 @@
   background-color: #fff9c4;
 }
 
-.action-button[data-action=\"copy_node_to\"] {
+.action-button[data-action="copy_node_to"],
+.action-button[data-action="copy_node_from"] {
   background-color: #e0f2f1;
   color: #00695c;
 }
 
-.action-button[data-action=\"copy_node_to\"].selected {
+.action-button[data-action="copy_node_to"].selected,
+.action-button[data-action="copy_node_from"].selected {
   border-color: #009688;
   background-color: #b2dfdb;
 }

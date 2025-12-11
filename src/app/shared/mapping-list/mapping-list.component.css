@@ -144,7 +144,8 @@
   color: #1e4620;
 }
 
-.pill--copy_node_to {
+.pill--copy_node_to,
+.pill--copy_node_from {
   background-color: #e0f2f1;
   color: #00695c;
 }

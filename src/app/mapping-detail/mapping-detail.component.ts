@@ -960,7 +960,7 @@ export class MappingDetailComponent implements OnInit {
         }),
         // If successful and applyToChildren is true, apply all children recommendations
         switchMap(response => {
-          if (response && applyToChildren && updateRequest.action === 'copy_node_to') {
+          if (response && applyToChildren && (updateRequest.action === 'copy_node_to' || updateRequest.action === 'copy_node_from')) {
             return this.mappingsService.applyAllChildrenRecommendations(this.projectKey, this.mappingId, fieldName)
               .pipe(
                 catchError(error => {

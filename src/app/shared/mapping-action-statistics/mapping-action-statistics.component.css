@@ -222,7 +222,8 @@
   border-color: #f44336;
 }
 
-.action-badge.action-chip--copy_node_to {
+.action-badge.action-chip--copy_node_to,
+.action-badge.action-chip--copy_node_from {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -367,7 +368,8 @@
   border-color: #ffeb3b;
 }
 
-.recommendation-badge.recommendation-chip--copy_node_to {
+.recommendation-badge.recommendation-chip--copy_node_to,
+.recommendation-badge.recommendation-chip--copy_node_from {
   background-color: #e0f2f1;
   color: #00796b;
   border-color: #009688;

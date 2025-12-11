@@ -52,6 +52,7 @@ export const ACTION_CSS: Record<string, string> = {
   copy_value_to: 'row-copy-value-to',
   fixed: 'row-fixed',
   copy_node_to: 'row-copy-node-to',
+  copy_node_from: 'row-copy-node-to',  // Same CSS as copy_node_to
   // Special styling for fields with no action selected
   'no-action': 'row-no-action',
 };
@@ -163,6 +164,7 @@ const ACTION_LABELS: Record<ActionType, string> = {
   fixed: 'fixed',
   manual: 'manual',
   copy_node_to: 'copy_node_to',
+  copy_node_from: 'copy_node_from',
   // Note: 'manual' action means user has provided free-text implementation instructions in remark field
   // null action means no action selected yet - user must decide
 };
@@ -184,7 +186,7 @@ export class MappingTextHelper {
       ? ` (vererbt von ${actionInfo.inherited_from})`
       : '';
 
-    if (actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') {
+    if (actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to' || actionInfo.action === 'copy_node_from') {
       const target = actionInfo.other_value;
       if (typeof target === 'string' && target.trim().length > 0) {
         return `${base} (${target})${inheritedSuffix}`;
@@ -227,7 +229,7 @@ export class MappingTextHelper {
       return fixed ? `Festwert: ${fixed}` : null;
     }
 
-    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to' || actionInfo.action === 'copy_node_from') && actionInfo.other_value) {
       const other = MappingTextHelper.formatValue(actionInfo.other_value);
       return other ? `Referenz: ${other}` : null;
     }
@@ -257,7 +259,7 @@ export class MappingTextHelper {
       }
     }
 
-    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to') && actionInfo.other_value) {
+    if ((actionInfo.action === 'copy_value_from' || actionInfo.action === 'copy_value_to' || actionInfo.action === 'copy_node_to' || actionInfo.action === 'copy_node_from') && actionInfo.other_value) {
       const reference = MappingTextHelper.formatValue(actionInfo.other_value);
       if (reference) {
         lines.push(`Referenz: ${reference}`);

@@ -488,12 +488,14 @@
   background-color: #bbdefb;
 }
 
-.action-button[data-action="copy_node_to"] {
+.action-button[data-action="copy_node_to"],
+.action-button[data-action="copy_node_from"] {
   background-color: #e0f2f1;
   color: #00695c;
 }
 
-.action-button[data-action="copy_node_to"].selected {
+.action-button[data-action="copy_node_to"].selected,
+.action-button[data-action="copy_node_from"].selected {
   border-color: #009688;
   background-color: #b2dfdb;
 }
@@ -795,7 +797,8 @@
   border: 1px solid #2196f3;
 }
 
-.pill--copy_node_to {
+.pill--copy_node_to,
+.pill--copy_node_from {
   background-color: #e0f2f1;
   color: #00695c;
   border: 1px solid #009688;

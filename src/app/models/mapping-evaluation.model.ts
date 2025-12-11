@@ -29,7 +29,8 @@ export type ActionType =
   | 'copy_value_to'
   | 'fixed'
   | 'manual'
-  | 'copy_node_to';
+  | 'copy_node_to'
+  | 'copy_node_from';
 // Note: null action value indicates no action has been selected yet (user must decide).
 
 export type ActionSource = 'manual' | 'inherited' | 'system_default';

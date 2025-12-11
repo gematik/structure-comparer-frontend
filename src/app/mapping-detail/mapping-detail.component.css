@@ -302,7 +302,8 @@ table {
   border-left-color: #2196f3;
 }
 
-.mapping-result[data-action="copy_node_to"] {
+.mapping-result[data-action="copy_node_to"],
+.mapping-result[data-action="copy_node_from"] {
   background-color: #e0f2f1;
   border-left-color: #009688;
 }
@@ -392,7 +393,8 @@ table {
   color: #1565c0;
 }
 
-.mapping-consolidated[data-action="copy_node_to"] .mapping-details {
+.mapping-consolidated[data-action="copy_node_to"] .mapping-details,
+.mapping-consolidated[data-action="copy_node_from"] .mapping-details {
   background-color: #e0f2f1;
   border-left-color: #009688;
   color: #00695c;
@@ -1402,7 +1404,8 @@ table {
   border-color: #2196f3;
 }
 
-.recommendation-chip--copy_node_to {
+.recommendation-chip--copy_node_to,
+.recommendation-chip--copy_node_from {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;
@@ -1489,7 +1492,8 @@ table {
   border-color: #2196f3;
 }
 
-.recommendation-detail-badge--copy_node_to {
+.recommendation-detail-badge--copy_node_to,
+.recommendation-detail-badge--copy_node_from {
   background-color: #b2dfdb;
   color: #00695c;
   border-color: #009688;

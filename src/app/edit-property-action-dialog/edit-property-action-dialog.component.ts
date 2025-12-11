@@ -127,14 +127,14 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   /**
    * Gets the list of profile names that should be used for filtering available fields
-   * For copy_value_from: if current field is in target, show fields from source profiles
-   * For copy_value_to: if current field is in source, show fields from target profile
+   * For copy_value_from/copy_node_from: if current field is in target, show fields from source profiles
+   * For copy_value_to/copy_node_to: if current field is in source, show fields from target profile
    */
   private getRelevantProfileNames(): string[] {
-    if (this.selectedAction === 'copy_value_from') {
+    if (this.selectedAction === 'copy_value_from' || this.selectedAction === 'copy_node_from') {
       // Current field is in target, so we want to copy FROM source fields
       return this.data.sources.map(s => (s as any).key || s.name);
-    } else if (this.selectedAction === 'copy_value_to') {
+    } else if (this.selectedAction === 'copy_value_to' || this.selectedAction === 'copy_node_to') {
       // Current field is in source, so we want to copy TO target fields
       return [(this.data.target as any).key || this.data.target.name];
     }
@@ -509,7 +509,10 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Checks if the current action requires a target field
    */
   requiresTargetField(): boolean {
-    return this.selectedAction === 'copy_value_from' || this.selectedAction === 'copy_value_to' || this.selectedAction === 'copy_node_to';
+    return this.selectedAction === 'copy_value_from'
+        || this.selectedAction === 'copy_value_to'
+        || this.selectedAction === 'copy_node_to'
+        || this.selectedAction === 'copy_node_from';
   }
 
   /**

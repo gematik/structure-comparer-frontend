@@ -54,6 +54,7 @@ export class MappingActionDisplayComponent {
       'copy_value_from': 'arrow_back',
       'copy_value_to': 'arrow_forward',
       'copy_node_to': 'swap_horiz',
+      'copy_node_from': 'swap_horiz',  // Mirrored via CSS transform
       'fixed': 'lock',
       'manual': 'edit',
       'medication_service': 'local_pharmacy'
@@ -75,6 +76,7 @@ export class MappingActionDisplayComponent {
       'copy_value_from': 'COPY_VALUE_FROM',
       'copy_value_to': 'COPY_VALUE_TO',
       'copy_node_to': 'COPY_NODE_TO',
+      'copy_node_from': 'COPY_NODE_FROM',
       'fixed': 'FIXED',
       'manual': 'MANUAL',
       'medication_service': 'MEDICATION_SERVICE'
@@ -96,6 +98,7 @@ export class MappingActionDisplayComponent {
       'copy_value_from': 'Wert wird aus anderem Feld kopiert',
       'copy_value_to': 'Wert wird in anderes Feld kopiert',
       'copy_node_to': 'Knoten wird in anderes Feld kopiert',
+      'copy_node_from': 'Knoten wird von anderem Feld empfangen',
       'fixed': 'Fester Wert wird gesetzt',
       'manual': 'Manuelle Bearbeitung erforderlich',
       'medication_service': 'Medication Service Mapping'
@@ -151,11 +154,14 @@ export class MappingActionDisplayComponent {
   }
 
   /**
-   * Get the other_value from a recommendation (for copy_value_from/copy_value_to/copy_node_to)
+   * Get the other_value from a recommendation (for copy_value_from/copy_value_to/copy_node_to/copy_node_from)
    */
   getRecommendationOtherValue(recommendation: ActionInfo): string | null {
-    // Only show for copy_value_from/copy_value_to/copy_node_to actions
-    if (recommendation.action !== 'copy_value_from' && recommendation.action !== 'copy_value_to' && recommendation.action !== 'copy_node_to') {
+    // Only show for copy_value_from/copy_value_to/copy_node_to/copy_node_from actions
+    if (recommendation.action !== 'copy_value_from'
+        && recommendation.action !== 'copy_value_to'
+        && recommendation.action !== 'copy_node_to'
+        && recommendation.action !== 'copy_node_from') {
       return null;
     }
 

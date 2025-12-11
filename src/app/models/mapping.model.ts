@@ -58,6 +58,7 @@ export type MappingAction =
   | 'fixed'
   | 'manual'
   | 'copy_node_to'
+  | 'copy_node_from'
   | null;
 
 /**
