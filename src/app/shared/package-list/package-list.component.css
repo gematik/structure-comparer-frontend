@@ -55,3 +55,89 @@
   width: 16px;
   height: 16px;
 }
+
+/* ============================================================================
+   Status Indicators and Badges
+   ============================================================================ */
+
+.col-status {
+  width: 60px;
+  text-align: center;
+}
+
+.status-cell {
+  text-align: center;
+}
+
+.status-indicator {
+  font-size: 1rem;
+}
+
+/* Status Summary Bar */
+.package-status-summary {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-badge.status-available {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.status-missing {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.status-badge.status-orphaned {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+/* Warning Banner */
+.missing-packages-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background-color: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: 8px;
+  color: #e65100;
+}
+
+.missing-packages-warning .warning-icon {
+  color: #ff9800;
+}
+
+.missing-packages-warning button {
+  margin-left: auto;
+}
+
+/* Row States */
+.row-missing {
+  background-color: #fffde7;
+}
+
+.row-missing:hover {
+  background-color: #fff9c4;
+}
+
+.row-orphaned {
+  background-color: #fafafa;
+  opacity: 0.85;
+}
+
+.row-orphaned:hover {
+  background-color: #f0f0f0;
+}
