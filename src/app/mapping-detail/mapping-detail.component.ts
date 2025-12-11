@@ -234,9 +234,9 @@ export class MappingDetailComponent implements OnInit {
 
   /**
    * Toggle between normal and resolved field view
+   * Note: showResolvedFields is already toggled by ngModel binding
    */
   toggleResolvedView(): void {
-    this.showResolvedFields = !this.showResolvedFields;
     if (this.showResolvedFields && this.resolvedFields.length === 0) {
       this.loadResolvedFields();
     } else {
