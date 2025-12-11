@@ -239,6 +239,9 @@ export class MappingDetailComponent implements OnInit {
     this.showResolvedFields = !this.showResolvedFields;
     if (this.showResolvedFields && this.resolvedFields.length === 0) {
       this.loadResolvedFields();
+    } else {
+      // Re-apply filters to switch between resolved and normal view
+      this.applyAllFilters();
     }
   }
 
@@ -273,6 +276,9 @@ export class MappingDetailComponent implements OnInit {
         if (this.unresolvedReferences.length > 0) {
           console.warn('Unresolved profile references:', this.unresolvedReferences);
         }
+
+        // Re-apply filters with the resolved fields
+        this.applyAllFilters();
       }
     });
   }
@@ -523,7 +529,12 @@ export class MappingDetailComponent implements OnInit {
   }
 
   private applyAllFilters(): void {
-    let filteredFields = this.original?.fields ?? [];
+    // Use resolved fields if the toggle is active and we have them loaded
+    let baseFields = this.original?.fields ?? [];
+    if (this.showResolvedFields && this.resolvedFields.length > 0) {
+      baseFields = this.resolvedFields;
+    }
+    let filteredFields = baseFields;
     const allFields = [...filteredFields];
 
     // First, filter out children of parent fields with max=0 (excluded in target profile)
