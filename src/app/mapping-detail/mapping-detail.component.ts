@@ -269,7 +269,30 @@ export class MappingDetailComponent implements OnInit {
     ).subscribe(response => {
       this.isLoadingResolved = false;
       if (response) {
-        this.resolvedFields = response.fields || [];
+        // Transform resolved fields to match the expected table format
+        this.resolvedFields = (response.fields || []).map((field: any) => {
+          // Build the profiles object from source_profiles and target_profile
+          const profiles: { [key: string]: any } = {};
+
+          // Copy source profiles
+          if (field.source_profiles) {
+            for (const [key, info] of Object.entries(field.source_profiles)) {
+              if (info) {
+                profiles[key] = info;
+              }
+            }
+          }
+
+          // Add target profile if present
+          if (field.target_profile && this.filtered?.target?.key) {
+            profiles[this.filtered.target.key] = field.target_profile;
+          }
+
+          return {
+            ...field,
+            profiles
+          };
+        });
         this.unresolvedReferences = response.unresolved_references || [];
         this.resolutionStats = response.resolution_stats || null;
 
