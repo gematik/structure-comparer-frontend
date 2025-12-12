@@ -608,13 +608,31 @@ export class EditPropertyActionDialogComponent implements OnInit {
       }
     }
 
-    // Return both the update request and the applyToChildren flag for copy_node_to actions
+    // Return both the update request and the applyToChildren flag for copy_node_to/copy_node_from actions
     const result: any = { updateRequest };
-    if (this.selectedAction === 'copy_node_to' && this.applyToChildren) {
+    if ((this.selectedAction === 'copy_node_to' || this.selectedAction === 'copy_node_from') && this.applyToChildren) {
       result.applyToChildren = true;
     }
 
     this.dialogRef.close(result);
+  }
+
+  /**
+   * Checks if the copy_node action should be available based on children compatibility
+   * Returns true if all children are compatible/solved (action is in actions_allowed)
+   */
+  isCopyNodeChildrenCompatible(): boolean {
+    // Check if copy_node_to or copy_node_from is in actions_allowed
+    // This is computed by the backend based on children compatibility
+    return this.data.field.actions_allowed.includes('copy_node_to') ||
+           this.data.field.actions_allowed.includes('copy_node_from');
+  }
+
+  /**
+   * Checks if the current action is a copy_node action
+   */
+  isCopyNodeAction(): boolean {
+    return this.selectedAction === 'copy_node_to' || this.selectedAction === 'copy_node_from';
   }
 
   /**

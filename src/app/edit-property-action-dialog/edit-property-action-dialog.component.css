@@ -743,6 +743,15 @@
   margin-top: 2px;
 }
 
+.checkbox-explanation.warning {
+  background-color: #fff3e0;
+  border-left: 3px solid #ff9800;
+}
+
+.checkbox-explanation.warning mat-icon {
+  color: #f57c00;
+}
+
 /* Dialog Actions */
 .dialog-actions {
   display: flex;
