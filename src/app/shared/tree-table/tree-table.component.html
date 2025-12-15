@@ -93,7 +93,11 @@
 
           <!-- Type info -->
           <ng-container *ngIf="row.isLeaf && row.field && getFieldTypes(row.field)">
-            <br /><span class="field-type">{{ getFieldTypes(row.field) }}</span>
+            <br /><span
+              class="field-type"
+              [matTooltip]="getFieldTypesTooltip(row.field)">
+              {{ getFieldTypes(row.field) }}
+            </span>
           </ng-container>
 
           <!-- Extension info for leaf nodes -->

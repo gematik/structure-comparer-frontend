@@ -610,14 +610,42 @@ export class TreeTableComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Gets the field types for display
+   * Collects all type strings for the first profile that defines them
    */
-  getFieldTypes(field: any): string {
+  private collectFieldTypes(field: any): string[] {
     const allTypes = this.config.profileColumns
       .map(p => field.profiles?.[p.key]?.types || [])
       .filter(types => types.length > 0);
 
-    if (allTypes.length === 0) return '';
-    return allTypes[0].join(', ');
+    if (allTypes.length === 0) {
+      return [];
+    }
+
+    return allTypes[0];
+  }
+
+  /**
+   * Gets the truncated list of field types for inline display (max 3 items)
+   */
+  getFieldTypes(field: any): string {
+    const types = this.collectFieldTypes(field);
+    if (types.length === 0) {
+      return '';
+    }
+
+    const maxVisible = 3;
+    if (types.length <= maxVisible) {
+      return types.join(', ');
+    }
+
+    const visibleTypes = types.slice(0, maxVisible).join(', ');
+    return `${visibleTypes}, ...`;
+  }
+
+  /**
+   * Returns the full type list for tooltips
+   */
+  getFieldTypesTooltip(field: any): string {
+    return this.collectFieldTypes(field).join(', ');
   }
 }
