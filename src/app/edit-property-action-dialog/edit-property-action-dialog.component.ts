@@ -644,7 +644,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
       return [];
     }
     const fieldName = this.data.field.name;
-    return this.data.allFields.filter(f => 
+    return this.data.allFields.filter(f =>
       f.name !== fieldName && f.name.startsWith(fieldName + '.')
     );
   }
@@ -653,7 +653,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Gets the count of compatible children
    */
   getCompatibleChildrenCount(): number {
-    return this.getChildFields().filter(f => 
+    return this.getChildFields().filter(f =>
       f.classification === 'compatible'
     ).length;
   }
@@ -662,7 +662,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
    * Gets the count of incompatible children (including warning)
    */
   getIncompatibleChildrenCount(): number {
-    return this.getChildFields().filter(f => 
+    return this.getChildFields().filter(f =>
       f.classification === 'incompatible' || f.classification === 'warning'
     ).length;
   }

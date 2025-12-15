@@ -344,7 +344,7 @@
           Automatisch alle kompatiblen Kinder-Felder als gelöst markieren
         </span>
       </mat-checkbox>
-      
+
       <!-- Children statistics -->
       <div class="children-statistics" *ngIf="getTotalChildrenCount() > 0">
         <div class="stat-row">
@@ -358,13 +358,13 @@
           <span class="stat-hint">(müssen manuell bearbeitet werden)</span>
         </div>
       </div>
-      
+
       <!-- Info message -->
       <div class="checkbox-explanation" *ngIf="!hasIncompatibleChildren()">
         <mat-icon>info_outline</mat-icon>
         <span>Wendet die Copy-Node-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
       </div>
-      
+
       <!-- Warning when incompatible children exist -->
       <div class="checkbox-explanation warning" *ngIf="hasIncompatibleChildren()">
         <mat-icon>warning</mat-icon>
