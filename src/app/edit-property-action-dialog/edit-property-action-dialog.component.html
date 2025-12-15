@@ -338,19 +338,37 @@
 
     <!-- Auto-apply children recommendations for copy_node_to/copy_node_from actions -->
     <div *ngIf="isCopyNodeAction()" class="auto-apply-section">
-      <mat-checkbox [(ngModel)]="applyToChildren" color="primary" [disabled]="!isCopyNodeChildrenCompatible()">
+      <mat-checkbox [(ngModel)]="applyToChildren" color="primary">
         <span class="checkbox-label">
           <mat-icon class="checkbox-icon">account_tree</mat-icon>
-          Automatisch alle Kinder-Felder als gelöst markieren
+          Automatisch alle kompatiblen Kinder-Felder als gelöst markieren
         </span>
       </mat-checkbox>
-      <div class="checkbox-explanation" *ngIf="isCopyNodeChildrenCompatible()">
+      
+      <!-- Children statistics -->
+      <div class="children-statistics" *ngIf="getTotalChildrenCount() > 0">
+        <div class="stat-row">
+          <mat-icon class="stat-icon compatible">check_circle</mat-icon>
+          <span>{{ getCompatibleChildrenCount() }} kompatible Kinder</span>
+          <span class="stat-hint">(werden automatisch übernommen)</span>
+        </div>
+        <div class="stat-row" *ngIf="getIncompatibleChildrenCount() > 0">
+          <mat-icon class="stat-icon incompatible">error</mat-icon>
+          <span>{{ getIncompatibleChildrenCount() }} inkompatible Kinder</span>
+          <span class="stat-hint">(müssen manuell bearbeitet werden)</span>
+        </div>
+      </div>
+      
+      <!-- Info message -->
+      <div class="checkbox-explanation" *ngIf="!hasIncompatibleChildren()">
         <mat-icon>info_outline</mat-icon>
         <span>Wendet die Copy-Node-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
       </div>
-      <div class="checkbox-explanation warning" *ngIf="!isCopyNodeChildrenCompatible()">
+      
+      <!-- Warning when incompatible children exist -->
+      <div class="checkbox-explanation warning" *ngIf="hasIncompatibleChildren()">
         <mat-icon>warning</mat-icon>
-        <span>Die rekursive Anwendung ist nicht möglich, da einige Kinder-Felder inkompatibel sind und noch nicht gelöst wurden. Bitte lösen Sie zuerst die Probleme bei den Kinder-Feldern.</span>
+        <span>Hinweis: {{ getIncompatibleChildrenCount() }} Kinder-Felder sind inkompatibel und müssen manuell bearbeitet werden. Nur die {{ getCompatibleChildrenCount() }} kompatiblen Kinder werden automatisch übernommen.</span>
       </div>
     </div>
 

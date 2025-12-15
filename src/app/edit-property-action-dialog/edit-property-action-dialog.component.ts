@@ -619,7 +619,8 @@ export class EditPropertyActionDialogComponent implements OnInit {
 
   /**
    * Checks if the copy_node action should be available based on children compatibility
-   * Returns true if all children are compatible/solved (action is in actions_allowed)
+   * Returns true if copy_node_to or copy_node_from is in actions_allowed
+   * With the new logic, this is always true for parent fields
    */
   isCopyNodeChildrenCompatible(): boolean {
     // Check if copy_node_to or copy_node_from is in actions_allowed
@@ -633,6 +634,51 @@ export class EditPropertyActionDialogComponent implements OnInit {
    */
   isCopyNodeAction(): boolean {
     return this.selectedAction === 'copy_node_to' || this.selectedAction === 'copy_node_from';
+  }
+
+  /**
+   * Gets all direct and indirect children of the current field
+   */
+  private getChildFields(): MappingField[] {
+    if (!this.data.allFields) {
+      return [];
+    }
+    const fieldName = this.data.field.name;
+    return this.data.allFields.filter(f => 
+      f.name !== fieldName && f.name.startsWith(fieldName + '.')
+    );
+  }
+
+  /**
+   * Gets the count of compatible children
+   */
+  getCompatibleChildrenCount(): number {
+    return this.getChildFields().filter(f => 
+      f.classification === 'compatible'
+    ).length;
+  }
+
+  /**
+   * Gets the count of incompatible children (including warning)
+   */
+  getIncompatibleChildrenCount(): number {
+    return this.getChildFields().filter(f => 
+      f.classification === 'incompatible' || f.classification === 'warning'
+    ).length;
+  }
+
+  /**
+   * Gets the total count of children
+   */
+  getTotalChildrenCount(): number {
+    return this.getChildFields().length;
+  }
+
+  /**
+   * Checks if there are any incompatible children
+   */
+  hasIncompatibleChildren(): boolean {
+    return this.getIncompatibleChildrenCount() > 0;
   }
 
   /**
