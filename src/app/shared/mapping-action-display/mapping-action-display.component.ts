@@ -18,10 +18,11 @@
  *
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTooltipModule, MatTooltip } from '@angular/material/tooltip';
+import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MappingAction, MappingField } from '../../models/mapping.model';
 import { ActionInfo } from '../../models/mapping-evaluation.model';
 import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helpers';
@@ -29,16 +30,38 @@ import { RecommendationHelper } from '../../mapping-detail/mapping-detail-helper
 @Component({
   selector: 'app-mapping-action-display',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, MatIconModule, MatTooltipModule, MatMenuModule],
   templateUrl: './mapping-action-display.component.html',
   styleUrl: './mapping-action-display.component.css'
 })
-export class MappingActionDisplayComponent {
+export class MappingActionDisplayComponent implements OnDestroy {
   @Input() field!: MappingField;
   @Input() compact: boolean = false; // Für kompakte Darstellung in der Tabelle
   @Input() allFields?: MappingField[]; // Optional: Alle Felder für Typ-Lookup bei copy_value_from/copy_value_to
   @Output() applyRecommendation = new EventEmitter<{ field: MappingField; index: number; event: Event }>();
   @Output() editField = new EventEmitter<{ field: MappingField; event: Event }>();
+  @Output() quickActionSelected = new EventEmitter<{ field: MappingField; action: MappingAction }>();
+  @Output() menuVisibleChange = new EventEmitter<boolean>();
+
+  @ViewChild('actionTooltip', { static: false }) actionTooltip?: MatTooltip;
+
+  private activeHoverTrigger: MatMenuTrigger | null = null;
+  private tooltipVisible = false;
+  private menuVisible = false;
+  private debugLogging = true;
+  private isTriggerHovered = false;
+  private isMenuHovered = false;
+
+  ngOnDestroy(): void {
+    this.cancelScheduledMenuClose();
+  }
+
+  getActionMenuClasses(action: MappingAction | null): string[] {
+    const classes = ['allowed-action-item'];
+    const suffix = action ? action : 'default';
+    classes.push(`allowed-action-item--${suffix}`);
+    return classes;
+  }
 
   /**
    * Gets the icon for an action
@@ -106,6 +129,234 @@ export class MappingActionDisplayComponent {
     return descriptions[action] || action;
   }
 
+  /**
+   * Builds tooltip text listing all allowed actions
+   */
+  getChooseActionTooltip(): string {
+    const allowedActions = this.field?.actions_allowed || [];
+    if (!allowedActions.length) {
+      return 'Mapping-Aktion bearbeiten';
+    }
+
+    const formatted = allowedActions.map(action => {
+      const label = action ? action.toUpperCase() : 'CHOOSE_ACTION';
+      const description = this.getActionDescription(action);
+      return `${label} – ${description}`;
+    });
+
+    return `Erlaubte Aktionen:\n${formatted.join('\n')}`;
+  }
+
+  /**
+   * Indicates whether allowed actions tooltip should be shown
+   */
+  shouldShowAllowedActionsTooltip(): boolean {
+    return !this.field?.action && !!(this.field?.actions_allowed?.length);
+  }
+
+  hasAllowedActions(): boolean {
+    return !!(this.field?.actions_allowed && this.field.actions_allowed.length > 0);
+  }
+
+  openAllowedActionsMenu(trigger: MatMenuTrigger, event?: Event): void {
+    if (!this.hasAllowedActions() || this.field?.action) {
+      this.logDebug('openAllowedActionsMenu aborted: no allowed actions or existing action', {
+        hasAllowed: this.hasAllowedActions(),
+        fieldAction: this.field?.action
+      });
+      return;
+    }
+    if (this.isMenuOpenForTrigger(trigger)) {
+      this.cancelScheduledMenuClose();
+      this.logDebug('openAllowedActionsMenu skipped: menu already open for trigger');
+      return;
+    }
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.cancelScheduledMenuClose();
+    this.activeHoverTrigger = trigger;
+    trigger.openMenu();
+    this.setMenuVisibility(true);
+    this.logDebug('openAllowedActionsMenu executed');
+  }
+
+  toggleAllowedActionsMenu(trigger: MatMenuTrigger, event: Event): void {
+    if (!this.hasAllowedActions() || this.field?.action) {
+      this.onEditField(event);
+      return;
+    }
+
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (trigger.menuOpen) {
+      trigger.closeMenu();
+      this.setMenuVisibility(false);
+      this.logDebug('toggleAllowedActionsMenu: closed via click');
+    } else {
+      this.openAllowedActionsMenu(trigger, event);
+    }
+  }
+
+  onTriggerMouseEnter(trigger: MatMenuTrigger, event?: Event): void {
+    this.isTriggerHovered = true;
+    if (this.isMenuOpenForTrigger(trigger)) {
+      this.logDebug('onTriggerMouseEnter: menu already open, skipping');
+      return;
+    }
+    this.hideTooltip();
+    this.openAllowedActionsMenu(trigger, event);
+    this.logDebug('onTriggerMouseEnter: menu opened');
+  }
+
+  onTriggerMouseLeave(): void {
+    this.isTriggerHovered = false;
+    this.logDebug('onTriggerMouseLeave: no auto-close (handled by host/menu leave)');
+  }
+
+  onMenuMouseEnter(): void {
+    this.isMenuHovered = true;
+    this.logDebug('onMenuMouseEnter: holding menu open');
+  }
+
+  onMenuMouseLeave(event: MouseEvent): void {
+    this.isMenuHovered = false;
+    if (this.isInsideHost(event.relatedTarget)) {
+      this.logDebug('onMenuMouseLeave: still inside host, skipping close');
+      return;
+    }
+    this.logDebug('onMenuMouseLeave: closing');
+    this.closeMenuImmediate();
+  }
+
+  onQuickActionMenuClick(action: MappingAction, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!action) {
+      this.onEditField(event);
+      return;
+    }
+    this.quickActionSelected.emit({ field: this.field, action });
+    this.setMenuVisibility(false);
+    this.logDebug('onQuickActionMenuClick: action emitted', { action });
+  }
+
+  onAllowedActionsMenuClosed(): void {
+    this.activeHoverTrigger = null;
+    this.setMenuVisibility(false);
+    this.isTriggerHovered = false;
+    this.isMenuHovered = false;
+    this.logDebug('onAllowedActionsMenuClosed called');
+  }
+
+  onAllowedActionsMenuOpened(): void {
+    // Treat a freshly opened menu as hovered so it stays open even before pointer moves
+    this.isMenuHovered = true;
+    this.logDebug('onAllowedActionsMenuOpened called');
+  }
+
+  private closeMenuImmediate(): void {
+    this.activeHoverTrigger?.closeMenu();
+    this.activeHoverTrigger = null;
+    this.setMenuVisibility(false);
+  }
+
+  private cancelScheduledMenuClose(): void {
+    // Timers were removed; method retained for compatibility/logs
+    this.logDebug('cancelScheduledMenuClose: no timers to clear');
+  }
+
+  onHostMouseOver(event: MouseEvent): void {
+    if (!this.shouldShowAllowedActionsTooltip()) {
+      this.hideTooltip();
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (this.isChooseActionTrigger(target)) {
+      this.hideTooltip();
+    } else {
+      this.showTooltip();
+    }
+  }
+
+  onHostMouseLeave(event: MouseEvent): void {
+    this.isTriggerHovered = false;
+    this.hideTooltip();
+    if (this.menuVisible) {
+      this.logDebug('onHostMouseLeave: menu open, ignore (menu handles close)');
+      return;
+    }
+    if (this.isInsideHost(event.relatedTarget)) {
+      this.logDebug('onHostMouseLeave: still inside host, skipping close');
+      return;
+    }
+    this.logDebug('onHostMouseLeave: closing');
+    this.closeMenuImmediate();
+  }
+
+  private isInsideHost(target: EventTarget | null): boolean {
+    if (!target || !(target instanceof HTMLElement)) {
+      return false;
+    }
+    return !!target.closest('.mapping-action-display');
+  }
+
+  private isChooseActionTrigger(target: HTMLElement | null): boolean {
+    if (!target) {
+      return false;
+    }
+    const element = target.closest('.choose-action-btn, .action-chip--no-action');
+    return !!element;
+  }
+
+  private showTooltip(): void {
+    if (this.tooltipVisible) {
+      return;
+    }
+    this.actionTooltip?.show();
+    this.tooltipVisible = true;
+  }
+
+  private hideTooltip(): void {
+    if (this.tooltipVisible) {
+      this.actionTooltip?.hide(0);
+      this.tooltipVisible = false;
+    } else {
+      this.actionTooltip?.hide(0);
+    }
+  }
+
+  private setMenuVisibility(open: boolean): void {
+    if (this.menuVisible === open) {
+      return;
+    }
+    this.menuVisible = open;
+    this.menuVisibleChange.emit(open);
+    if (!open) {
+      this.hideTooltip();
+    }
+    this.logDebug('setMenuVisibility', { open });
+  }
+
+  private isMenuOpenForTrigger(trigger: MatMenuTrigger): boolean {
+    return this.menuVisible && this.activeHoverTrigger === trigger && !!trigger.menuOpen;
+  }
+
+  private logDebug(message: string, payload?: any): void {
+    if (!this.debugLogging) {
+      return;
+    }
+    const prefix = '[MappingActionDisplay]';
+    if (payload !== undefined) {
+      // eslint-disable-next-line no-console
+      console.log(prefix, message, payload);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(prefix, message);
+    }
+  }
   /**
    * Check if action requires additional details to be shown
    */

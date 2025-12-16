@@ -272,6 +272,134 @@
   white-space: nowrap;
 }
 
+/* Allowed actions menu */
+.allowed-actions-menu {
+  max-width: 320px;
+}
+
+.allowed-actions-menu-content {
+  display: block;
+}
+
+.allowed-actions-header {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 16px 2px;
+  color: #616161;
+}
+
+.menu-section-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+  margin: 4px 0;
+}
+
+.allowed-actions-menu .mat-mdc-menu-content {
+  padding: 4px 0;
+}
+
+.allowed-actions-menu .mat-mdc-menu-item.allowed-action-item {
+  border-radius: 6px;
+  height: auto;
+  min-height: 34px;
+  line-height: 1.2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  gap: 8px;
+  margin: 2px 8px;
+  border-left: 4px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.allowed-actions-menu .mat-mdc-menu-item.allowed-action-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.allowed-actions-menu .allowed-action-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
+.allowed-actions-menu .allowed-action-item .menu-item-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.allowed-action-item--default {
+  background-color: #f5f5f5;
+  color: #555;
+  border-color: #9e9e9e;
+}
+
+.allowed-action-item--use {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  border-color: #4caf50;
+}
+
+.allowed-action-item--use_recursive {
+  background-color: #81c784;
+  color: #0d3d17;
+  border-color: #2e7d32;
+}
+
+.allowed-action-item--not_use {
+  background-color: #f8bbd0;
+  color: #880e4f;
+  border-color: #c2185b;
+}
+
+.allowed-action-item--empty {
+  background-color: #e1bee7;
+  color: #4a148c;
+  border-color: #7b1fa2;
+}
+
+.allowed-action-item--copy_value_from,
+.allowed-action-item--copy_value_to {
+  background-color: #bbdefb;
+  color: #0d47a1;
+  border-color: #1565c0;
+}
+
+.allowed-action-item--copy_node_to,
+.allowed-action-item--copy_node_from {
+  background-color: #b2dfdb;
+  color: #004d40;
+  border-color: #00695c;
+}
+
+.allowed-action-item--fixed {
+  background-color: #ffe0b2;
+  color: #e65100;
+  border-color: #ef6c00;
+}
+
+.allowed-action-item--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffca28;
+}
+
+.allowed-action-item--medication_service {
+  background-color: #ffcdd2;
+  color: #b71c1c;
+  border-color: #d32f2f;
+}
+
+.allowed-action-item--dialog {
+  background-color: #eceff1;
+  color: #37474f;
+  border-color: #90a4ae;
+}
+
 .recommendation-chip {
   display: inline-flex;
   align-items: center;

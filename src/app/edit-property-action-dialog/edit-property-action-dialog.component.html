@@ -6,83 +6,6 @@
 
   <div mat-dialog-content class="dialog-content">
 
-    <!-- Field Information -->
-    <div class="field-info">
-
-      <h3>{{ data.field.name }}</h3>
-
-      <div class="field-meta-row" *ngIf="getFieldTypes()">
-        <mat-icon class="info-icon-small">data_object</mat-icon>
-        <span class="field-meta-label">Typ:</span>
-        <span class="field-type">{{ getFieldTypes() }}</span>
-      </div>
-
-      <div class="field-meta-row" *ngIf="data.field.extension">
-        <mat-icon class="info-icon-small">extension</mat-icon>
-        <span class="field-meta-label">Extension:</span>
-        <span class="field-extension-text">{{ data.field.extension }}</span>
-      </div>
-
-      <!-- Profile Badges -->
-      <div class="profile-badges-container" *ngIf="getSourceProfiles().length > 0 || getTargetProfile()">
-        <div class="profile-badges-label">
-          <mat-icon class="info-icon-small">account_tree</mat-icon>
-          <span>Profile:</span>
-        </div>
-        <div class="profile-badges-list">
-          <div class="profile-badge source-badge" *ngFor="let profile of getSourceProfiles()"
-               [matTooltip]="'Source Profile'"
-               matTooltipPosition="above">
-            <mat-icon class="badge-icon">input</mat-icon>
-            <span class="badge-text">
-              <span *ngIf="profile.package" class="package-prefix">{{ profile.package }}.</span>{{ profile.name }}
-            </span>
-          </div>
-          <div class="profile-badge target-badge" *ngIf="getTargetProfile()"
-               [matTooltip]="'Target Profile'"
-               matTooltipPosition="above">
-            <mat-icon class="badge-icon">output</mat-icon>
-            <span class="badge-text">
-              <span *ngIf="getTargetProfile()!.package" class="package-prefix">{{ getTargetProfile()!.package }}.</span>{{ getTargetProfile()!.name }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Classification Explanation -->
-      <div class="field-classification-section">
-        <h4 class="info-section-title">
-          <mat-icon class="info-icon">analytics</mat-icon>
-          Kompatibilitäts-Bewertung
-          <button mat-icon-button
-                  class="info-toggle-btn"
-                  (click)="showClassificationInfo = !showClassificationInfo"
-                  [matTooltip]="showClassificationInfo ? 'Info ausblenden' : 'Info einblenden'"
-                  type="button">
-            <mat-icon>{{ showClassificationInfo ? 'expand_less' : 'info' }}</mat-icon>
-          </button>
-        </h4>
-        <div class="collapsible-info" *ngIf="showClassificationInfo">
-          <p class="info-explanation">
-            Diese Bewertung zeigt, wie gut Source- und Target-Profil zusammenpassen:
-          </p>
-        </div>
-        <div class="classification-display">
-          <span [class]="'pill pill--' + data.field.classification"
-                [matTooltip]="getClassificationTooltip()"
-                matTooltipPosition="above">
-            {{ data.field.classification }}
-          </span>
-          <span class="classification-meaning">
-            <span *ngIf="data.field.classification === 'compatible'">✓ Felder passen direkt zusammen</span>
-            <span *ngIf="data.field.classification === 'incompatible'">✗ Felder sind nicht kompatibel - Aktion erforderlich</span>
-            <span *ngIf="data.field.classification === 'warning'">⚠ Kleinere Probleme - Aktion empfohlen</span>
-            <span *ngIf="data.field.classification === 'unknown'">? Kompatibilität unbekannt</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
     <!-- Current Action & Status Display -->
     <div class="current-status-section">
       <h4 class="info-section-title">
@@ -191,6 +114,83 @@
       (actionSelected)="selectAction($event)"
       (actionRemoved)="removeAction()">
     </app-action-selection>
+
+    <!-- Field Information -->
+    <div class="field-info">
+
+      <h3>{{ data.field.name }}</h3>
+
+      <div class="field-meta-row" *ngIf="getFieldTypes()">
+        <mat-icon class="info-icon-small">data_object</mat-icon>
+        <span class="field-meta-label">Typ:</span>
+        <span class="field-type">{{ getFieldTypes() }}</span>
+      </div>
+
+      <div class="field-meta-row" *ngIf="data.field.extension">
+        <mat-icon class="info-icon-small">extension</mat-icon>
+        <span class="field-meta-label">Extension:</span>
+        <span class="field-extension-text">{{ data.field.extension }}</span>
+      </div>
+
+      <!-- Profile Badges -->
+      <div class="profile-badges-container" *ngIf="getSourceProfiles().length > 0 || getTargetProfile()">
+        <div class="profile-badges-label">
+          <mat-icon class="info-icon-small">account_tree</mat-icon>
+          <span>Profile:</span>
+        </div>
+        <div class="profile-badges-list">
+          <div class="profile-badge source-badge" *ngFor="let profile of getSourceProfiles()"
+               [matTooltip]="'Source Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">input</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="profile.package" class="package-prefix">{{ profile.package }}.</span>{{ profile.name }}
+            </span>
+          </div>
+          <div class="profile-badge target-badge" *ngIf="getTargetProfile()"
+               [matTooltip]="'Target Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">output</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="getTargetProfile()!.package" class="package-prefix">{{ getTargetProfile()!.package }}.</span>{{ getTargetProfile()!.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classification Explanation -->
+      <div class="field-classification-section">
+        <h4 class="info-section-title">
+          <mat-icon class="info-icon">analytics</mat-icon>
+          Kompatibilitäts-Bewertung
+          <button mat-icon-button
+                  class="info-toggle-btn"
+                  (click)="showClassificationInfo = !showClassificationInfo"
+                  [matTooltip]="showClassificationInfo ? 'Info ausblenden' : 'Info einblenden'"
+                  type="button">
+            <mat-icon>{{ showClassificationInfo ? 'expand_less' : 'info' }}</mat-icon>
+          </button>
+        </h4>
+        <div class="collapsible-info" *ngIf="showClassificationInfo">
+          <p class="info-explanation">
+            Diese Bewertung zeigt, wie gut Source- und Target-Profil zusammenpassen:
+          </p>
+        </div>
+        <div class="classification-display">
+          <span [class]="'pill pill--' + data.field.classification"
+                [matTooltip]="getClassificationTooltip()"
+                matTooltipPosition="above">
+            {{ data.field.classification }}
+          </span>
+          <span class="classification-meaning">
+            <span *ngIf="data.field.classification === 'compatible'">✓ Felder passen direkt zusammen</span>
+            <span *ngIf="data.field.classification === 'incompatible'">✗ Felder sind nicht kompatibel - Aktion erforderlich</span>
+            <span *ngIf="data.field.classification === 'warning'">⚠ Kleinere Probleme - Aktion empfohlen</span>
+            <span *ngIf="data.field.classification === 'unknown'">? Kompatibilität unbekannt</span>
+          </span>
+        </div>
+      </div>
+    </div>
 
     <!-- Conditional Fields -->
 

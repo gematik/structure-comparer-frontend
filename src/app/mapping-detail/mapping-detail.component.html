@@ -439,7 +439,8 @@
                 [compact]="true"
                 [allFields]="mapping?.fields"
                 (applyRecommendation)="applyRecommendation(field, $event.index, $event.event)"
-                (editField)="openEditPropertyActionDialog($event.field, i)">
+                (editField)="openEditPropertyActionDialog($event.field, i)"
+                (quickActionSelected)="onQuickActionSelected($event)">
               </app-mapping-action-display>
             </div>
 
@@ -531,6 +532,7 @@
       (startHover)="handleEdit($event).startHover()"
       (stopHover)="handleEdit().stopHover()"
       (applyRecommendation)="applyRecommendation($event.field, $event.index, $event.event)"
+      (quickActionSelected)="onQuickActionSelected($event)"
     >
     </app-tree-table>
   </div>

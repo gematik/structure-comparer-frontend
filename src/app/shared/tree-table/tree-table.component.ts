@@ -91,11 +91,13 @@ export class TreeTableComponent implements OnInit, OnChanges {
   @Output() stopHover = new EventEmitter<void>();
   @Output() sortChange = new EventEmitter<any>();
   @Output() applyRecommendation = new EventEmitter<{ field: any; index: number; event: Event }>();
+  @Output() quickActionSelected = new EventEmitter<{ field: MappingField; action: MappingAction }>();
 
   propertyTree: PropertyTreeNode[] = [];
   filteredTree: PropertyTreeNode[] = [];
   isExpandedById: Record<string, boolean> = {};
   visibleRows: DisplayRow[] = [];
+  quickMenuRowIndex: number | null = null;
 
   ngOnInit(): void {
     this.buildTree();
@@ -566,6 +568,21 @@ export class TreeTableComponent implements OnInit, OnChanges {
    */
   onApplyRecommendation(event: { field: any; index: number; event: Event }): void {
     this.applyRecommendation.emit(event);
+  }
+
+  onQuickActionSelected(event: { field: MappingField; action: MappingAction }): void {
+    this.quickActionSelected.emit(event);
+  }
+
+  onMenuVisibleChange(isVisible: boolean, rowIndex: number): void {
+    if (isVisible) {
+      this.quickMenuRowIndex = rowIndex;
+      return;
+    }
+
+    if (this.quickMenuRowIndex === rowIndex) {
+      this.quickMenuRowIndex = null;
+    }
   }
 
   /**

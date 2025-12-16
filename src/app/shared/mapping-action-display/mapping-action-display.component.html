@@ -1,4 +1,11 @@
-<div class="mapping-action-display" [class.compact]="compact">
+<div class="mapping-action-display"
+  #actionTooltip="matTooltip"
+  [class.compact]="compact"
+  [matTooltip]="shouldShowAllowedActionsTooltip() ? getChooseActionTooltip() : ''"
+  [matTooltipDisabled]="true"
+  matTooltipPosition="above"
+  (mouseover)="onHostMouseOver($event)"
+  (mouseleave)="onHostMouseLeave($event)">
   <!-- Show Recommendation if exists and no active action -->
   <div *ngIf="hasRecommendation() && !field.action" class="recommendation-container">
     <!-- Chip and detail badge in horizontal row -->
@@ -29,9 +36,14 @@
 
         <!-- Choose Action Button -->
         <button class="choose-action-btn"
-                [matTooltip]="'Mapping-Aktion bearbeiten'"
-                matTooltipPosition="above"
-                (click)="onEditField($event)">
+                *ngIf="!field.action"
+                #chooseActionTrigger="matMenuTrigger"
+                [matMenuTriggerFor]="allowedActionsMenu"
+                [matMenuTriggerRestoreFocus]="false"
+          (mouseenter)="onTriggerMouseEnter(chooseActionTrigger, $event)"
+                    (mouseleave)="onTriggerMouseLeave()"
+                (focus)="openAllowedActionsMenu(chooseActionTrigger, $event)"
+                (click)="toggleAllowedActionsMenu(chooseActionTrigger, $event)">
           <mat-icon>help_outline</mat-icon>
           <span class="btn-label">CHOOSE_ACTION</span>
         </button>
@@ -60,8 +72,13 @@
     <!-- No Action Chip -->
     <div *ngIf="!field.action"
          class="action-chip action-chip--no-action"
-         matTooltip="Es wurde noch keine Mapping-Aktion festgelegt"
-         matTooltipPosition="above">
+         #chipTrigger="matMenuTrigger"
+         [matMenuTriggerFor]="allowedActionsMenu"
+         [matMenuTriggerRestoreFocus]="false"
+          (mouseenter)="onTriggerMouseEnter(chipTrigger, $event)"
+           (mouseleave)="onTriggerMouseLeave()"
+         (focus)="openAllowedActionsMenu(chipTrigger, $event)"
+         (click)="toggleAllowedActionsMenu(chipTrigger, $event)">
       <mat-icon>help_outline</mat-icon>
       <span class="chip-label">choose_action</span>
     </div>
@@ -110,4 +127,32 @@
       <span class="inherited-text">Geerbt von {{ field.inherited_from }}</span>
     </div>
   </div>
+  <mat-menu #allowedActionsMenu="matMenu"
+            class="allowed-actions-menu"
+            [overlapTrigger]="false"
+            (click)="$event.stopPropagation()"
+            (opened)="onAllowedActionsMenuOpened()"
+            (closed)="onAllowedActionsMenuClosed()">
+    <div class="allowed-actions-menu-content"
+         (mouseenter)="onMenuMouseEnter()"
+         (mouseleave)="onMenuMouseLeave($event)">
+      <ng-container *ngIf="hasAllowedActions()">
+        <div class="allowed-actions-header">Schnellauswahl</div>
+        <button mat-menu-item
+                *ngFor="let actionOption of field.actions_allowed"
+                [ngClass]="getActionMenuClasses(actionOption)"
+                (click)="onQuickActionMenuClick(actionOption, $event)">
+          <mat-icon>{{ getActionIcon(actionOption) }}</mat-icon>
+          <span class="menu-item-title">{{ getActionLabel(actionOption) }}</span>
+        </button>
+        <div class="menu-section-divider"></div>
+      </ng-container>
+      <button mat-menu-item
+              [ngClass]="['allowed-action-item', 'allowed-action-item--dialog']"
+              (click)="onEditField($event)">
+        <mat-icon>open_in_new</mat-icon>
+        <span class="menu-item-title">Mapping-Dialog öffnen…</span>
+      </button>
+    </div>
+  </mat-menu>
 </div>

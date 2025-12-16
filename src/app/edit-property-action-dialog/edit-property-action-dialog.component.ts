@@ -44,6 +44,7 @@ export interface EditPropertyActionDialogData {
   mappingId: string;
   sources: { name: string }[];
   target: { name: string };
+  prefillAction?: MappingAction | null;
 }
 
 @Component({
@@ -91,7 +92,7 @@ export class EditPropertyActionDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: EditPropertyActionDialogData
   ) {
     // Initialize with current values (may be null if no action selected yet)
-    this.selectedAction = data.field.action ?? null;
+    this.selectedAction = data.prefillAction ?? data.field.action ?? null;
     this.targetField = data.field.other || '';
     this.fixedValue = data.field.fixed || '';
     this.remarkText = data.field.remark || '';

@@ -116,6 +116,7 @@ export class MappingDetailComponent implements OnInit {
   private savedTextFilter: string = '';
   private savedPageIndex: number = 0;
   private savedPageSize: number = 200;
+  private readonly quickActionDialogActions: MappingAction[] = ['copy_value_from', 'copy_value_to', 'copy_node_to', 'copy_node_from', 'fixed'];
 
   // Pagination
   totalLength: number = 0;
@@ -908,7 +909,7 @@ export class MappingDetailComponent implements OnInit {
     }
   });
 
-  openEditPropertyActionDialog(field: MappingField, fieldIndex: number): void {
+  openEditPropertyActionDialog(field: MappingField, fieldIndex: number, prefillAction?: MappingAction): void {
     // Save current filter state before opening dialog
     this.savedQuickFilter = this.currentQuickFilter;
     this.savedTextFilter = this.textFilterValue;
@@ -923,7 +924,8 @@ export class MappingDetailComponent implements OnInit {
       projectKey: this.projectKey,
       mappingId: this.mappingId,
       sources: this.filtered.sources,
-      target: this.filtered.target
+      target: this.filtered.target,
+      prefillAction: prefillAction ?? null
     };
 
     const dialogRef = this.dialog.open(EditPropertyActionDialogComponent, {
@@ -1102,6 +1104,32 @@ export class MappingDetailComponent implements OnInit {
           this.loadMapping(this.projectKey, this.mappingId);
         }
       });
+  }
+
+  onQuickActionSelected(event: { field: MappingField; action: MappingAction }): void {
+    if (!event || !event.field) {
+      return;
+    }
+
+    const action = event.action;
+    const targetField = event.field;
+
+    if (!action) {
+      this.openEditPropertyActionDialog(targetField, -1);
+      return;
+    }
+
+    if (this.quickActionRequiresDialog(action)) {
+      this.openEditPropertyActionDialog(targetField, -1, action);
+      return;
+    }
+
+    const updateRequest: MappingFieldUpdateRequest = { action };
+    this.updateFieldAction(targetField.name, updateRequest, false);
+  }
+
+  private quickActionRequiresDialog(action: MappingAction): boolean {
+    return this.quickActionDialogActions.includes(action);
   }
 
   // === RECOMMENDATION METHODS ===

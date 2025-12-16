@@ -54,6 +54,7 @@
     <tr
       *ngFor="let row of getVisibleTreeRows(); let i = index"
       [ngClass]="getClassificationCssClass(row.field?.action)"
+      [class.hover-locked]="quickMenuRowIndex === i"
     >
       <!-- Property Column with Tree Structure -->
       <td class="default-td" [matTooltip]="row.field?.name || row.node.label" matTooltipPosition="above">
@@ -161,7 +162,9 @@
             [compact]="true"
             [allFields]="fields"
             (applyRecommendation)="onApplyRecommendation($event)"
-            (editField)="onEditPropertyAction($event.field, i)">
+            (editField)="onEditPropertyAction($event.field, i)"
+            (quickActionSelected)="onQuickActionSelected($event)"
+            (menuVisibleChange)="onMenuVisibleChange($event, i)">
           </app-mapping-action-display>
         </div>
 
