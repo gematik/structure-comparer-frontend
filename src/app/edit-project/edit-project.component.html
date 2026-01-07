@@ -1,3 +1,9 @@
+<!-- Material Loading Overlay -->
+<div *ngIf="isLoading" class="loading-overlay">
+  <mat-spinner diameter="60" color="primary"></mat-spinner>
+  <div class="loading-text">Deleting...</div>
+</div>
+
 <div class="m-20">
   <h1>Overview for project "{{ projectName }}"</h1>
 
@@ -19,7 +25,9 @@
       </td>
       <td>
         <button mat-icon-button (click)="editPackage(this.package.display, this.projectKey, this.package.id )" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
-        
+        <button mat-icon-button (click)="deletePackageWithConfirm(package.id, package.display || package.name)" class="mat-icon-button-sm" title="Delete package">
+          <mat-icon>delete</mat-icon>
+        </button>
       </td>
     </tr>
   </table>
@@ -29,7 +37,7 @@
     <tr>
       <th class="col-wide">Comparison</th>
       <th class="col-narrow">Action
-        <button mat-icon-button (click)="openAddComparisonDialogAndSave(this.projectKey)"  title="Neuen Vergleich hinzufügen" class="mat-icon-button-sm">
+        <button mat-icon-button (click)="openAddComparisonDialogAndSave(this.projectKey)"  title="Add new comparison" class="mat-icon-button-sm">
           <mat-icon>add-box</mat-icon>
         </button>
       </th>
@@ -37,11 +45,12 @@
     <tr *ngFor="let comparison of comparisons" class="hover-highlight">
       <td class="clickable-cell" (click)="goToComparison(comparison.id)">{{ comparison.name }}</td>
       <td>
-        <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" > <mat-icon >remove_red_eye</mat-icon> </button>
-        <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" >
+        <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" title="View comparison"> 
+          <mat-icon>remove_red_eye</mat-icon> 
+        </button>
+        <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" title="Delete comparison">
           <mat-icon>delete</mat-icon>
         </button>
-        
       </td>
     </tr>
   </table>
@@ -59,11 +68,14 @@
     <tr *ngFor="let mapping of mappings" class="hover-highlight">
       <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>
       <td>
-        <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
+        <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm" title="Edit mapping">
           <mat-icon>edit</mat-icon> 
         </button>
-       
+        <button mat-icon-button (click)="deleteMappingWithConfirm(mapping.id, mapping.name)" class="mat-icon-button-sm" title="Delete mapping">
+          <mat-icon>delete</mat-icon>
+        </button>
       </td>
     </tr>
   </table>
+
 </div>

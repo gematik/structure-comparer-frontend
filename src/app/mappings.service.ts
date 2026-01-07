@@ -163,9 +163,10 @@ export class MappingsService {
    * @param mappingId The unique identifier of the mapping to delete
    * @returns Observable containing the deletion response
    */
-  deleteMapping(mappingId: string): Observable<any> {
+  deleteMapping(projectId: string, mappingId: string): Observable<any> {
+    const encodedProjectId = encodeURIComponent(projectId);
     const encodedMappingId = encodeURIComponent(mappingId);
-    return this.http.delete(`${this.baseUrl}/mappings/${encodedMappingId}`)
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectId}/mapping/${encodedMappingId}`)
       .pipe(catchError(this.handleError));
   }
 

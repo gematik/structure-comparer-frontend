@@ -30,7 +30,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
 import { firstValueFrom } from 'rxjs';
-import { MappingsListComponent } from '../mappings-list/mappings-list.component';
+
 import { MappingsService } from '../mappings.service';
 import { Comparison } from '../models/comparison.model';
 import { Mapping } from '../models/mapping.model';
@@ -42,14 +42,16 @@ import { ComparisonService } from '../comparison.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
 import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
+import { PackageService } from '../package.service';
 
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [MappingsListComponent, CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
+  imports: [CommonModule, FontAwesomeModule, MatButtonModule, MatIcon, MatProgressSpinnerModule],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })
@@ -65,6 +67,9 @@ export class EditProjectComponent implements OnInit {
   projectKey: string = '';
   projectData: any;
   
+  // Loading state for global operations
+  isLoading = false;  // Track global loading state
+  
   // FontAwesome icons for UI elements
   faEdit = faEdit;   // Icon fÃ¼r den Edit-Button
   faPlus = faPlus;   // Icon fÃ¼r den Plus-Button
@@ -76,7 +81,9 @@ export class EditProjectComponent implements OnInit {
     private projectService: ProjectService,
     private comparisonService: ComparisonService,
     private router: Router,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog,
+    private packageService: PackageService
+  ) { }
 
   /**
    * Initializes the component by loading project data
@@ -115,9 +122,9 @@ export class EditProjectComponent implements OnInit {
       try {
         const data = await firstValueFrom(this.projectService.reloadProjectData(projectKey));
         this.projectData = data;
-        console.log('Projekt geladen:', data);
+        console.log('Project loaded:', data);
       } catch (error) {
-        console.error('Fehler beim Laden des Projekts:', error);
+        console.error('Error loading project:', error);
       }
     }
     console.log('Project data:', this.projectData);
@@ -151,7 +158,7 @@ export class EditProjectComponent implements OnInit {
     
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Datei erhalten:', result);
+        console.log('File received:', result);
         // Add the uploaded package to the local list
         this.packages.push(result);
       }
@@ -172,44 +179,92 @@ export class EditProjectComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== null) {
-        console.log('Neuer Name:', result);
+        console.log('New name:', result);
         // API call zum Umbenennen would be implemented here
       }
     });
   }
 
   /**
-   * Deletes a comparison after user confirmation
-   * @param id The ID of the comparison to delete
+   * Deletes a package after user confirmation and refreshes the component
+   * Shows global loading overlay during deletion process
+   * @param packageId The ID of the package to delete
+   * @param packageName The display name of the package for confirmation message
    */
-  deleteComparisonWithConfirm(id: string) {
+  deletePackageWithConfirm(packageId: string, packageName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: 'Willst du diesen Vergleich wirklich lÃ¶schen?' }
+      data: { message: `Do you really want to delete the package "${packageName}"? IMPORTANT: When deleting this package, all associated data (e.g. the mappings and comparisons) will also be removed.` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.comparisonService.deleteComparison(this.projectKey, id).subscribe(() => {
-          // Remove the deleted comparison from the local array
-          this.comparisons = this.comparisons.filter(c => c.id !== id);
+        this.isLoading = true;
+        
+        this.packageService.deletePackage(this.projectKey, packageId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
+            this.isLoading = false;
+          }
         });
       }
     });
   }
 
   /**
-   * Deletes a comparison directly without confirmation dialog
-   * @param comparisonId The ID of the comparison to delete
+   * Deletes a mapping after user confirmation and refreshes the data
+   * Shows global loading overlay during deletion process
+   * @param mappingId The ID of the mapping to delete
+   * @param mappingName The name of the mapping for confirmation message
    */
-  deleteComparison(comparisonId: string) {
-    this.comparisonService.deleteComparison(this.projectKey, comparisonId).subscribe(
-      response => {
-        console.log('Comparison deleted successfully:', response);
-        // Remove the deleted comparison from the local array
-        this.comparisons = this.comparisons.filter(comparison => comparison.id !== comparisonId);
-      },
-      error => {
-        console.error('Error deleting comparison:', error);
-      });
+  deleteMappingWithConfirm(mappingId: string, mappingName: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: `Do you really want to delete the mapping "${mappingName}"?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.isLoading = true;
+        
+        this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting mapping:', error);
+            this.isLoading = false;
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Deletes a comparison after user confirmation
+   * Shows global loading overlay during deletion process
+   * @param id The ID of the comparison to delete
+   */
+  deleteComparisonWithConfirm(id: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: 'Do you really want to delete this comparison?' }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.isLoading = true;
+        
+        this.comparisonService.deleteComparison(this.projectKey, id).subscribe({
+          next: () => {
+            // Remove the deleted comparison from the local array
+            this.comparisons = this.comparisons.filter(c => c.id !== id);
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error('Error deleting comparison:', error);
+            this.isLoading = false;
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -263,6 +318,23 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
+   * Saves a new comparison to the project
+   * @param projectKey The key of the current project
+   * @param payload The comparison data to save
+   */
+  private saveComparison(projectKey: string, payload: any) {
+    this.comparisonService.createComparison(projectKey, payload).subscribe(
+      comparison => {
+        // Add the new comparison to the local list
+        this.comparisons.push(comparison);
+      },
+      error => {
+        console.error('Error creating comparison:', error);
+      }
+    );
+  }
+
+  /**
    * Maps dialog result to API payload format
    * @param result The result from the dialog
    * @returns Formatted payload for API calls
@@ -276,19 +348,25 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
-   * Saves a new comparison to the project
-   * @param projectKey The key of the current project
-   * @param payload The comparison data to save
+   * Refreshes project data without full page reload
+   * Uses global loading state for better UX
+   * Recommended approach for better performance
    */
-  private saveComparison(projectKey: string, payload: any) {
-    this.comparisonService.createComparison(projectKey, payload).subscribe(
-      comparison => {
-        // Add the new comparison to the local list
-        this.comparisons.push(comparison);
-      },
-      error => {
-        console.error('Fehler beim Erstellen des Vergleichs:', error);
-      }
-    );
+  private async refreshProjectData() {
+    try {
+      const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
+      this.projectData = data;
+      this.projectName = data.name;
+      this.mappings = data.mappings;
+      this.packages = data.packages;
+      this.comparisons = data.comparisons;
+      console.log('Project data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing project data:', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
+
+
 }
