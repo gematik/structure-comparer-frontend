@@ -46,6 +46,7 @@ const INHERITED_INCOMPATIBLE_META = {
 export const ACTION_CSS: Record<string, string> = {
   use: 'row-use',
   not_use: 'row-not-use',
+  delete: 'row-not-use',
   empty: 'row-empty',
   manual: 'row-manual',
   copy_value_from: 'row-copy-value-from',
@@ -158,6 +159,7 @@ const ACTION_LABELS: Record<ActionType, string> = {
   use: 'use',
   use_recursive: 'use_recursive',
   not_use: 'not_use',
+  delete: 'delete',
   empty: 'empty',
   copy_value_from: 'copy_value_from',
   copy_value_to: 'copy_value_to',

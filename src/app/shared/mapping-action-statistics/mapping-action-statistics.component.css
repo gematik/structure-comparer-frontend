@@ -190,6 +190,12 @@
   border-color: #e91e63;
 }
 
+.action-badge.action-chip--delete {
+  background-color: #f8bbd0;
+  color: #c2185b;
+  border-color: #e91e63;
+}
+
 .action-badge.action-chip--empty {
   background-color: #e1bee7;
   color: #7b1fa2;

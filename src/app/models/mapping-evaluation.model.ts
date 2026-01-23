@@ -24,6 +24,7 @@ export type ActionType =
   | 'use'
   | 'use_recursive'
   | 'not_use'
+  | 'delete'
   | 'empty'
   | 'copy_value_from'
   | 'copy_value_to'
