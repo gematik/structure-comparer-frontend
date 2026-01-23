@@ -8,113 +8,47 @@ body {
 
 table {
     width: 100%;
-    margin-top: 20px; 
+    margin-top: 20px;
     border-collapse: collapse;
 }
 
-
-.pill {
-  padding: 2px 10px;
-  font-size: 13px;
-  border-radius: 9999px;
-  font-weight: 500;
-  display: inline-block;
-  text-transform: capitalize;
-  white-space: nowrap;
+.evaluation-reasons {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
 }
 
-.copy_from {
-  background-color: #d0f0ff;
-  color: #004466;
+.reason-message {
+  font-size: 0.85em;
+  line-height: 1.3;
+  word-wrap: break-word;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
 }
 
-.copy_to {
-  background-color: #ffe6cc;
-  color: #663300;
+.reason-message.severity-info {
+  background-color: #e8f4fd;
+  color: #0c4a6e;
+  border-color: #0c4a6e;
 }
 
-.fixed {
-  background-color: #d9fdd3;
-  color: #1e4620;
-}
-/* Button-Styling */
-/* Zeilen-Hover-Styling */
-tr:hover {
-    background-color: #f5f5f5; /* Hintergrundfarbe beim Hovern */
-    border: 1px solid #007bff; /* Blaue Umrandung */
+.reason-message.severity-warning {
+  background-color: #fff6e6;
+  color: #7f4f00;
+  border-color: #d39e00;
 }
 
-
-
-button:hover {
-    background-color: #0056b3; /* Dunklere Farbe beim Überfahren mit der Maus */
+.reason-message.severity-error {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #c62828;
 }
 
-/* Button-Styling mit Icons */
-button.confirm {
-    background-color: #28a745; /* Grün für Übernehmen */
-    padding: 5px 10px;
-}
-
-button.confirm:hover {
-    background-color: #218838; /* Dunkleres Grün beim Hovern */
-}
-
-button.cancel {
-    background-color: #dc3545; /* Rot für Abbrechen */
-    padding: 5px 10px;
-}
-
-button.cancel:hover {
-    background-color: #c82333; /* Dunkleres Rot beim Hovern */
-}
-
-button i {
-    color: white; /* Weiße Icons */
-}
-
-tr:hover {
-    background-color: #f5f5f5; /* Hover-Effekt für Zeilen */
-}
-/* Farbstil für Zeilen basierend auf ihrer Klassifikation */
-.pill--use {
-  background-color: #E3FCEF;
-}
-
-.pill--not_use {
-  background-color: #FFEBE6;
-}
-
-.pill--extension {
-  background-color: #FFFAE6;
-}
-
-.pill--manual {
-  background-color: #B3F5FF;
-}
-
-.pill--other {
-  background-color: #FFBDAD;
-}
-
-.pill--empty {
-  background-color: #F0F0F0;
-}
-
-.pill--copy_from {
-  background-color: #D6EAF8;
-}
-
-.pill--copy_to {
-  background-color: #D1F2EB;
-}
-
-.pill--fixed {
-  background-color: #FCF3CF;
-}
-
-.pill--medication_service {
-  background-color: #FADBD8;
+.mapping-sub-text {
+  font-size: 0.8em;
+  color: #5f6368;
+  margin-top: 4px;
 }
 
 /* Stile für Wrapper der DataTable, falls verwendet */
@@ -124,7 +58,1638 @@ tr:hover {
 
 .wide-select {
     width: 100%;
-    min-width: 200px; 
+    min-width: 200px;
     max-width: 100%;
     overflow-x: auto; /* Ermöglicht horizontales Scrollen */
+}
+
+
+.modern-table {
+  table-layout: fixed;           /* verhindert, dass eine Spalte alles aufzieht */
+  width: 100%;
+}
+
+.modern-table th,
+.modern-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;       /* hübsches Kürzen mit … */
+  vertical-align: top;
+  white-space: nowrap;           /* Basis: einzeilig */
+}
+
+/* Referenz-Typen und Mapping-Remark dürfen umbrechen */
+.modern-table td .ref-types,
+.mapping-remark {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Enhanced ref-types styling from Tree-View */
+.ref-types {
+  white-space: normal;
+  line-height: 1.25;
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+/* Profile content layout */
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Field type styling (displayed under field name) */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Muted text styling (for extensions) */
+.muted {
+  font-size: 0.85em;
+  color: #6c757d;
+}
+
+/* Reference warning indicator */
+.ref-warning {
+  color: #ff9800;
+  font-size: 1.1em;
+  cursor: help;
+  margin-left: 2px;
+}
+
+/* --- Spaltenbreiten ---------------------------------------------------- */
+/* 1. Spalte: Property – bewusst breiter, damit Feldnamen lesbar bleiben */
+.modern-table th:nth-child(1),
+.modern-table td:nth-child(1) {
+  width: 50rem;
+  max-width: 50rem;
+}
+
+/* 2. Spalte: Profile – kompakter ohne ref-types */
+.modern-table th:nth-child(2),
+.modern-table td:nth-child(2) {
+  width: 8rem;          /* Reduziert da keine ref-types mehr angezeigt */
+  max-width: 8rem;
+}
+
+/* 3. Spalte: Profile – kompakter ohne ref-types */
+.modern-table th:nth-child(3),
+.modern-table td:nth-child(3) {
+  width: 8rem;          /* Reduziert da keine ref-types mehr angezeigt */
+  max-width: 8rem;
+}
+
+/* 4.-6. Spalte: Weitere Profile-Spalten – auch kompakter */
+.modern-table th:nth-child(4),
+.modern-table td:nth-child(4),
+.modern-table th:nth-child(5),
+.modern-table td:nth-child(5),
+.modern-table th:nth-child(6),
+.modern-table td:nth-child(6) {
+  width: 8rem;
+  max-width: 8rem;
+}
+
+/* Letzte Spalte: Compatibility – schmal */
+.modern-table th:last-child,
+.modern-table td:last-child {
+  width: 30rem;
+  max-width: 30rem;
+  text-align: left;
+}
+
+/* Kardinalitäts-Badge */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Mapping-Spalte bleibt kompakt (aus deiner letzten Anpassung) */
+.modern-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.modern-table th,
+.modern-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+/* Kardinalitäts-/Remark-Text darf umbrechen, wenn nötig */
+.modern-table td .ref-types,
+.mapping-remark {
+  white-space: normal;
+  line-height: 1.25;
+}
+
+/* Kardinalität (bereits vorhanden; lassen wir) */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  margin-right: 4px; /* Abstand zu MS-Badge */
+  white-space: nowrap;
+}
+
+/* Must-Support-Badge */
+.badge-ms {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #C62828; /* Rot (Material Red 800) */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 2px;
+  cursor: default;
+}
+
+/* Type-Badge */
+.badge-type {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Field type unter dem Feldnamen */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Mapping Result Display */
+.mapping-result {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 0.85em;
+  border-left: 4px solid #6c757d; /* Default left border */
+  transition: all 0.2s ease;
+}
+
+.mapping-result-content {
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Specific styles for different mapping actions based on content */
+.mapping-result:has(.mapping-result-content:contains("Kopiert von")),
+.mapping-result:has(.mapping-result-content:contains("Kopiert zu")) {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  border-left-color: #2196f3;
+}
+
+.mapping-result:has(.mapping-result-content:contains("Fester Wert")) {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+  border-left-color: #ff9800;
+}
+
+.mapping-result:has(.mapping-result-content:contains("Wird übernommen")) {
+  background-color: #e8f5e8;
+  border-color: #4caf50;
+  border-left-color: #4caf50;
+}
+
+.mapping-result:has(.mapping-result-content:contains("nicht verwendet")),
+.mapping-result:has(.mapping-result-content:contains("geleert")) {
+  background-color: #ffebee;
+  border-color: #f44336;
+  border-left-color: #f44336;
+}
+
+.mapping-result:has(.mapping-result-content:contains("Manuell")),
+
+/* Fallback styles using different approach */
+.mapping-result[data-action="copy_value_from"],
+.mapping-result[data-action="copy_value_to"] {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+}
+
+.mapping-result[data-action="copy_node_to"],
+.mapping-result[data-action="copy_node_from"] {
+  background-color: #e0f2f1;
+  border-left-color: #009688;
+}
+
+.mapping-result[data-action="fixed"] {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+}
+
+.mapping-result[data-action="use"] {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+}
+
+.mapping-result[data-action="not_use"],
+.mapping-result[data-action="empty"] {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+}
+
+.mapping-result[data-action="manual"],
+
+/* Different styles for different mapping types */
+.mapping-result .copy-value-from {
+  color: #0d6efd;
+}
+
+.mapping-result .copy-value-to {
+  color: #198754;
+}
+
+.mapping-result .fixed-value {
+  color: #fd7e14;
+}
+
+.mapping-result .empty-value {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.mapping-result .use-value {
+  color: #198754;
+}
+
+/* Improved mapping remark styling */
+.mapping-remark {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-style: italic;
+  color: #856404;
+  line-height: 1.3;
+}
+
+/* Consolidated Mapping Display */
+.mapping-consolidated {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapping-header {
+  display: flex;
+  align-items: center;
+}
+
+.mapping-details {
+  font-size: 0.85em;
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #6c757d;
+  margin-top: 4px;
+}
+
+/* Action-specific styling for consolidated display */
+.mapping-consolidated[data-action="copy_value_from"] .mapping-details,
+.mapping-consolidated[data-action="copy_value_to"] .mapping-details {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #1565c0;
+}
+
+.mapping-consolidated[data-action="copy_node_to"] .mapping-details,
+.mapping-consolidated[data-action="copy_node_from"] .mapping-details {
+  background-color: #e0f2f1;
+  border-left-color: #009688;
+  color: #00695c;
+}
+
+.mapping-consolidated[data-action="fixed"] .mapping-details {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+  color: #e65100;
+}
+
+.mapping-consolidated[data-action="use"] .mapping-details {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.mapping-consolidated[data-action="not_use"] .mapping-details,
+.mapping-consolidated[data-action="empty"] .mapping-details {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+.mapping-consolidated[data-action="manual"] .mapping-details,
+
+
+.mapping-consolidated[data-action="other"] .mapping-details {
+  background-color: #fce4ec;
+  border-left-color: #e91e63;
+  color: #ad1457;
+}
+
+/* Clickable mapping cell */
+.clickable-mapping-cell {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickable-mapping-cell:hover {
+  background-color: #f5f5f5;
+}
+
+.clickable-mapping-cell:active {
+  background-color: #e8e8e8;
+}
+
+/* Enhanced Evaluation Styles */
+.evaluation-summary {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.evaluation-summary h3 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.25rem;
+}
+
+.summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  min-width: 100px;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #495057;
+}
+
+.stat-item.compatible .stat-value {
+  color: #28a745;
+}
+
+.stat-item.warning .stat-value {
+  color: #ffc107;
+}
+
+.stat-item.incompatible .stat-value {
+  color: #dc3545;
+}
+
+.stat-item.action-resolved .stat-value {
+  color: #17a2b8;
+}
+
+.stat-item.action-mitigated .stat-value {
+  color: #fd7e14;
+}
+
+.stat-item.needs-attention .stat-value {
+  color: #e83e8c;
+}
+
+/* Enhanced Classification Pills */
+.pill--action_resolved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--action_mitigated {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.pill--action-resolved {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+.pill--action-mitigated {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Evaluation Indicators */
+.evaluation-indicators {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+
+.issue-count, .warning-count, .recommendation-count {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  cursor: help;
+}
+
+.issue-count {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-color: #f1aeb5;
+}
+
+.warning-count {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffeaa7;
+}
+
+.recommendation-count {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-color: #b8daff;
+}
+
+/* Enhanced View Toggle Button */
+.view-toggle {
+  margin-bottom: 15px;
+}
+
+.evaluation-error {
+  margin-top: 5px;
+}
+
+.evaluation-error .text-muted {
+  color: #dc3545;
+  font-size: 0.8rem;
+}
+
+/* Enhanced tooltip styles */
+.enhanced-tooltip {
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.enhanced-tooltip .issue-section {
+  margin-bottom: 10px;
+}
+
+.enhanced-tooltip .issue-section:last-child {
+  margin-bottom: 0;
+}
+
+.enhanced-tooltip .issue-title {
+  font-weight: bold;
+  color: #495057;
+}
+
+.enhanced-tooltip .issue-list {
+  margin: 5px 0;
+  padding-left: 15px;
+}
+
+.enhanced-tooltip .recommendation-section {
+  background-color: #f8f9fa;
+  padding: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.status-compatible {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-solved {
+  background-color: #cce5f0;
+  color: #0c5460;
+  border: 1px solid #b6d7ff;
+}
+
+.status-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.status-incompatible {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f1aeb5;
+}
+
+.status-incompatible-inherited {
+  background-color: #f8d7da; /* Same red as incompatible */
+  color: #721c24;
+  border: 1px solid #f1aeb5;
+  font-style: italic; /* Italic to distinguish, plus ↓ icon in label */
+}
+
+/* Status column width */
+/* Diese Definitionen wurden nach oben zu den Profile-Spalten verschoben */
+
+/* Status Summary */
+.status-summary {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.status-summary h3 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.25rem;
+}
+
+.status-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.status-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: white;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  min-width: 120px;
+}
+
+.status-stat-item.status-completed {
+  border-color: #c3e6cb;
+  background-color: #d4edda;
+}
+
+.status-stat-item.status-resolved {
+  border-color: #b6d7ff;
+  background-color: #cce5f0;
+}
+
+.status-stat-item.status-mitigated {
+  border-color: #ffeaa7;
+  background-color: #fff3cd;
+}
+
+.status-stat-item.status-in-progress {
+  border-color: #ced4da;
+  background-color: #e2e3e5;
+}
+
+.status-stat-item.status-needs-action {
+  border-color: #f1aeb5;
+  background-color: #f8d7da;
+}
+
+/* Evaluation Details */
+.evaluation-details {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.evaluation-badges {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.detail-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #495057;
+}
+
+.issues-section {
+  background-color: #fff5f5;
+  border-left: 3px solid #f56565;
+}
+
+.warnings-section {
+  background-color: #fffdf0;
+  border-left: 3px solid #ffc107;
+}
+
+.recommendations-section {
+  background-color: #f0f8ff;
+  border-left: 3px solid #17a2b8;
+}
+
+.issue-list, .warning-list, .recommendation-list {
+  margin: 0;
+  padding-left: 16px;
+  list-style-type: disc;
+}
+
+.issue-item, .warning-item, .recommendation-item {
+  margin-bottom: 4px;
+  color: #495057;
+}
+
+.issue-message {
+  font-weight: 500;
+}
+
+.resolved-by {
+  font-style: italic;
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.severity-compatible {
+  color: #28a745;
+}
+
+.severity-warning {
+  color: #ffc107;
+}
+
+.severity-incompatible {
+  color: #dc3545;
+}
+
+.severity-action_resolved {
+  color: #17a2b8;
+}
+
+.severity-action_mitigated {
+  color: #fd7e14;
+}
+
+/* Compact table layout when details are shown */
+.modern-table.detailed-view th:nth-child(1),
+.modern-table.detailed-view td:nth-child(1) {
+  width: 25rem;
+  max-width: 25rem;
+}
+
+.modern-table.detailed-view th:nth-child(3),
+.modern-table.detailed-view td:nth-child(3) {
+  width: 35rem;
+  max-width: 35rem;
+}
+
+/* Unified Mapping Overview */
+.mapping-overview {
+  margin: 20px 0;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 1px solid #dee2e6;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.mapping-overview h3 {
+  margin: 0 0 20px 0;
+  color: #495057;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+/* Mapping Information Section */
+.mapping-info-section {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.mapping-info-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.mapping-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  color: #495057;
+  font-size: 0.95rem;
+}
+
+.info-value a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.info-value a:hover {
+  text-decoration: underline;
+}
+
+.multiple-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-draft {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.status-retired {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Overview Cards */
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.overview-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Clickable Cards */
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+
+.clickable-card.active {
+  border-width: 3px;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.clickable-card.active.total-card {
+  border-color: #495057;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.clickable-card.active.success-card {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.clickable-card.active.resolved-card {
+  border-color: #17a2b8;
+  background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.clickable-card.active.attention-card {
+  border-color: #ffc107;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+}
+
+.clickable-card.active.danger-card {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.clickable-card.active.mitigated-card {
+  border-color: #f39c12;
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.card-icon {
+  font-size: 1.2rem;
+}
+
+.card-title {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.card-value-filtered {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.card-subtitle {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Card Types */
+.total-card {
+  border-color: #6c757d;
+}
+
+.total-card .card-value {
+  color: #495057;
+}
+
+.success-card {
+  border-color: #28a745;
+}
+
+.success-card .card-value {
+  color: #28a745;
+}
+
+.resolved-card {
+  border-color: #17a2b8;
+}
+
+.resolved-card .card-value {
+  color: #17a2b8;
+}
+
+.mitigated-card {
+  border-color: #f39c12;
+}
+
+.mitigated-card .card-value {
+  color: #f39c12;
+}
+
+.attention-card {
+  border-color: #ffc107;
+}
+
+.attention-card .card-value {
+  color: #e0a800;
+}
+
+.danger-card {
+  border-color: #dc3545;
+}
+
+.danger-card .card-value {
+  color: #dc3545;
+}
+
+.progress-card {
+  border-color: #ffc107;
+}
+
+.progress-card .card-value {
+  color: #e0a800;
+}
+
+/* Progress Bar */
+.progress-section {
+  margin-bottom: 25px;
+}
+
+.progress-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.progress-bar {
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.progress-segment {
+  transition: all 0.3s ease;
+  cursor: help;
+}
+
+.progress-segment.compatible {
+  background: linear-gradient(90deg, #28a745, #20c997);
+}
+
+.progress-segment.solved {
+  background: linear-gradient(90deg, #17a2b8, #20c997);
+}
+
+.progress-segment.warning {
+  background: linear-gradient(90deg, #ffc107, #fd7e14);
+}
+
+.progress-segment.incompatible {
+  background: linear-gradient(90deg, #dc3545, #e74c3c);
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.filter-info {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Quick Filters */
+.quick-filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 5px;
+}
+
+.filter-btn {
+  border-radius: 20px;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  transform: scale(1.05);
+}
+
+.filter-btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Tree View Styles */
+.view-mode-toggle {
+  display: flex;
+  gap: 5px;
+  margin-right: 10px;
+}
+
+.view-mode-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  color: #495057;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.view-mode-toggle button:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.view-mode-toggle button.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.tree-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.tree-controls button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid #dee2e6;
+  background-color: white;
+  color: #495057;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.tree-controls button:hover {
+  background-color: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+/* Tree Elements within Table */
+.tree-property-column {
+  position: relative;
+  vertical-align: top;
+}
+
+/* Tree cell container */
+.tree-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  min-height: 32px;
+}
+
+/* Depth indicator bars */
+.tree-depth {
+  display: flex;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.tree-depth-bar {
+  width: 12px;
+  height: 20px;
+  border-left: 1px solid #dee2e6;
+  margin-right: 2px;
+  position: relative;
+}
+
+.tree-depth-bar:last-child {
+  margin-right: 6px;
+}
+
+/* Toggle button for expandable nodes */
+.tree-toggle-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  margin-right: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #6c757d;
+  font-family: monospace;
+}
+
+.tree-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Spacer for leaf nodes without toggle button */
+.tree-toggle-spacer {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* Node icon */
+.tree-node-icon {
+  margin-right: 6px;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Node label */
+.tree-node-label {
+  font-weight: 500;
+  color: #495057;
+  word-break: break-word;
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* Branch nodes get slightly different styling */
+.tree-cell:has(.tree-toggle-btn) .tree-node-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+
+/* Hover effects */
+.tree-property-column:hover .tree-toggle-btn {
+  background-color: #e9ecef;
+}
+
+.tree-property-column:hover .tree-node-label {
+  color: #212529;
+}
+
+/* Tree expansion animation */
+.tree-toggle-btn mat-icon {
+  transition: transform 0.2s ease;
+}
+
+
+.tree-toggle-btn[aria-expanded="true"] mat-icon {
+  transform: rotate(90deg);
+}
+
+.tree-toggle-btn[aria-expanded="false"] mat-icon {
+  transform: rotate(0deg);
+}
+
+/* ===== Recommendation Styles ===== */
+.has-recommendation {
+  background-color: #fffef7 !important; /* Subtle yellow tint */
+}
+
+.recommendation-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px;
+}
+
+/* Recommendation row - horizontal layout for chip and badges */
+.recommendation-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Base recommendation chip style - matches action chips but with dashed border */
+.recommendation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  opacity: 0.7; /* Faded appearance for recommendations */
+  transition: opacity 0.2s ease;
+}
+
+.recommendation-chip:hover {
+  opacity: 0.9; /* Slightly less faded on hover */
+}
+
+.recommendation-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.recommendation-chip .chip-label {
+  font-weight: 600;
+}
+
+/* Action-specific recommendation colors (same as actions but faded with dashed border) */
+.recommendation-chip--use {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.recommendation-chip--use_recursive {
+  background-color: #81c784;
+  color: #1b5e20;
+  border-color: #388e3c;
+}
+
+.recommendation-chip--not_use {
+  background-color: #f8bbd0;
+  color: #c2185b;
+  border-color: #e91e63;
+}
+
+.recommendation-chip--empty {
+  background-color: #e1bee7;
+  color: #7b1fa2;
+  border-color: #9c27b0;
+}
+
+.recommendation-chip--copy_value_from,
+.recommendation-chip--copy_value_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.recommendation-chip--copy_node_to,
+.recommendation-chip--copy_node_from {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
+}
+
+.recommendation-chip--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
+.recommendation-chip--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffeb3b;
+}
+
+.recommendation-chip--medication_service {
+  background-color: #ffcdd2;
+  color: #d32f2f;
+  border-color: #f44336;
+}
+
+.apply-recommendation-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0;
+  margin: 0;
+  color: #388e3c; /* Green check color */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.apply-recommendation-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.apply-recommendation-btn:hover {
+  background-color: rgba(76, 175, 80, 0.1); /* Light green background on hover */
+  color: #2e7d32; /* Darker green on hover */
+}
+
+.apply-recommendation-btn:active {
+  background-color: rgba(76, 175, 80, 0.2);
+}
+
+/* Recommendation Detail Badges - same style as active detail badges but dashed */
+.recommendation-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
+  opacity: 0.7; /* Faded appearance for recommendations */
+}
+
+.recommendation-detail-badge .detail-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.recommendation-detail-badge .detail-text {
+  font-weight: 500;
+}
+
+/* Color variations for detail badges - matching active badges */
+.recommendation-detail-badge--copy_value_from,
+.recommendation-detail-badge--copy_value_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.recommendation-detail-badge--copy_node_to,
+.recommendation-detail-badge--copy_node_from {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
+}
+
+.recommendation-detail-badge--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
+/* System Remark for Recommendations */
+.recommendation-system-remark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  margin-top: 4px;
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border-left: 3px solid #2196f3;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.recommendation-system-remark .remark-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.recommendation-system-remark .remark-text {
+  flex: 1;
+  font-weight: 400;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .overview-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .quick-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-value {
+    font-size: 1.5rem;
+  }
+
+  .view-mode-toggle {
+    margin-bottom: 10px;
+  }
+
+  .view-mode-toggle button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .tree-controls {
+    flex-wrap: wrap;
+  }
+
+  .tree-leaf-row {
+    padding: 8px 4px;
+  }
+
+  .tree-property-cell,
+  .tree-profiles-cell,
+  .tree-compatibility-cell,
+  .tree-status-cell,
+  .tree-mapping-cell {
+    min-width: auto;
+  }
+
+  /* Compact recommendation display on mobile */
+  .recommendation-chip {
+    padding: 6px 12px;
+    font-size: 0.75em;
+  }
+
+  .recommendation-chip mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  .apply-recommendation-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .apply-recommendation-btn mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Inherited cardinality styling */
+.badge-cardinality {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.inherited-cardinality {
+  background: linear-gradient(135deg,
+    var(--background-color, #f0f0f0) 0%,
+    var(--background-color, #f0f0f0) 85%,
+    #e0e0e0 85%,
+    #e0e0e0 100%) !important;
+  border-style: dashed !important;
+  position: relative;
+}
+
+.inherited-icon {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+.badge-ms {
+  display: inline-block;
+  padding: 2px 5px;
+  background-color: #ff6b6b;
+  color: white;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+/* Incomplete mapping badge for StructureMap button */
+.incomplete-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background-color: #fff;
+  color: #f44336;
+  border-radius: 50%;
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+/* Row styling based on action type */
+.row-use {
+  background-color: #e8f5e9 !important;
+}
+
+.row-use-recursive {
+  background-color: #c8e6c9 !important;
+}
+
+.row-not-use {
+  background-color: #ffebee !important;
+}
+
+.row-empty {
+  background-color: #fce4ec !important;
+}
+
+.row-manual {
+  background-color: #fff8e1 !important;
+}
+
+.row-copy-value-from,
+.row-copy-value-to {
+  background-color: #e3f2fd !important;
+}
+
+.row-copy-node-to {
+  background-color: #e0f2f1 !important;
+}
+
+.row-fixed {
+  background-color: #fff3e0 !important;
+}
+
+.row-no-action {
+  background-color: #f5f5f5 !important;
+}
+
+.row-unknown {
+  background-color: #eceff1 !important;
 }

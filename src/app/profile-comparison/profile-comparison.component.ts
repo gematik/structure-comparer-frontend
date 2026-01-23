@@ -33,6 +33,7 @@ import { CommonModule } from '@angular/common';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-profile-comparison',
@@ -65,6 +66,52 @@ export class ProfileComparisonComponent implements OnInit {
 
 
   constructor(private route: ActivatedRoute, private comparisonService: ComparisonService) { this.projectKey = ""; this.comparisonId = ""; }
+  private readonly DEBUG = true;
+
+  dbg(...args: any[]) {
+    if (this.DEBUG) console.log('[ProfileComparison]', ...args);
+  }
+
+  dbgTable(label: string, rows: any[]) {
+    if (this.DEBUG && console.table) {
+      console.log(`[ProfileComparison] ${label}`);
+      console.table(rows);
+    }
+  }
+
+  norm(v: unknown): string {
+    return (v ?? '').toString().trim().toLowerCase();
+  }
+
+  onSort(e: Sort): void {
+    const data = [...(this.comparison?.fields ?? [])]; // Kopie, wichtig!
+
+    if (!e.active || !e.direction) {
+      this.dbg('Sort reset (no active/direction)');
+      // optional: ursprüngliche Reihenfolge wiederherstellen
+      this.comparison.fields = [...this.comparison.fields];
+      return;
+    }
+
+    const isAsc = e.direction === 'asc';
+    const compare = (a: string | number, b: string | number) =>
+      ((a ?? '') < (b ?? '') ? -1 : (a ?? '') > (b ?? '') ? 1 : 0) * (isAsc ? 1 : -1);
+
+    const sorted = data.sort((a: any, b: any) => {
+      switch (e.active) {
+        case 'name':
+          return compare(a?.name ?? '', b?.name ?? '');
+        case 'classification':
+          return compare(a?.classification ?? '', b?.classification ?? '');
+        default:
+          return 0;
+      }
+    });
+
+    this.dbg('Sort applied', { by: e.active, dir: e.direction, count: sorted.length });
+    this.dbgTable('First 10 after sort', sorted.slice(0, 10));
+    this.comparison.fields = sorted;
+  }
 
   ngOnInit(): void {
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
@@ -88,9 +135,16 @@ export class ProfileComparisonComponent implements OnInit {
       )
       .subscribe((comparison) => {
         console.log('comparison', comparison);
-        this.comparison = comparison;
-        this.originalFields = [...comparison.fields];
 
+        // initial: classification DESC
+        const sortedFields = [...(comparison.fields ?? [])].sort((a: any, b: any) => {
+          const A = (a?.classification ?? '').toString();
+          const B = (b?.classification ?? '').toString();
+          return A < B ? 1 : A > B ? -1 : 0; // DESC
+        });
+
+        this.comparison = { ...comparison, fields: sortedFields };
+        this.originalFields = [...sortedFields];
       });
 
   }
@@ -105,22 +159,45 @@ export class ProfileComparisonComponent implements OnInit {
   }
 
   getTooltipComparison(field: any): string {
-    
+
     return this.comparisonService.getClassificationDescription(field);
   }
-  
+
 
   toggleRow(index: number) {
     this.expandedRow = this.expandedRow === index ? null : index;
   }
 
   filterComparisonFields(event: Event): void {
-    const input = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    const raw = (event.target as HTMLInputElement)?.value ?? '';
+    const val = this.norm(raw);
 
-    this.comparison.fields = this.originalFields.filter(field => {
-      const name = field.name?.toLowerCase() ?? '';
-      const classification = field.classification?.toLowerCase() ?? '';
-      return name.includes(input) || classification.includes(input);
+    const totalBefore = this.originalFields.length;
+    const wantIncompatible = ['incompatible', 'incompat', 'incomp'].includes(val);
+
+    this.dbg('Filter input', { raw, val, wantIncompatible, totalBefore });
+
+    const filtered = this.originalFields.filter((field: any) => {
+      const name = this.norm(field?.name);
+      const cls = this.norm(field?.classification);
+
+      const matches = wantIncompatible ? (cls === 'incompatible') : (
+        !val || name.includes(val) || cls.includes(val)
+      );
+
+      if (this.DEBUG && val) {
+        console.groupCollapsed(`[filter] ${field?.name ?? '(no name)'} -> ${matches ? '✔' : '✘'}`);
+        console.log('name:', name);
+        console.log('classification:', cls);
+        console.log('wantIncompatible:', wantIncompatible);
+        console.groupEnd();
+      }
+
+      return matches;
     });
+
+    this.dbg('Filter result', { totalAfter: filtered.length });
+    this.dbgTable('First 10 filtered rows', filtered.slice(0, 10));
+    this.comparison.fields = filtered;
   }
 }

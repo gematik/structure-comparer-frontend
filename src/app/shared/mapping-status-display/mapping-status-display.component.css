@@ -1,0 +1,85 @@
+/* Mapping Status Pill */
+.mapping-status-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Base pill styles */
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+/* Status-specific styles */
+.status-compatible {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.status-incompatible {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #f44336;
+}
+
+.status-incompatible-inherited {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #f44336;
+  font-style: italic;
+}
+
+.status-warning {
+  background-color: #fff6e6;
+  color: #875f00;
+  border-color: #ffeb3b;
+}
+
+.status-solved {
+  background-color: #e0f3ff;
+  color: #0c4a6e;
+  border-color: #2196f3;
+}
+
+.status-ok {
+  background-color: #e3fcef;
+  color: #1b5e20;
+  border-color: #4caf50;
+}
+
+.status-resolved {
+  background-color: #e0f3ff;
+  color: #0c4a6e;
+  border-color: #2196f3;
+}
+
+.status-needs-action {
+  background-color: #fff3cd;
+  color: #7f4f00;
+  border-color: #ffc107;
+}
+
+.status-unknown {
+  background-color: #eceff1;
+  color: #37474f;
+  border-color: #999;
+}
+
+.status-evaluation-failed {
+  background-color: #ffebef;
+  color: #8a1c33;
+  border-color: #f44336;
+}

@@ -1,170 +1,555 @@
 <div class="m-20" *ngIf="filtered">
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px">
+    <button
+      mat-raised-button
+      [color]="getIncompleteFieldsCount() > 0 ? 'warn' : 'accent'"
+      (click)="downloadStructureMap()"
+      aria-label="Download StructureMap"
+      [matTooltip]="getIncompleteFieldsCount() > 0
+        ? 'Warnung: ' + getIncompleteFieldsCount() + ' Feld(er) ohne Aktion - Export als FHIR StructureMap'
+        : 'Export als FHIR StructureMap'"
+    >
+      <mat-icon>file_download</mat-icon>
+      StructureMap
+      <span *ngIf="getIncompleteFieldsCount() > 0" class="incomplete-badge">!</span>
+    </button>
+  </div>  <!-- Unified Mapping Status Overview -->
+  <div class="mapping-overview">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3>Mapping: {{ filtered.name }}</h3>
+      <button
+        mat-icon-button
+        (click)="openEditMappingDialog()"
+        aria-label="Mapping-Eigenschaften bearbeiten"
+        matTooltip="Mapping-Eigenschaften bearbeiten"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+    </div>
 
-    <h2>{{ filtered.name }}</h2>
-    <div style="display: flex; justify-content: space-between;">
-        <div style="flex: 1;">
-            <ng-container *ngIf="filtered.sources.length > 1; else singleSource">
-                <p>Source profile:</p>
-                <ul>
-                    <li *ngFor="let profile of filtered.sources">
-                        <a [href]="profile.url" target="_blank">{{ profile.name }}</a>
-                    </li>
-                </ul>
-            </ng-container>
-            <ng-template #singleSource>
-                <p>Source profile:
-                    <a [href]="filtered.sources[0].url" target="_blank">{{
-                        filtered.sources[0].name }}</a>
-                </p>
-            </ng-template>
-
-            <p>Target profile:
-                <a [href]="filtered.target.url" target="_blank">{{ filtered.target.name
-                    }}</a>
-            </p>
-            <p>Version: {{ filtered.version }}, Status: {{ filtered.status }}</p>
-            <p>Last updated on: {{ filtered.last_updated }}</p>
-            <button mat-raised-button color="primary" (click)="getStaticMappings()" aria-label="Download mapping">
-                Download mapping
-            </button>
+    <!-- General Mapping Information -->
+    <div class="mapping-info-section">
+      <h4>Mapping-Details</h4>
+      <div class="mapping-info-grid">
+        <div class="info-item">
+          <span class="info-label">Source Profile:</span>
+          <ng-container
+            *ngIf="filtered.sources.length > 1; else singleSourceInfo"
+          >
+            <div class="multiple-sources">
+              <span *ngFor="let profile of filtered.sources; let last = last">
+                <a [href]="profile.webUrl || profile.url" target="_blank">{{ profile.name }}</a>
+                <span *ngIf="!last">, </span>
+              </span>
+            </div>
+          </ng-container>
+          <ng-template #singleSourceInfo>
+            <a [href]="filtered.sources[0].webUrl || filtered.sources[0].url" target="_blank">{{
+              filtered.sources[0].name
+            }}</a>
+          </ng-template>
         </div>
+
+        <div class="info-item">
+          <span class="info-label">Target Profile:</span>
+          <a [href]="filtered.target.webUrl || filtered.target.url" target="_blank">{{
+            filtered.target.name
+          }}</a>
+
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Version:</span>
+          <span class="info-value">{{ filtered.version }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Status:</span>
+          <span
+            class="info-value status-badge"
+            [ngClass]="'status-' + filtered.status"
+            >{{ filtered.status }}</span
+          >
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Letztes Update:</span>
+          <span class="info-value">{{
+            filtered.last_updated | date : "dd.MM.yyyy HH:mm"
+          }}</span>
+        </div>
+      </div>
     </div>
 
-    <div style="flex: 1; display: flex; justify-content: flex-end;">
-        <mat-form-field fxFlex="40%">
-            <input matInput type="text" (keyup)="handleTable($event).filter()" placeholder="Filter" />
+    <!-- Summary Cards -->
+    <div class="overview-cards">
+      <!-- Total Fields Card -->
+      <div
+        class="overview-card total-card clickable-card"
+        (click)="clearQuickFilter()"
+        [class.active]="!currentQuickFilter"
+        matTooltip="Alle Felder anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Gesamt</span>
+        </div>
+        <div class="card-value">
+          {{ getTotalFieldCount() }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredFieldCount() }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Felder</div>
+      </div>
+
+      <!-- Compatible Card -->
+      <div
+        class="overview-card success-card clickable-card"
+        (click)="applyQuickFilter('compatible')"
+        [class.active]="currentQuickFilter === 'compatible'"
+        matTooltip="Nur kompatible Felder anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Kompatibel</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusSummary()?.compatible || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.compatible || 0 }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Keine Probleme</div>
+      </div>
+
+      <!-- Solved Card -->
+      <div
+        class="overview-card resolved-card clickable-card"
+        (click)="applyQuickFilter('solved')"
+        [class.active]="currentQuickFilter === 'solved'"
+        matTooltip="Nur gelöste Felder anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Gelöst</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusSummary()?.solved || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.solved || 0 }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Durch Aktionen behoben</div>
+      </div>
+
+      <!-- Warning Card -->
+      <div
+        class="overview-card attention-card clickable-card"
+        (click)="applyQuickFilter('warning')"
+        [class.active]="currentQuickFilter === 'warning'"
+        matTooltip="Nur Warnungen anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Warnung</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusSummary()?.warning || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.warning || 0 }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Überprüfung empfohlen</div>
+      </div>
+
+      <!-- Incompatible Card -->
+      <div
+        class="overview-card danger-card clickable-card"
+        (click)="applyQuickFilter('incompatible')"
+        [class.active]="currentQuickFilter === 'incompatible'"
+        matTooltip="Nur inkompatible Felder anzeigen"
+      >
+        <div class="card-header">
+          <span class="card-title">Inkompatibel</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusSummary()?.incompatible || 0 }}
+          <span
+            *ngIf="isFilteredView()"
+            class="card-value-filtered"
+          >
+            ({{ getFilteredStatusSummary()?.incompatible || 0 }} angezeigt)
+          </span>
+        </div>
+        <div class="card-subtitle">Aktion erforderlich</div>
+      </div>
+    </div>
+
+    <div
+      class="filter-info"
+      *ngIf="isFilteredView()"
+    >
+      Anzeige gefiltert: {{ getFilteredFieldCount() }} von {{ getTotalFieldCount() }} Feldern.
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-label">Fortschritt (Gesamt)</div>
+      <div class="progress-bar">
+        <div
+          class="progress-segment compatible"
+          [style.width.%]="getStatusPercentage('compatible')"
+          [matTooltip]="(getTotalStatusSummary()?.compatible || 0) + ' kompatibel'"
+        ></div>
+        <div
+          class="progress-segment solved"
+          [style.width.%]="getStatusPercentage('solved')"
+          [matTooltip]="(getTotalStatusSummary()?.solved || 0) + ' gelöst'"
+        ></div>
+        <div
+          class="progress-segment warning"
+          [style.width.%]="getStatusPercentage('warning')"
+          [matTooltip]="(getTotalStatusSummary()?.warning || 0) + ' Warnung'"
+        ></div>
+        <div
+          class="progress-segment incompatible"
+          [style.width.%]="getStatusPercentage('incompatible')"
+          [matTooltip]="(getTotalStatusSummary()?.incompatible || 0) + ' inkompatibel'"
+        ></div>
+      </div>
+      <div class="progress-text">
+        {{ getTotalCompletionPercentage() }}% bearbeitet
+      </div>
+    </div>
+  </div>
+
+  <!-- View Mode and Filter Controls -->
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      gap: 16px;
+    "
+  >
+    <div style="display: flex; gap: 10px; align-items: center">
+      <!-- Recursive Resolution Toggle -->
+      <div class="resolution-controls" style="display: flex; align-items: center; gap: 12px; margin-right: 16px;">
+        <mat-slide-toggle
+          [(ngModel)]="showResolvedFields"
+          (change)="toggleResolvedView()"
+          [disabled]="isLoadingResolved"
+          color="primary">
+          Referenzen auflösen
+        </mat-slide-toggle>
+
+        <mat-form-field *ngIf="showResolvedFields" appearance="outline" style="width: 100px; margin: 0;">
+          <mat-label>Max. Tiefe</mat-label>
+          <mat-select [(ngModel)]="maxResolutionDepth" (selectionChange)="loadResolvedFields()">
+            <mat-option [value]="1">1</mat-option>
+            <mat-option [value]="2">2</mat-option>
+            <mat-option [value]="3">3</mat-option>
+            <mat-option [value]="5">5</mat-option>
+          </mat-select>
         </mat-form-field>
-    </div>
-    <div style="max-height: 600px; overflow: auto;">
-        <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="filtered?.fields?.length"
-            matSort (matSortChange)="handleTable($event).sorter()">
-            <thead>
-                <tr>
-                    <th class="default-th" mat-sort-header="name">Property</th>
 
-                    <ng-container>
-                        <th class="default-th" mat-sort-header="remark">Mapping</th>
-                    </ng-container>
-                    <th class="default-th" mat-sort-header="compatibility">Compatibility</th>
-                </tr>
-            </thead>
-            <tbody>
-                <ng-container *ngFor="let field of filtered.fields; let i = index">
-                    <tr>
-                        <td class="default-td">
-                            {{ field.name }}
-                            <ng-container *ngIf="field.extension">
-                                <br />({{ field.extension }})
-                            </ng-container>
-                        </td>
+        <mat-spinner *ngIf="isLoadingResolved" diameter="20"></mat-spinner>
+      </div>
 
-                        <td class="default-td" (mouseenter)="handleEdit(i).startHover()"
-                            (mouseleave)="handleEdit().stopHover()">
-                            <span *ngIf="editingIndex !== i" class="pill" [ngClass]="'pill--' + field.action"
-                                [matTooltip]="getRemarkTooltip(field)" matTooltipPosition="above">{{
-                                getDescriptionForMapping(field.action)
-                                }}</span>
-                            <button mat-button *ngIf="hoverIndex === i && editingIndex !== i"
-                                (click)="handleEdit(i).startEdit()">
-                                Ändern
-                            </button>
-                            <div *ngIf="editingIndex === i">
-                                <div>Aktueller Stand: {{ getDescriptionForMapping(field.action) }}</div>
-                                <select [(ngModel)]="field.remark">
-                                    <option *ngFor="let classification of field.actions_allowed"
-                                        [value]="classification">
-                                        {{ getClassificationInstruction(classification) }}
-                                    </option>
-                                </select>
-
-                                <div *ngIf="field.remark === 'copy_from'">
-                                    <span>Wird aus&nbsp;</span>
-                                    <select [(ngModel)]="field.targetField">
-                                        <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.name">
-                                            {{ availableField.name }}
-                                        </option>
-                                    </select>
-                                    <span>&nbsp;übernommen</span>
-                                </div>
-                                <div *ngIf="field.remark === 'copy_to'">
-                                    <span>Wird in&nbsp;</span>
-                                    <select [(ngModel)]="field.targetField">
-                                        <option *ngFor="let availableField of availableFields"
-                                            [value]="availableField.name">
-                                            {{ availableField.name }}
-                                        </option>
-                                    </select>
-                                    <span>&nbsp;übernommen</span>
-                                </div>
-                                <div *ngIf="field.remark === 'fixed'">
-                                    <span>Wird fix auf&nbsp;</span>
-                                    <input type="text" [(ngModel)]="field.fixedValue" />
-                                    <span>&nbsp;gesetzt</span>
-                                </div>
-                                <button mat-button (click)="confirmChanges(field)" class="mat-icon-button-sm confirm">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                                <button mat-button class="mat-icon-button-sm cancel"
-                                    (click)="handleEdit().cancelEdit()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="default-td">
-                            <div
-                                style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                <span class="pill" [ngClass]="'pill--' + field.classification"
-                                    [matTooltipHideDelay]="1000" [matTooltip]="getTooltipComparison(field)">{{
-                                    field.classification
-                                    }}</span>
-
-                                <button class="button-expand-table" (click)="toggleRow(i)" aria-label="Toggle Row">
-                                    <mat-icon>{{ expandedRow === i ? 'expand_less' : 'expand_more' }}</mat-icon>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr *ngIf="expandedRow === i">
-                        <td [attr.colspan]="2 + filtered.sources.length">
-                            <div class="expanded-detail" style="padding: 0 16px;">
-
-                                <table class="inner-detail-table" style="width: 100%; margin-top: 10px;">
-                                    <thead>
-                                        <tr>
-                                            <th *ngFor="let profile of filtered.sources.concat(filtered.target)">{{
-                                                profile.name }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td *ngFor="let profile of filtered.sources.concat(filtered.target)">
-                                                <ng-container *ngIf="field.profiles[profile.key] as p">
-                                                    Min: {{ p.min }}<br>
-                                                    Max: {{ p.max }}<br>
-                                                    Must-Support: {{ p.must_support }}
-                                                    <ng-container *ngIf="p.ref_types">
-                                                        <br>Reference Types: {{ p.ref_types.join(', ') }}
-                                                    </ng-container>
-                                                </ng-container>
-                                                <ng-container *ngIf="!field.profiles[profile.key]">
-                                                    Unavailable
-                                                </ng-container>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-container>
-            </tbody>
-        </table>
+      <!-- View Mode Toggle -->
+      <div class="view-mode-toggle">
+        <button
+          mat-button
+          [class.active]="viewMode === 'flat'"
+          (click)="viewMode = 'flat'"
+          matTooltip="Flache Tabellensicht"
+        >
+          <mat-icon>view_list</mat-icon>
+          Tabelle
+        </button>
+        <button
+          mat-button
+          [class.active]="viewMode === 'tree'"
+          (click)="viewMode = 'tree'"
+          matTooltip="Hierarchische Baumsicht"
+        >
+          <mat-icon>account_tree</mat-icon>
+          Baum
+        </button>
+      </div>
     </div>
 
+    <!-- Mapping Action Statistics with Filter -->
+    <app-mapping-action-statistics
+      [fields]="original?.fields || []"
+      [selectedActions]="currentActionFilter"
+      [selectedRecommendations]="currentRecommendationFilter"
+      [textFilterValue]="textFilterValue"
+      (actionsSelected)="applyActionFilter($event)"
+      (recommendationsSelected)="applyRecommendationFilter($event)"
+      (textFilterChanged)="onTextFilterChanged($event)"
+    >
+      <!-- Filter Settings projected into the statistics component -->
+      <app-filter-settings
+        filterSettings
+        [settings]="filterSettings"
+        (settingsChanged)="onFilterSettingsChanged($event)"
+      ></app-filter-settings>
+    </app-mapping-action-statistics>
+  </div>
 
-    <mat-paginator (page)="handleTable($event).paginator()" [length]="totalLength" [pageSize]="pageSize"
-        [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex"
-        aria-label="Select page">
-    </mat-paginator>
+  <!-- Unresolved References Warning -->
+  <mat-card *ngIf="showResolvedFields && unresolvedReferences.length > 0" class="warning-card" style="margin-top: 16px; background-color: #fff3e0;">
+    <mat-card-header>
+      <mat-icon style="color: #ff9800; margin-right: 8px;">warning</mat-icon>
+      <mat-card-title style="font-size: 16px;">Nicht aufgelöste Referenzen</mat-card-title>
+    </mat-card-header>
+    <mat-card-content style="margin-top: 12px;">
+      <p style="margin-bottom: 8px;">Einige Profil-Referenzen konnten nicht aufgelöst werden:</p>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li *ngFor="let ref of unresolvedReferences.slice(0, 5)" style="margin-bottom: 4px;">
+          <code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px;">{{ ref.field_path }}</code>
+          → <span style="color: #666;">{{ ref.reference_url }}</span>
+          <span style="color: #999; font-size: 12px;">({{ ref.reference_type }})</span>
+        </li>
+        <li *ngIf="unresolvedReferences.length > 5" style="color: #666;">
+          ... und {{ unresolvedReferences.length - 5 }} weitere
+        </li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Resolution Statistics -->
+  <div *ngIf="showResolvedFields && resolutionStats" class="resolution-stats" style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: #666;">
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">layers</mat-icon>
+      {{ resolutionStats.total_fields }} Felder
+    </span>
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px; color: #4caf50;">link</mat-icon>
+      {{ resolutionStats.resolved_references }} aufgelöst
+    </span>
+    <span *ngIf="resolutionStats.unresolved_references > 0" style="display: flex; align-items: center; gap: 4px; color: #ff9800;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">link_off</mat-icon>
+      {{ resolutionStats.unresolved_references }} nicht aufgelöst
+    </span>
+    <span style="display: flex; align-items: center; gap: 4px;">
+      <mat-icon style="font-size: 18px; height: 18px; width: 18px;">folder_open</mat-icon>
+      {{ resolutionStats.profiles_loaded?.length || 0 }} Profile geladen
+    </span>
+  </div>
+
+  <div style="overflow: auto; margin-top: 10px;">
+    <!-- Flat Table View -->
+    <table
+      id="resultsTable"
+      class="sticky-table modern-table detailed-view"
+      style="width: 100%"
+      *ngIf="viewMode === 'flat' && filtered?.fields?.length"
+      matSort
+      [matSortActive]="'status'"
+      [matSortDirection]="'desc'"
+      (matSortChange)="handleTable($event).sorter()"
+    >
+      <thead>
+        <tr>
+          <th class="default-th" mat-sort-header="name">Property</th>
+
+          <!-- Dynamische Profilspalten (alle Sources + Target) -->
+          <ng-container *ngFor="let p of profileColumns">
+            <th class="default-th" [mat-sort-header]="'profile-' + p.key">
+              {{ p.name }}
+            </th>
+          </ng-container>
+
+          <!-- Status Column -->
+          <th class="default-th" mat-sort-header="status">Status</th>
+
+          <!-- Mapping-Aktion (unverändert) -->
+          <th class="default-th" mat-sort-header="remark">Mapping</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr
+          *ngFor="let field of filtered.fields; let i = index"
+          [ngClass]="getClassificationCssClass(field.action)"
+        >
+          <!-- Property -->
+          <td class="default-td" [matTooltip]="field.name" matTooltipPosition="above">
+            {{ field.name }}
+            <ng-container *ngIf="getFieldTypes(field)">
+              <br /><span class="field-type">{{ getFieldTypes(field) }}</span>
+            </ng-container>
+            <ng-container *ngIf="field.extension">
+              <br /><span class="muted">({{ field.extension }})</span>
+            </ng-container>
+          </td>
+          <!-- Profilspalten: min..max, MS, Ref-Typen oder — -->
+          <ng-container *ngFor="let p of profileColumns">
+            <td class="default-td">
+              <app-profile-badges
+                [profile]="field.profiles?.[p.key]"
+                [refTooltip]="getRefTooltip(field, p.key)"
+                [showRefWarning]="field.profiles?.[p.key]?.ref_types?.length && hasRefDifferences(field)"
+              ></app-profile-badges>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <td class="default-td">
+            <app-mapping-status-display
+              [field]="field"
+              [showTooltip]="true">
+            </app-mapping-status-display>
+
+            <div
+              *ngIf="field.evaluation?.reasons?.length"
+              class="evaluation-reasons"
+            >
+              <div
+                *ngFor="let reason of field.evaluation?.reasons"
+                class="reason-message"
+                [ngClass]="'severity-' + reason.severity"
+              >
+                {{ reason.message_key }}
+              </div>
+            </div>
+          </td>
+
+          <!-- Mapping-Aktion (unverändert + 'manual' Remark unten) -->
+          <td
+            class="default-td clickable-mapping-cell"
+            [class.has-recommendation]="hasRecommendation(field) && !field.action"
+            (click)="editingIndex !== i && openEditPropertyActionDialog(field, i)"
+          >
+            <div *ngIf="editingIndex !== i">
+              <!-- Use unified mapping action display component with recommendation support -->
+              <app-mapping-action-display
+                [field]="field"
+                [compact]="true"
+                [allFields]="mapping?.fields"
+                (applyRecommendation)="applyRecommendation(field, $event.index, $event.event)"
+                (editField)="openEditPropertyActionDialog($event.field, i)"
+                (quickActionSelected)="onQuickActionSelected($event)">
+              </app-mapping-action-display>
+            </div>
+
+            <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">
+              <div>
+                Aktueller Stand: {{ getDescriptionForMapping(field.action) }}
+              </div>
+
+              <select [(ngModel)]="field.remark">
+                <option
+                  *ngFor="let classification of field.actions_allowed"
+                  [value]="classification"
+                >
+                  {{ getClassificationInstruction(classification) }}
+                </option>
+              </select>
+
+              <div *ngIf="field.action === 'copy_value_from'">
+                <span>Wird aus&nbsp;</span>
+                <select [(ngModel)]="field.targetField">
+                  <option
+                    *ngFor="let availableField of availableFields"
+                    [value]="availableField.name"
+                  >
+                    {{ availableField.name }}
+                  </option>
+                </select>
+                <span>&nbsp;übernommen</span>
+              </div>
+
+              <div *ngIf="field.action === 'copy_value_to'">
+                <span>Wird in&nbsp;</span>
+                <select [(ngModel)]="field.targetField">
+                  <option
+                    *ngFor="let availableField of availableFields"
+                    [value]="availableField.name"
+                  >
+                    {{ availableField.name }}
+                  </option>
+                </select>
+                <span>&nbsp;übernommen</span>
+              </div>
+
+              <div *ngIf="field.action === 'fixed'">
+                <span>Wird fix auf&nbsp;</span>
+                <input type="text" [(ngModel)]="field.fixedValue" />
+                <span>&nbsp;gesetzt</span>
+              </div>
+
+              <div *ngIf="field.action === 'manual'">
+                <span>Manuelle Anpassung erforderlich</span>
+              </div>
+
+              <button
+                mat-button
+                (click)="confirmChanges(field)"
+                class="mat-icon-button-sm confirm"
+              >
+                <i class="fas fa-check"></i>
+              </button>
+              <button
+                mat-button
+                class="mat-icon-button-sm cancel"
+                (click)="handleEdit().cancelEdit()"
+              >
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Tree Table View -->
+    <app-tree-table
+      *ngIf="viewMode === 'tree'"
+      [config]="treeTableConfig"
+      [fields]="filteredFields"
+      [filterSettings]="filterSettings"
+      [currentQuickFilter]="currentQuickFilter"
+      [currentActionFilter]="currentActionFilter"
+      [currentRecommendationFilter]="currentRecommendationFilter"
+      [textFilter]="textFilterValue"
+      [availableFields]="availableFields"
+      [classifications]="classifications"
+      [editingIndex]="editingIndex ?? null"
+      [hoverIndex]="hoverIndex ?? null"
+      (editField)="openEditPropertyActionDialog($event.field, $event.index)"
+      (startHover)="handleEdit($event).startHover()"
+      (stopHover)="handleEdit().stopHover()"
+      (applyRecommendation)="applyRecommendation($event.field, $event.index, $event.event)"
+      (quickActionSelected)="onQuickActionSelected($event)"
+    >
+    </app-tree-table>
+  </div>
+
+  <mat-paginator
+    *ngIf="viewMode === 'flat'"
+    (page)="handleTable($event).paginator()"
+    [length]="totalLength"
+    [pageSize]="pageSize"
+    [showFirstLastButtons]="false"
+    [pageSizeOptions]="pageSizeOptions"
+    [pageIndex]="pageIndex"
+    aria-label="Select page"
+  >
+  </mat-paginator>
+
+  <!-- Spacer for bottom margin -->
+  <div style="height: 40px;"></div>
+
 </div>

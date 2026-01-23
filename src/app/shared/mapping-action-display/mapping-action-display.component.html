@@ -1,0 +1,158 @@
+<div class="mapping-action-display"
+  #actionTooltip="matTooltip"
+  [class.compact]="compact"
+  [matTooltip]="shouldShowAllowedActionsTooltip() ? getChooseActionTooltip() : ''"
+  [matTooltipDisabled]="true"
+  matTooltipPosition="above"
+  (mouseover)="onHostMouseOver($event)"
+  (mouseleave)="onHostMouseLeave($event)">
+  <!-- Show Recommendation if exists and no active action -->
+  <div *ngIf="hasRecommendation() && !field.action" class="recommendation-container">
+    <!-- Chip and detail badge in horizontal row -->
+    <div class="recommendation-row">
+      <ng-container *ngFor="let recommendation of getRecommendations(field); let i = index">
+        <div class="recommendation-chip"
+             [class]="'recommendation-chip--' + getRecommendationAction(recommendation)"
+             [matTooltip]="getRecommendationTooltip(recommendation)"
+             matTooltipPosition="above"
+             (click)="onApplyRecommendation($event, i)">
+          <mat-icon>lightbulb_outline</mat-icon>
+          <span class="chip-label">
+            {{ getRecommendationLabel(recommendation) }}
+          </span>
+        </div>
+
+        <!-- Detail Badge for copy_value_from/copy_value_to/copy_node_to recommendations -->
+        <div *ngIf="getRecommendationOtherValue(recommendation)"
+             [class]="'recommendation-detail-badge recommendation-detail-badge--' + getRecommendationAction(recommendation)">
+          <mat-icon class="detail-icon">{{ getRecommendationAction(recommendation) === 'copy_value_from' ? 'input' : getRecommendationAction(recommendation) === 'copy_node_to' ? 'swap_horiz' : 'output' }}</mat-icon>
+          <span class="detail-text">
+            {{ getRecommendationOtherValue(recommendation) }}
+            <ng-container *ngIf="formatTypes(getFieldTypes(getRecommendationOtherValue(recommendation)!)) as formattedTypes">
+              <span *ngIf="formattedTypes"><br /><span class="field-type">{{ formattedTypes }}</span></span>
+            </ng-container>
+          </span>
+        </div>
+
+        <!-- Choose Action Button -->
+        <button class="choose-action-btn"
+                *ngIf="!field.action"
+                #chooseActionTrigger="matMenuTrigger"
+                [matMenuTriggerFor]="allowedActionsMenu"
+                [matMenuTriggerRestoreFocus]="false"
+          (mouseenter)="onTriggerMouseEnter(chooseActionTrigger, $event)"
+                    (mouseleave)="onTriggerMouseLeave()"
+                (focus)="openAllowedActionsMenu(chooseActionTrigger, $event)"
+                (click)="toggleAllowedActionsMenu(chooseActionTrigger, $event)">
+          <mat-icon>help_outline</mat-icon>
+          <span class="btn-label">CHOOSE_ACTION</span>
+        </button>
+      </ng-container>
+    </div>
+
+    <!-- System Remarks below in their own rows -->
+    <div *ngFor="let remark of getRecommendationSystemRemarks()"
+         class="recommendation-system-remark">
+      <mat-icon class="remark-icon">info</mat-icon>
+      <span class="remark-text">{{ remark }}</span>
+    </div>
+  </div>
+
+  <!-- Show normal action display if no recommendation or action exists -->
+  <div *ngIf="!hasRecommendation() || field.action" class="action-chip-container">
+    <!-- Action Chip -->
+    <div *ngIf="field.action"
+         [class]="'action-chip action-chip--' + field.action"
+         [matTooltip]="getActionDescription(field.action)"
+         matTooltipPosition="above">
+      <mat-icon>{{ getActionIcon(field.action) }}</mat-icon>
+      <span class="chip-label">{{ getActionLabel(field.action) }}</span>
+    </div>
+
+    <!-- No Action Chip -->
+    <div *ngIf="!field.action"
+         class="action-chip action-chip--no-action"
+         #chipTrigger="matMenuTrigger"
+         [matMenuTriggerFor]="allowedActionsMenu"
+         [matMenuTriggerRestoreFocus]="false"
+          (mouseenter)="onTriggerMouseEnter(chipTrigger, $event)"
+           (mouseleave)="onTriggerMouseLeave()"
+         (focus)="openAllowedActionsMenu(chipTrigger, $event)"
+         (click)="toggleAllowedActionsMenu(chipTrigger, $event)">
+      <mat-icon>help_outline</mat-icon>
+      <span class="chip-label">choose_action</span>
+    </div>
+
+    <!-- Detail Badges (same style as action chip) -->
+    <div *ngIf="field.action_info?.other_value && (field.action === 'copy_value_from' || field.action === 'copy_value_to' || field.action === 'copy_node_to')"
+         [class]="'detail-badge detail-badge--' + field.action">
+      <mat-icon class="detail-icon">{{ field.action === 'copy_value_from' ? 'input' : field.action === 'copy_node_to' ? 'swap_horiz' : 'output' }}</mat-icon>
+      <span class="detail-text">
+        {{ field.action_info!.other_value }}
+        <ng-container *ngIf="formatTypes(getFieldTypes(field.action_info!.other_value?.toString() || '')) as formattedTypes">
+          <span *ngIf="formattedTypes"><br /><span class="field-type">{{ formattedTypes }}</span></span>
+        </ng-container>
+      </span>
+    </div>
+
+    <div *ngIf="field.action_info?.fixed_value && field.action === 'fixed'"
+         class="detail-badge detail-badge--fixed">
+      <mat-icon class="detail-icon">lock</mat-icon>
+      <span class="detail-text">"{{ field.action_info!.fixed_value }}"</span>
+    </div>
+
+    <div *ngIf="field.action_info?.user_remark && field.action === 'manual'"
+         [class]="'detail-badge detail-badge--' + field.action"
+         [matTooltip]="field.action_info!.user_remark || ''"
+         matTooltipPosition="above">
+      <mat-icon class="detail-icon">comment</mat-icon>
+      <span class="detail-text">{{ field.action_info!.user_remark }}</span>
+    </div>
+
+    <!-- System Remark Badge -->
+    <div *ngIf="field.action_info?.system_remark"
+         class="detail-badge detail-badge--system"
+         [matTooltip]="field.action_info!.system_remark || ''"
+         matTooltipPosition="above">
+      <mat-icon class="detail-icon">info</mat-icon>
+      <span class="detail-text">{{ field.action_info!.system_remark }}</span>
+    </div>
+
+    <!-- Inherited Badge - shown last -->
+    <div *ngIf="field.action_info?.source === 'inherited' && field.inherited_from"
+         class="inherited-badge"
+         [matTooltip]="'Automatisch geerbt von ' + field.inherited_from"
+         matTooltipPosition="above">
+      <mat-icon class="inherited-icon">auto_awesome</mat-icon>
+      <span class="inherited-text">Geerbt von {{ field.inherited_from }}</span>
+    </div>
+  </div>
+  <mat-menu #allowedActionsMenu="matMenu"
+            class="allowed-actions-menu"
+            [overlapTrigger]="false"
+            (click)="$event.stopPropagation()"
+            (opened)="onAllowedActionsMenuOpened()"
+            (closed)="onAllowedActionsMenuClosed()">
+    <div class="allowed-actions-menu-content"
+         (mouseenter)="onMenuMouseEnter()"
+         (mouseleave)="onMenuMouseLeave($event)">
+      <ng-container *ngIf="hasAllowedActions()">
+        <div class="allowed-actions-header">Schnellauswahl</div>
+        <button mat-menu-item
+                *ngFor="let actionOption of field.actions_allowed"
+                [ngClass]="getActionMenuClasses(actionOption)"
+                (click)="onQuickActionMenuClick(actionOption, $event)">
+          <mat-icon>{{ getActionIcon(actionOption) }}</mat-icon>
+          <span class="menu-item-title">{{ getActionLabel(actionOption) }}</span>
+        </button>
+        <div class="menu-section-divider"></div>
+      </ng-container>
+      <button mat-menu-item
+              [ngClass]="['allowed-action-item', 'allowed-action-item--dialog']"
+              (click)="onEditField($event)">
+        <mat-icon>open_in_new</mat-icon>
+        <span class="menu-item-title">Mapping-Dialog öffnen…</span>
+      </button>
+    </div>
+  </mat-menu>
+</div>

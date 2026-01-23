@@ -1,0 +1,77 @@
+/* Profile content layout */
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Kardinalitäts-Badge */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Inherited cardinality styling */
+.inherited-cardinality {
+  background: linear-gradient(135deg,
+    var(--background-color, #f0f0f0) 0%,
+    var(--background-color, #f0f0f0) 85%,
+    #e0e0e0 85%,
+    #e0e0e0 100%) !important;
+  border-style: dashed !important;
+  position: relative;
+}
+
+.inherited-icon {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+/* Must-Support-Badge */
+.badge-ms {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #C62828; /* Rot (Material Red 800) */
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 2px;
+  cursor: default;
+}
+
+/* Type-Badge */
+.badge-type {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* Reference warning indicator */
+.ref-warning {
+  color: #ff9800;
+  font-size: 1.1em;
+  cursor: help;
+  margin-left: 2px;
+}

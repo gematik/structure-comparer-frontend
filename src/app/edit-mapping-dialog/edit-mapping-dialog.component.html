@@ -1,0 +1,134 @@
+<h2 mat-dialog-title>Mapping-Eigenschaften bearbeiten</h2>
+
+<mat-dialog-content>
+  <div class="dialog-content">
+    <p class="mapping-name">{{ data.name }}</p>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="status">
+        <mat-option *ngFor="let statusOption of availableStatuses" [value]="statusOption.value">
+          {{ statusOption.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Version</mat-label>
+      <input
+        matInput
+        [(ngModel)]="version"
+        placeholder="z.B. 1.0.0"
+        required
+      />
+    </mat-form-field>
+
+    <div class="profile-section">
+      <h3>Source Profile(s)</h3>
+      <div *ngFor="let source of sources; let i = index" class="profile-group">
+        <h4 class="profile-title">{{ source.name }}</h4>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Canonical URL</mat-label>
+          <input
+            matInput
+            [(ngModel)]="source.url"
+            placeholder="z.B. http://hl7.org/fhir/StructureDefinition/Patient"
+          />
+          <mat-hint>Kanonische URL des Profils (für Profil-Lookup)</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Web URL (optional)</mat-label>
+          <input
+            matInput
+            [(ngModel)]="source.webUrl"
+            placeholder="z.B. https://simplifier.net/packages/..."
+          />
+          <mat-hint>Dokumentations-/Simplifier-URL (für Links)</mat-hint>
+        </mat-form-field>
+
+        <div class="row-fields">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Version</mat-label>
+            <input
+              matInput
+              [(ngModel)]="source.version"
+              placeholder="z.B. 1.0.0"
+              required
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Package</mat-label>
+            <input
+              matInput
+              [(ngModel)]="source.package"
+              placeholder="z.B. de.basisprofil.r4"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <h3>Target Profile</h3>
+      <div class="profile-group">
+        <h4 class="profile-title">{{ target.name }}</h4>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Canonical URL</mat-label>
+          <input
+            matInput
+            [(ngModel)]="target.url"
+            placeholder="z.B. http://hl7.org/fhir/StructureDefinition/Patient"
+          />
+          <mat-hint>Kanonische URL des Profils (für Profil-Lookup)</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Web URL (optional)</mat-label>
+          <input
+            matInput
+            [(ngModel)]="target.webUrl"
+            placeholder="z.B. https://simplifier.net/packages/..."
+          />
+          <mat-hint>Dokumentations-/Simplifier-URL (für Links)</mat-hint>
+        </mat-form-field>
+
+        <div class="row-fields">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Version</mat-label>
+            <input
+              matInput
+              [(ngModel)]="target.version"
+              placeholder="z.B. 1.0.0"
+              required
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Package</mat-label>
+            <input
+              matInput
+              [(ngModel)]="target.package"
+              placeholder="z.B. de.basisprofil.r4"
+            />
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Abbrechen</button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSave()"
+    [disabled]="!version"
+  >
+    Speichern
+  </button>
+</mat-dialog-actions>

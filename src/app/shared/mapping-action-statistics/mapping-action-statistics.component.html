@@ -1,0 +1,83 @@
+<div class="action-statistics-container">
+  <!-- Action Filter Badges (Actions that are set) -->
+  <div class="action-badges-container" *ngIf="actionStatistics.length > 0">
+    <span class="filter-section-label">Gesetzt:</span>
+    <div
+      *ngFor="let stat of actionStatistics"
+      class="action-badge clickable"
+      [class]="stat.cssClass"
+      [class.active]="isActive(stat.action)"
+      [matTooltip]="getActionTooltip(stat)"
+      matTooltipPosition="above"
+      (click)="onActionClick(stat.action)"
+    >
+      <mat-icon class="badge-icon">{{ stat.icon }}</mat-icon>
+      <span class="badge-label">{{ stat.label }}</span>
+      <span class="badge-count">{{ stat.count }}</span>
+    </div>
+  </div>
+
+  <!-- Recommendation Filter Badges (including Todo for CHOOSE_ACTION) -->
+  <div class="recommendation-badges-container" *ngIf="recommendationStatistics.length > 0 || chooseActionCount > 0">
+    <span class="filter-section-label">Todo:</span>
+
+    <!-- Todo Badge (CHOOSE_ACTION - fields without action) -->
+    <div
+      *ngIf="chooseActionCount > 0"
+      class="recommendation-badge clickable recommendation-chip--todo"
+      [class.active]="isTodoActive()"
+      matTooltip="Felder ohne gesetzte Aktion. Klicken zum Filtern."
+      matTooltipPosition="above"
+      (click)="onTodoClick()"
+    >
+      <mat-icon class="badge-icon">help_outline</mat-icon>
+      <span class="badge-label">choose_action</span>
+      <span class="badge-count">{{ chooseActionCount }}</span>
+    </div>
+
+    <!-- Recommendation badges -->
+    <div
+      *ngFor="let stat of recommendationStatistics"
+      class="recommendation-badge clickable"
+      [class]="stat.cssClass"
+      [class.active]="isRecommendationActive(stat.action)"
+      [matTooltip]="getRecommendationTooltip(stat)"
+      matTooltipPosition="above"
+      (click)="onRecommendationClick(stat.action)"
+    >
+      <mat-icon class="badge-icon">lightbulb</mat-icon>
+      <span class="badge-label">{{ stat.label }}</span>
+      <span class="badge-count">{{ stat.count }}</span>
+    </div>
+  </div>
+
+  <!-- Clear Filter Button -->
+  <button
+    *ngIf="hasAnyFilters()"
+    class="clear-filter-btn"
+    mat-stroked-button
+    color="warn"
+    (click)="clearAllFilters()"
+    matTooltip="Alle Filter zurücksetzen"
+  >
+    <mat-icon>clear</mat-icon>
+    Löschen ({{ selectedActions.length + selectedRecommendations.length }})
+  </button>
+
+  <!-- Text Filter Input and Settings -->
+  <div class="filter-input-container">
+    <mat-form-field class="filter-input" appearance="outline">
+      <mat-label>Filter</mat-label>
+      <input
+        matInput
+        type="text"
+        [value]="textFilterValue"
+        (input)="onTextFilterInput($event)"
+        placeholder="Suchen..."
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <ng-content select="[filterSettings]"></ng-content>
+  </div>
+</div>

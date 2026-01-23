@@ -1,0 +1,210 @@
+/* Missing Dependencies List Styles */
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.error-message mat-icon {
+  color: #f44336;
+}
+
+/* Missing Dependencies Container */
+.missing-dependencies-container {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+/* Section Header */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.warning-icon {
+  color: #ff9800;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.count-badge {
+  font-size: 0.9rem;
+  font-weight: normal;
+  color: #666;
+}
+
+/* Header Actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.refresh-button {
+  color: #e65100;
+}
+
+.refresh-button:hover {
+  background-color: rgba(230, 81, 0, 0.1);
+}
+
+/* Download All Button */
+.download-all-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.download-all-button mat-spinner {
+  margin: 0;
+}
+
+/* Missing Table */
+.missing-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.missing-table th {
+  background-color: #f5f5f5;
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+}
+
+.missing-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.missing-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Column Widths */
+.col-package {
+  width: 35%;
+}
+
+.col-type {
+  width: 15%;
+  text-align: center;
+}
+
+.col-required-by {
+  width: 35%;
+}
+
+.col-action {
+  width: 15%;
+  text-align: center;
+}
+
+/* Row Styling */
+.direct-row {
+  border-left: 3px solid #f44336;
+}
+
+.transitive-row {
+  border-left: 3px solid #ff9800;
+}
+
+/* Package Cell */
+.package-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dep-icon {
+  color: #666;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.package-key {
+  font-family: monospace;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Type Cell */
+.type-cell {
+  text-align: center;
+}
+
+.direct-chip {
+  background-color: #ffcdd2 !important;
+  color: #c62828 !important;
+  font-size: 11px !important;
+}
+
+.transitive-chip {
+  background-color: #ffe0b2 !important;
+  color: #e65100 !important;
+  font-size: 11px !important;
+}
+
+/* Required By Cell */
+.required-by-cell {
+  color: #666;
+  cursor: help;
+}
+
+/* Action Cell */
+.action-cell {
+  text-align: center;
+}
+
+.action-cell mat-spinner {
+  margin: 0 auto;
+}
+
+/* Multiline Tooltip */
+::ng-deep .multiline-tooltip {
+  white-space: pre-line;
+  max-width: 400px;
+}

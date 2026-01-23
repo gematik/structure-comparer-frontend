@@ -1,0 +1,393 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>
+    <mat-icon>edit</mat-icon>
+    Mapping-Action bearbeiten
+  </h2>
+
+  <div mat-dialog-content class="dialog-content">
+
+    <!-- Current Action & Status Display -->
+    <div class="current-status-section">
+      <h4 class="info-section-title">
+        <mat-icon class="info-icon">assignment</mat-icon>
+        Aktueller Status
+        <button mat-icon-button
+                class="info-toggle-btn"
+                (click)="showStatusInfo = !showStatusInfo"
+                [matTooltip]="showStatusInfo ? 'Info ausblenden' : 'Was bedeutet das?'"
+                type="button">
+          <mat-icon>{{ showStatusInfo ? 'expand_less' : 'info' }}</mat-icon>
+        </button>
+      </h4>
+
+      <div class="status-grid">
+        <!-- Current Action -->
+        <div class="status-box">
+          <div class="status-label-with-action">
+            <div class="status-label"
+                 matTooltip="Die Aktion beschreibt, was mit diesem Feld gemacht werden soll"
+                 matTooltipPosition="above">
+              Gewählte Aktion / Aktuelle Empfehlungen:
+              <mat-icon class="help-icon">help_outline</mat-icon>
+            </div>
+            <!-- Remove Action Button (Small Chip Style) -->
+            <div class="suffix-chip clear-chip remove-action-chip"
+                 *ngIf="data.field.action !== null"
+                 (click)="removeAction()"
+                 matTooltip="Aktion entfernen"
+                 matTooltipPosition="above">
+              <mat-icon>clear</mat-icon>
+            </div>
+          </div>
+          <div class="status-value">
+            <div class="current-action-wrapper">
+              <app-mapping-action-display
+                [field]="data.field"
+                [compact]="false"
+                [allFields]="data.allFields">
+              </app-mapping-action-display>
+            </div>
+
+            <!-- Recommendation Notice - only show when no action selected -->
+            <div *ngIf="hasRecommendations() && data.field.action === null" class="recommendation-notice">
+              <mat-icon>lightbulb</mat-icon>
+              <span>
+                Es gibt {{ data.field.recommendations?.length }} Empfehlung(en) vom System.
+                Diese sind <strong>noch nicht aktiv</strong> und müssen explizit übernommen werden.
+              </span>
+            </div>
+
+            <div class="collapsible-info" *ngIf="showStatusInfo">
+              <div *ngIf="data.field.action === null" class="status-explanation">
+                <mat-icon>info</mat-icon>
+                <span>Noch keine Aktion gewählt - beschreibt, was mit dem Feld gemacht werden soll</span>
+              </div>
+              <div *ngIf="data.field.action !== null" class="status-explanation">
+                <mat-icon>check_circle</mat-icon>
+                <span>Diese Aktion bestimmt, wie das Feld behandelt wird</span>
+              </div>
+              <div *ngIf="hasRecommendations()" class="status-explanation" style="background-color: #fff8e1; border-color: #ffc107; color: #856404;">
+                <mat-icon style="color: #ffc107;">info</mat-icon>
+                <span>
+                  <strong>Empfehlungen (Recommendations):</strong> Das System zeigt automatisch generierte Vorschläge an.
+                  Diese beeinflussen den Status NICHT, bis Sie eine Empfehlung explizit als Aktion übernehmen.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mapping Status -->
+        <div class="status-box" *ngIf="data.field.evaluation">
+          <div class="status-label"
+               matTooltip="Der finale Status zeigt, ob das Feld fertig bearbeitet ist"
+               matTooltipPosition="above">
+            Finaler Status:
+            <mat-icon class="help-icon">help_outline</mat-icon>
+          </div>
+          <div class="status-value">
+            <app-mapping-status-display
+              [field]="data.field"
+              [showTooltip]="true">
+            </app-mapping-status-display>
+            <div class="collapsible-info" *ngIf="showStatusInfo">
+              <div class="status-explanation">
+                <mat-icon>help_outline</mat-icon>
+                <span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'compatible'">Keine Probleme - Feld ist fertig</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'warning'">Warnung vorhanden - keine Aktion ausgewählt</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'incompatible'">Problem vorhanden - Aktion erforderlich</span>
+                  <span *ngIf="data.field.evaluation.mapping_status === 'solved'">Problem wurde durch Aktion gelöst</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Selection Component -->
+    <app-action-selection
+      [field]="data.field"
+      [availableActions]="data.availableActions"
+      [selectedAction]="selectedAction"
+      (actionSelected)="selectAction($event)"
+      (actionRemoved)="removeAction()">
+    </app-action-selection>
+
+    <!-- Field Information -->
+    <div class="field-info">
+
+      <h3>{{ data.field.name }}</h3>
+
+      <div class="field-meta-row" *ngIf="getFieldTypes()">
+        <mat-icon class="info-icon-small">data_object</mat-icon>
+        <span class="field-meta-label">Typ:</span>
+        <span class="field-type">{{ getFieldTypes() }}</span>
+      </div>
+
+      <div class="field-meta-row" *ngIf="data.field.extension">
+        <mat-icon class="info-icon-small">extension</mat-icon>
+        <span class="field-meta-label">Extension:</span>
+        <span class="field-extension-text">{{ data.field.extension }}</span>
+      </div>
+
+      <!-- Profile Badges -->
+      <div class="profile-badges-container" *ngIf="getSourceProfiles().length > 0 || getTargetProfile()">
+        <div class="profile-badges-label">
+          <mat-icon class="info-icon-small">account_tree</mat-icon>
+          <span>Profile:</span>
+        </div>
+        <div class="profile-badges-list">
+          <div class="profile-badge source-badge" *ngFor="let profile of getSourceProfiles()"
+               [matTooltip]="'Source Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">input</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="profile.package" class="package-prefix">{{ profile.package }}.</span>{{ profile.name }}
+            </span>
+          </div>
+          <div class="profile-badge target-badge" *ngIf="getTargetProfile()"
+               [matTooltip]="'Target Profile'"
+               matTooltipPosition="above">
+            <mat-icon class="badge-icon">output</mat-icon>
+            <span class="badge-text">
+              <span *ngIf="getTargetProfile()!.package" class="package-prefix">{{ getTargetProfile()!.package }}.</span>{{ getTargetProfile()!.name }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classification Explanation -->
+      <div class="field-classification-section">
+        <h4 class="info-section-title">
+          <mat-icon class="info-icon">analytics</mat-icon>
+          Kompatibilitäts-Bewertung
+          <button mat-icon-button
+                  class="info-toggle-btn"
+                  (click)="showClassificationInfo = !showClassificationInfo"
+                  [matTooltip]="showClassificationInfo ? 'Info ausblenden' : 'Info einblenden'"
+                  type="button">
+            <mat-icon>{{ showClassificationInfo ? 'expand_less' : 'info' }}</mat-icon>
+          </button>
+        </h4>
+        <div class="collapsible-info" *ngIf="showClassificationInfo">
+          <p class="info-explanation">
+            Diese Bewertung zeigt, wie gut Source- und Target-Profil zusammenpassen:
+          </p>
+        </div>
+        <div class="classification-display">
+          <span [class]="'pill pill--' + data.field.classification"
+                [matTooltip]="getClassificationTooltip()"
+                matTooltipPosition="above">
+            {{ data.field.classification }}
+          </span>
+          <span class="classification-meaning">
+            <span *ngIf="data.field.classification === 'compatible'">✓ Felder passen direkt zusammen</span>
+            <span *ngIf="data.field.classification === 'incompatible'">✗ Felder sind nicht kompatibel - Aktion erforderlich</span>
+            <span *ngIf="data.field.classification === 'warning'">⚠ Kleinere Probleme - Aktion empfohlen</span>
+            <span *ngIf="data.field.classification === 'unknown'">? Kompatibilität unbekannt</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conditional Fields -->
+
+    <!-- Target Field Selection (for copy_value_from / copy_value_to) -->
+    <div *ngIf="requiresTargetField()" class="conditional-field">
+      <!-- Quick Filters Container -->
+      <div class="quick-filters-container">
+        <!-- Type Filter -->
+        <div class="filter-group">
+          <span class="filter-label">Schnellfilter:</span>
+          <div class="suffix-chip filter-chip"
+               [class.active]="typeFilterActive"
+               (click)="toggleTypeFilter()"
+               [matTooltip]="typeFilterActive ? 'Nur Felder mit gleichem Typ anzeigen (aktiv)' : 'Typ-Filter deaktiviert'"
+               matTooltipPosition="above">
+            <mat-icon class="chip-icon">data_object</mat-icon>
+            <span class="suffix-chip-text">Gleicher Typ</span>
+          </div>
+        </div>
+
+        <!-- Suffix Filters -->
+        <div class="filter-group" *ngIf="getAvailableSuffixes().length > 0">
+          <span class="filter-label">Nach Endung:</span>
+          <div class="suffix-chips-list">
+            <div class="suffix-chip"
+                 *ngFor="let suffix of getAvailableSuffixes()"
+                 [class.active]="suffixFilterActive && suffixFilter === suffix"
+                 (click)="setSuffixFilter(suffix)"
+                 [matTooltip]="'Nur Felder die auf .' + suffix + ' enden'"
+                 matTooltipPosition="above">
+              <span class="suffix-chip-text">.{{ suffix }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>
+          <span *ngIf="selectedAction === 'copy_value_from'">Quellfeld</span>
+          <span *ngIf="selectedAction === 'copy_value_to'">Zielfeld</span>
+          <span *ngIf="selectedAction === 'copy_node_to'">Zielfeld für Node</span>
+        </mat-label>
+
+        <!-- Display selected field with formatting above input -->
+        <div class="selected-field-preview" *ngIf="targetField">
+          <div class="autocomplete-option-large">
+            <span class="field-name">{{ targetField }}</span>
+            <div class="field-profile-badges" *ngIf="getProfilesForField(targetField).length > 0">
+              <span class="field-profile-badge" *ngFor="let profile of getProfilesForField(targetField)">{{ profile }}</span>
+            </div>
+            <span class="field-type-small" *ngIf="getTypesForField(targetField)">{{ getTypesForField(targetField) }}</span>
+          </div>
+        </div>
+
+        <input matInput
+               type="text"
+               placeholder="Feldname eingeben oder auswählen..."
+               [(ngModel)]="targetField"
+               (ngModelChange)="onFieldInputChange($event)"
+               [matAutocomplete]="auto"
+               required>
+
+        <button mat-icon-button
+                matSuffix
+                aria-label="Feldauswahl leeren"
+                *ngIf="targetField"
+                (click)="targetField = ''; onFieldInputChange('')"
+                type="button">
+          <mat-icon>close</mat-icon>
+        </button>
+        <mat-autocomplete #auto="matAutocomplete">
+          <mat-option *ngFor="let field of filteredFields" [value]="field.name">
+            <div class="autocomplete-option">
+              <div class="autocomplete-main-row">
+                <span class="field-name">{{ field.name }}</span>
+                <div class="field-profile-badges" *ngIf="getProfilesForField(field.name).length > 0">
+                  <span class="field-profile-badge" *ngFor="let profile of getProfilesForField(field.name)">{{ profile }}</span>
+                </div>
+              </div>
+              <span class="field-type-small" *ngIf="getTypesForField(field.name)">{{ getTypesForField(field.name) }}</span>
+            </div>
+          </mat-option>
+          <mat-option *ngIf="filteredFields.length === 0" disabled>
+            Keine Felder gefunden
+          </mat-option>
+        </mat-autocomplete>
+        <mat-hint>
+          <span *ngIf="getProfileFilterHint()" class="profile-filter-hint">
+            {{ getProfileFilterHint() }}
+            <span *ngIf="(suffixFilterActive && suffixFilter) || typeFilterActive"> - </span>
+          </span>
+          <span *ngIf="typeFilterActive">Nur Felder mit gleichem Typ - </span>
+          <span *ngIf="suffixFilterActive && suffixFilter">Gefiltert nach Suffix "{{ suffixFilter }}" - </span>
+          Beginnen Sie zu tippen, um weiter zu filtern
+        </mat-hint>
+        <mat-error *ngIf="!targetField.trim()">
+          Bitte wählen Sie ein Feld aus oder geben Sie einen Namen ein
+        </mat-error>
+      </mat-form-field>
+
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span *ngIf="selectedAction === 'copy_value_from'">
+          Der Wert wird aus dem ausgewählten Quellfeld übernommen
+        </span>
+        <span *ngIf="selectedAction === 'copy_value_to'">
+          Der Wert wird in das ausgewählte Zielfeld kopiert
+        </span>
+        <span *ngIf="selectedAction === 'copy_node_to'">
+          Der Knoten wird in das ausgewählte Zielfeld übertragen
+        </span>
+      </div>
+    </div>
+
+    <!-- Fixed Value Input -->
+    <div *ngIf="requiresFixedValue()" class="conditional-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Fester Wert</mat-label>
+        <input matInput [(ngModel)]="fixedValue" placeholder="Wert eingeben..." required>
+        <mat-error *ngIf="!fixedValue.trim()">
+          Bitte geben Sie einen festen Wert ein
+        </mat-error>
+      </mat-form-field>
+
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span>Das Feld wird immer mit diesem festen Wert gesetzt</span>
+      </div>
+    </div>
+
+    <!-- Remark Text (for manual) -->
+    <div *ngIf="allowsRemark()" class="conditional-field">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Bemerkung</mat-label>
+        <textarea matInput [(ngModel)]="remarkText"
+                  placeholder="Zusätzliche Informationen..."
+                  rows="3"></textarea>
+      </mat-form-field>
+
+      <div class="action-explanation">
+        <mat-icon>info</mat-icon>
+        <span>Zusätzliche Informationen für die manuelle Bearbeitung</span>
+      </div>
+    </div>
+
+    <!-- Auto-apply children recommendations for copy_node_to/copy_node_from actions -->
+    <div *ngIf="isCopyNodeAction()" class="auto-apply-section">
+      <mat-checkbox [(ngModel)]="applyToChildren" color="primary">
+        <span class="checkbox-label">
+          <mat-icon class="checkbox-icon">account_tree</mat-icon>
+          Automatisch alle kompatiblen Kinder-Felder als gelöst markieren
+        </span>
+      </mat-checkbox>
+
+      <!-- Children statistics -->
+      <div class="children-statistics" *ngIf="getTotalChildrenCount() > 0">
+        <div class="stat-row">
+          <mat-icon class="stat-icon compatible">check_circle</mat-icon>
+          <span>{{ getCompatibleChildrenCount() }} kompatible Kinder</span>
+          <span class="stat-hint">(werden automatisch übernommen)</span>
+        </div>
+        <div class="stat-row" *ngIf="getIncompatibleChildrenCount() > 0">
+          <mat-icon class="stat-icon incompatible">error</mat-icon>
+          <span>{{ getIncompatibleChildrenCount() }} inkompatible Kinder</span>
+          <span class="stat-hint">(müssen manuell bearbeitet werden)</span>
+        </div>
+      </div>
+
+      <!-- Info message -->
+      <div class="checkbox-explanation" *ngIf="!hasIncompatibleChildren()">
+        <mat-icon>info_outline</mat-icon>
+        <span>Wendet die Copy-Node-Action automatisch auf alle Kinder dieses Feldes an (z.B. .id, .system, .value, usw.)</span>
+      </div>
+
+      <!-- Warning when incompatible children exist -->
+      <div class="checkbox-explanation warning" *ngIf="hasIncompatibleChildren()">
+        <mat-icon>warning</mat-icon>
+        <span>Hinweis: {{ getIncompatibleChildrenCount() }} Kinder-Felder sind inkompatibel und müssen manuell bearbeitet werden. Nur die {{ getCompatibleChildrenCount() }} kompatiblen Kinder werden automatisch übernommen.</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Dialog Actions -->
+  <div mat-dialog-actions class="dialog-actions">
+    <button mat-button (click)="onCancel()" type="button">
+      <mat-icon>close</mat-icon>
+      Abbrechen
+    </button>
+    <button mat-raised-button
+            color="primary"
+            (click)="onSave()"
+            [disabled]="!isValid()"
+            type="button">
+      <mat-icon>save</mat-icon>
+      Speichern
+    </button>
+  </div>
+
+</div>

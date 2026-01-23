@@ -1,0 +1,8 @@
+<span class="mapping-status-pill"
+      [class]="'pill ' + getCssClass()"
+      [matTooltip]="getTooltip()"
+      [matTooltipDisabled]="!showTooltip"
+      matTooltipPosition="above"
+      matTooltipClass="multiline-tooltip">
+  {{ getLabel() }}
+</span>

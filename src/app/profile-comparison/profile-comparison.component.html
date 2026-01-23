@@ -27,13 +27,21 @@
 
   <div style="flex: 1; display: flex; justify-content: flex-end;">
     <mat-form-field fxFlex="40%">
-      <input matInput type="text" placeholder="Filter" (keyup)="filterComparisonFields($event)" />
+      <input matInput type="text" placeholder="Filter" (input)="filterComparisonFields($event)" />
     </mat-form-field>
   </div>
 
-  <div style="max-height: 600px; overflow: auto;">
-    <table id="resultsTable" class="sticky-table modern-table" style="width: 100%" *ngIf="comparison?.fields?.length"
-      matSort>
+  <div style=" overflow: auto;">
+<table
+  id="resultsTable"
+  class="sticky-table modern-table"
+  style="width: 100%"
+  *ngIf="comparison?.fields?.length"
+  matSort
+  [matSortActive]="'classification'"
+  [matSortDirection]="'desc'"
+  (matSortChange)="onSort($event)"
+>
       <thead>
         <tr>
           <th class="default-th" mat-sort-header="name">Property</th>

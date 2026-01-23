@@ -25,8 +25,10 @@
 import { Routes } from '@angular/router';
 import { EditProjectComponent } from './edit-project/edit-project.component';
 import { MappingDetailComponent } from './mapping-detail/mapping-detail.component';
+import { TransformationDetailComponent } from './transformation-detail/transformation-detail.component';
 import { ProjectListComponent } from './project-list/project-list.component';
 import { ProfileComparisonComponent } from './profile-comparison/profile-comparison.component';
+import { TargetCreationDetailComponent } from './target-creation-detail/target-creation-detail.component';
 
 export const routes: Routes = [
   // Default route redirects to project list
@@ -37,6 +39,10 @@ export const routes: Routes = [
   { path: 'project/:projectKey', component: EditProjectComponent, data: { breadcrumb: 'Project'} },
   // Mapping detail page for specific mapping within a project
   { path: 'project/:projectKey/mapping/:mappingId', component: MappingDetailComponent, data: { breadcrumb: 'Mapping Detail'} },
+  // Transformation detail page for specific transformation within a project
+  { path: 'project/:projectKey/transformation/:transformationId', component: TransformationDetailComponent, data: { breadcrumb: 'Transformation Detail'} },
+  // Target Creation detail page for specific target creation within a project
+  { path: 'project/:projectKey/target-creation/:targetCreationId', component: TargetCreationDetailComponent, data: { breadcrumb: 'Target Creation Detail'} },
   // Profile comparison page for comparing profiles within a project
   { path: 'project/:projectKey/comparison/:comparisonId', component: ProfileComparisonComponent, data: { breadcrumb: 'Profile Comparison'} },
 ];

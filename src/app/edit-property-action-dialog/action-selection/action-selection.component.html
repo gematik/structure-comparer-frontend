@@ -1,0 +1,52 @@
+<div class="action-selection">
+  <h4 class="info-section-title">
+    <mat-icon class="info-icon">touch_app</mat-icon>
+    <span *ngIf="!field.action">Mapping-Aktion wählen</span>
+    <span *ngIf="field.action">Mapping-Aktion ändern</span>
+    <button mat-icon-button
+            class="info-toggle-btn"
+            (click)="showActionInfo = !showActionInfo"
+            [matTooltip]="showActionInfo ? 'Info ausblenden' : 'Was sind Allowed Actions?'"
+            type="button">
+      <mat-icon>{{ showActionInfo ? 'expand_less' : 'info' }}</mat-icon>
+    </button>
+  </h4>
+  <div class="collapsible-info" *ngIf="showActionInfo">
+    <p class="info-explanation">
+      <span *ngIf="!field.action">Wählen Sie eine der erlaubten Aktionen (Allowed Actions) aus, um festzulegen, wie dieses Feld behandelt werden soll.</span>
+      <span *ngIf="field.action">Ändern Sie die gewählte Aktion oder wählen Sie eine andere erlaubte Aktion aus.</span>
+      Nur die für dieses Feld erlaubten Aktionen werden angezeigt.
+    </p>
+  </div>
+  <div class="action-buttons">
+    <button *ngFor="let action of getFilteredActions()"
+            type="button"
+            class="action-button"
+            [class.selected]="selectedAction === action.value"
+            [attr.data-action]="action.value"
+            (click)="selectAction(action.value)"
+            [matTooltip]="action.instruction || action.description"
+            matTooltipPosition="above">
+      <mat-icon *ngIf="getActionIcon(action.value)">{{ getActionIcon(action.value) }}</mat-icon>
+      <span class="action-label">{{ getActionLabel(action.value) }}</span>
+    </button>
+  </div>
+
+  <!-- Action Hints -->
+  <div class="action-hints">
+    <div *ngIf="!selectedAction && !field.action" class="hint-box hint-warning">
+      <mat-icon>info</mat-icon>
+      <div>
+        <strong>Keine Aktion gewählt</strong>
+        <p>Wählen Sie oben eine Aktion aus, um zu definieren, wie das Feld behandelt werden soll.</p>
+      </div>
+    </div>
+    <div *ngIf="selectedAction !== null && getActionInstruction()" class="hint-box hint-info">
+      <mat-icon>lightbulb</mat-icon>
+      <div>
+        <strong>Hinweis zur gewählten Aktion:</strong>
+        <p>{{ getActionInstruction() }}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,554 @@
+/* Tree Elements within Table */
+.tree-property-column {
+  position: relative;
+  vertical-align: top;
+}
+
+/* Tree cell container */
+.tree-cell {
+  display: flex;
+  align-items: center;
+  padding: 4px 0;
+  min-height: 32px;
+}
+
+/* Clickable tree cells (nodes with children) */
+.tree-cell.clickable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.tree-cell.clickable:hover {
+  background-color: #f8f9fa;
+}
+
+/* Depth indicator bars */
+.tree-depth {
+  display: flex;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.tree-depth-bar {
+  width: 12px;
+  height: 20px;
+  border-left: 1px solid #dee2e6;
+  margin-right: 2px;
+  position: relative;
+}
+
+.tree-depth-bar:last-child {
+  margin-right: 6px;
+}
+
+/* Toggle button for expandable nodes */
+.tree-toggle-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  margin-right: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #6c757d;
+  font-family: monospace;
+  position: relative;
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.tree-toggle-btn:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Spacer for leaf nodes without toggle button */
+.tree-toggle-spacer {
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* Node icon */
+.tree-node-icon {
+  margin-right: 6px;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Node label */
+.tree-node-label {
+  font-weight: 500;
+  color: #495057;
+  word-break: break-word;
+  line-height: 1.3;
+  flex: 1;
+}
+
+/* Branch nodes get slightly different styling */
+.tree-cell:has(.tree-toggle-btn) .tree-node-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+/* Extension info styling - use same as main component */
+.muted {
+  color: #6c757d;
+  font-weight: 400;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* Field type unter dem Feldnamen */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Evaluation reasons styling */
+.evaluation-reasons {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+}
+
+.reason-message {
+  font-size: 0.85em;
+  line-height: 1.3;
+  word-wrap: break-word;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+
+.reason-message.severity-info {
+  background-color: #e8f4fd;
+  color: #0c4a6e;
+  border-color: #0c4a6e;
+}
+
+.reason-message.severity-warning {
+  background-color: #fff6e6;
+  color: #7f4f00;
+  border-color: #d39e00;
+}
+
+.reason-message.severity-error {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #c62828;
+}
+
+/* Row hover effects */
+tr:hover {
+  background-color: #f5f5f5;
+}
+
+tr.hover-locked {
+  background-color: #f5f5f5;
+}
+
+/* Button styling */
+button.confirm {
+    background-color: #28a745;
+    padding: 5px 10px;
+}
+
+button.confirm:hover {
+    background-color: #218838;
+}
+
+button.cancel {
+    background-color: #dc3545;
+    padding: 5px 10px;
+}
+
+button.cancel:hover {
+    background-color: #c82333;
+}
+
+/* Badge styles from main component */
+.badge-cardinality {
+  display: inline-block;
+  padding: 2px 8px;
+  line-height: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  vertical-align: middle;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+
+.badge-ms {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background-color: #C62828;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  vertical-align: middle;
+  margin-right: 2px;
+  cursor: default;
+}
+
+/* Type-Badge */
+.badge-type {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ref-types {
+  white-space: normal;
+  line-height: 1.25;
+  font-size: 0.9em;
+  color: #6c757d;
+  margin-top: 2px;
+}
+
+/* Status Pills */
+.status-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.status-compatible {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-solved {
+  background-color: #cce5f0;
+  color: #0c5460;
+  border: 1px solid #b6d7ff;
+}
+
+/* Consolidated Mapping Display */
+.mapping-consolidated {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mapping-header {
+  display: flex;
+  align-items: center;
+}
+
+.mapping-details {
+  font-size: 0.85em;
+  color: #495057;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #6c757d;
+  margin-top: 4px;
+}
+
+.evaluation-reasons {
+  margin-top: 6px;
+  display: grid;
+  gap: 4px;
+}
+
+.reason-message {
+  font-size: 0.85em;
+  line-height: 1.3;
+  word-wrap: break-word;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border-left: 3px solid transparent;
+}
+
+.reason-message.severity-info {
+  background-color: #e8f4fd;
+  color: #0c4a6e;
+  border-color: #0c4a6e;
+}
+
+.reason-message.severity-warning {
+  background-color: #fff6e6;
+  color: #7f4f00;
+  border-color: #d39e00;
+}
+
+.reason-message.severity-error {
+  background-color: #fdecea;
+  color: #7a1f1f;
+  border-color: #c62828;
+}
+
+.mapping-sub-text {
+  font-size: 0.8em;
+  color: #5f6368;
+  margin-top: 4px;
+}
+
+/* Action-specific styling for consolidated display */
+.mapping-consolidated[data-action="copy_value_from"] .mapping-details,
+.mapping-consolidated[data-action="copy_value_to"] .mapping-details {
+  background-color: #e3f2fd;
+  border-left-color: #2196f3;
+  color: #1565c0;
+}
+
+.mapping-consolidated[data-action="fixed"] .mapping-details {
+  background-color: #fff3e0;
+  border-left-color: #ff9800;
+  color: #e65100;
+}
+
+.mapping-consolidated[data-action="use"] .mapping-details {
+  background-color: #e8f5e8;
+  border-left-color: #4caf50;
+  color: #2e7d32;
+}
+
+.mapping-consolidated[data-action="not_use"] .mapping-details,
+.mapping-consolidated[data-action="empty"] .mapping-details {
+  background-color: #ffebee;
+  border-left-color: #f44336;
+  color: #c62828;
+}
+
+.mapping-consolidated[data-action="manual"] .mapping-details {
+  background-color: #fff8e1;
+  border-left-color: #ffc107;
+  color: #f57c00;
+}
+
+.mapping-consolidated[data-action="copy_node_to"] .mapping-details,
+.mapping-consolidated[data-action="copy_node_from"] .mapping-details {
+  background-color: #e0f2f1;
+  border-left-color: #009688;
+  color: #00695c;
+}
+
+.mapping-consolidated[data-action="other"] .mapping-details {
+  background-color: #fce4ec;
+  border-left-color: #e91e63;
+  color: #ad1457;
+}
+
+/* Recommendations styling */
+.mapping-recommendations {
+  margin-top: 8px;
+}
+
+.recommendations-section {
+  background-color: #f0f8ff;
+  border-left: 3px solid #17a2b8;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+.recommendations-header {
+  font-weight: 600;
+  color: #17a2b8;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.recommendation-item {
+  font-size: 0.8em;
+  line-height: 1.4;
+  margin: 2px 0;
+  word-wrap: break-word;
+  color: #495057;
+}
+
+.issue-message {
+  font-weight: 500;
+}
+
+.resolved-indicator {
+  color: #28a745;
+  font-weight: 500;
+}
+
+/* Profile content layout */
+.profile-content {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* Reference warning indicator */
+.ref-warning {
+  color: #ff9800;
+  font-size: 1.1em;
+  cursor: help;
+  margin-left: 2px;
+}
+
+/* Hover effects */
+.tree-property-column:hover .tree-toggle-btn {
+  background-color: #e9ecef;
+}
+
+.tree-property-column:hover .tree-node-label {
+  color: #212529;
+}
+
+/* Tree expansion animation */
+.tree-toggle-btn mat-icon {
+  transition: transform 0.2s ease;
+}
+
+.tree-toggle-btn[aria-expanded="true"] mat-icon {
+  transform: rotate(90deg);
+}
+
+.tree-toggle-btn[aria-expanded="false"] mat-icon {
+  transform: rotate(0deg);
+}
+
+/* Empty state */
+.tree-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.tree-empty-state p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Mapping content container */
+.mapping-content-container {
+  position: relative;
+  min-height: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Ensure edit button is accessible */
+.tree-table tr td:last-child {
+  position: relative;
+}
+
+.tree-table tr:hover button[mat-button] {
+  z-index: 10;
+  position: relative;
+}
+
+/* Mapping recommendations styling */
+.mapping-recommendations {
+  margin-top: 4px;
+}
+
+/* Inherited cardinality styling */
+.badge-cardinality {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.inherited-cardinality {
+  background: linear-gradient(135deg,
+    var(--background-color, #f0f0f0) 0%,
+    var(--background-color, #f0f0f0) 85%,
+    #e0e0e0 85%,
+    #e0e0e0 100%) !important;
+  border-style: dashed !important;
+  position: relative;
+}
+
+.inherited-icon {
+  font-size: 0.85em;
+  opacity: 0.7;
+  margin-left: 2px;
+}
+
+.badge-ms {
+  display: inline-block;
+  padding: 2px 5px;
+  background-color: #ff6b6b;
+  color: white;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+/* Row styling based on action type */
+.row-use {
+  background-color: #e8f5e9 !important;
+}
+
+.row-use-recursive {
+  background-color: #c8e6c9 !important;
+}
+
+.row-not-use {
+  background-color: #ffebee !important;
+}
+
+.row-empty {
+  background-color: #fce4ec !important;
+}
+
+.row-manual {
+  background-color: #fff8e1 !important;
+}
+
+.row-copy-value-from,
+.row-copy-value-to {
+  background-color: #e3f2fd !important;
+}
+
+.row-copy-node-to {
+  background-color: #e0f2f1 !important;
+}
+
+.row-fixed {
+  background-color: #fff3e0 !important;
+}
+
+.row-no-action {
+  background-color: #f5f5f5 !important;
+}
+
+.row-unknown {
+  background-color: #eceff1 !important;
+}

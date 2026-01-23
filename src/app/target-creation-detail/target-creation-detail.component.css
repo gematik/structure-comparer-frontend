@@ -1,0 +1,346 @@
+/* Target Creation Detail Component - Phase 8.2 Styles */
+
+.m-20 {
+  margin: 20px;
+}
+
+/* Header */
+.header-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Overview Section */
+.target-creation-overview {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.target-creation-overview h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Info Section */
+.info-section {
+  margin-bottom: 20px;
+}
+
+.info-section h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #555;
+  font-size: 1.1em;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.info-value {
+  color: #333;
+}
+
+.info-value a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.info-value a:hover {
+  text-decoration: underline;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.status-draft {
+  background-color: #ffd54f;
+  color: #333;
+}
+
+.status-badge.status-active {
+  background-color: #66bb6a;
+  color: white;
+}
+
+.status-badge.status-deprecated {
+  background-color: #ef5350;
+  color: white;
+}
+
+/* Overview Cards */
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.overview-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s;
+}
+
+.overview-card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.card-value {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.card-value-filtered {
+  font-size: 0.5em;
+  color: #999;
+  font-weight: normal;
+}
+
+.card-subtitle {
+  font-size: 0.85em;
+  color: #999;
+}
+
+.total-card .card-value {
+  color: #1976d2;
+}
+
+.action-required-card .card-value {
+  color: #d32f2f;
+}
+
+.resolved-card .card-value {
+  color: #388e3c;
+}
+
+.optional-card .card-value {
+  color: #757575;
+}
+
+/* Controls Section */
+.controls-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.controls-left,
+.controls-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-field {
+  min-width: 300px;
+}
+
+/* Fields Table */
+.fields-table-container {
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.fields-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fields-table thead {
+  background-color: #f5f5f5;
+}
+
+.fields-table th {
+  text-align: left;
+  padding: 12px;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #ddd;
+}
+
+.fields-table tbody tr {
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.fields-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.fields-table td {
+  padding: 12px;
+}
+
+.field-name {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.extension-indicator {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 6px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 0.8em;
+  cursor: help;
+}
+
+.field-types {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.field-cardinality {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.field-action {
+  min-width: 120px;
+}
+
+.no-action {
+  color: #999;
+  font-style: italic;
+}
+
+.field-value {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fixed-value {
+  color: #1976d2;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.manual-remark {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.no-results {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
+}
+
+/* Pagination */
+.pagination-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #666;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Loading State */
+.loading {
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  font-size: 1.2em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .controls-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls-left,
+  .controls-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-field {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fields-table {
+    font-size: 0.85em;
+  }
+
+  .fields-table th,
+  .fields-table td {
+    padding: 8px;
+  }
+}

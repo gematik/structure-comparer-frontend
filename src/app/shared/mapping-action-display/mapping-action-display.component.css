@@ -1,0 +1,583 @@
+.mapping-action-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapping-action-display.compact {
+  gap: 6px;
+}
+
+/* Action Chip Container */
+.action-chip-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Action Chip */
+.action-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.action-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Detail Badges (same style as action chips) */
+.detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.detail-badge .detail-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.detail-badge .detail-text {
+  font-weight: 500;
+}
+
+/* Field type styling (displayed under field name) */
+.field-type {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Detail badge colors matching action chips */
+.detail-badge--copy_value_from,
+.detail-badge--copy_value_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.detail-badge--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
+.detail-badge--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffeb3b;
+}
+
+.detail-badge--copy_node_to,
+.detail-badge--copy_node_from {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
+}
+
+.detail-badge--system {
+  background-color: #e8eaf6;
+  color: #3f51b5;
+  border-color: #5c6bc0;
+}
+
+/* Inherited Badge */
+.inherited-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #e1f5fe;
+  color: #01579b;
+  border: 1px solid #0288d1;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 500;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.inherited-badge .inherited-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.inherited-badge .inherited-text {
+  font-weight: 500;
+}
+
+
+/* Compact mode */
+.compact .action-chip {
+  padding: 6px 12px;
+  font-size: 0.75em;
+}
+
+.compact .action-chip mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.compact .detail-badge {
+  padding: 6px 12px;
+  font-size: 0.75em;
+}
+
+.compact .detail-badge .detail-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Action-specific colors */
+.action-chip--use {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+.action-chip--use_recursive {
+  background-color: #81c784;
+  color: #1b5e20;
+  border-color: #388e3c;
+}
+
+.action-chip--not_use {
+  background-color: #f8bbd0;
+  color: #c2185b;
+  border-color: #e91e63;
+}
+
+.action-chip--delete {
+  background-color: #f8bbd0;
+  color: #c2185b;
+  border-color: #e91e63;
+}
+
+.action-chip--empty {
+  background-color: #e1bee7;
+  color: #7b1fa2;
+  border-color: #9c27b0;
+}
+
+.action-chip--copy_value_from,
+.action-chip--copy_value_to {
+  background-color: #bbdefb;
+  color: #1565c0;
+  border-color: #2196f3;
+}
+
+.action-chip--fixed {
+  background-color: #ffe0b2;
+  color: #ef6c00;
+  border-color: #ff9800;
+}
+
+.action-chip--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffeb3b;
+}
+
+.action-chip--copy_node_to,
+.action-chip--copy_node_from {
+  background-color: #b2dfdb;
+  color: #00695c;
+  border-color: #009688;
+}
+
+.action-chip--medication_service {
+  background-color: #ffcdd2;
+  color: #d32f2f;
+  border-color: #f44336;
+}
+
+.action-chip--no-action {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 2px dashed #999;
+  font-style: italic;
+}
+
+/* Recommendation Styles */
+.recommendation-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendation-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Choose Action Button - styled exactly like recommendation-chip */
+.choose-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px dashed #999;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.choose-action-btn:hover {
+  background-color: #e8e8e8;
+  border-color: #666;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.choose-action-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.choose-action-btn .btn-label {
+  white-space: nowrap;
+}
+
+/* Allowed actions menu */
+.allowed-actions-menu {
+  max-width: 320px;
+}
+
+.allowed-actions-menu-content {
+  display: block;
+}
+
+.allowed-actions-header {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 16px 2px;
+  color: #616161;
+}
+
+.menu-section-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.08);
+  margin: 4px 0;
+}
+
+.allowed-actions-menu .mat-mdc-menu-content {
+  padding: 4px 0;
+}
+
+.allowed-actions-menu .mat-mdc-menu-item.allowed-action-item {
+  border-radius: 6px;
+  height: auto;
+  min-height: 34px;
+  line-height: 1.2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  gap: 8px;
+  margin: 2px 8px;
+  border-left: 4px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.allowed-actions-menu .mat-mdc-menu-item.allowed-action-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.allowed-actions-menu .allowed-action-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}
+
+.allowed-actions-menu .allowed-action-item .menu-item-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.allowed-action-item--default {
+  background-color: #f5f5f5;
+  color: #555;
+  border-color: #9e9e9e;
+}
+
+.allowed-action-item--use {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  border-color: #4caf50;
+}
+
+.allowed-action-item--use_recursive {
+  background-color: #81c784;
+  color: #0d3d17;
+  border-color: #2e7d32;
+}
+
+.allowed-action-item--not_use {
+  background-color: #f8bbd0;
+  color: #880e4f;
+  border-color: #c2185b;
+}
+
+.allowed-action-item--delete {
+  background-color: #f8bbd0;
+  color: #880e4f;
+  border-color: #c2185b;
+}
+
+.allowed-action-item--empty {
+  background-color: #e1bee7;
+  color: #4a148c;
+  border-color: #7b1fa2;
+}
+
+.allowed-action-item--copy_value_from,
+.allowed-action-item--copy_value_to {
+  background-color: #bbdefb;
+  color: #0d47a1;
+  border-color: #1565c0;
+}
+
+.allowed-action-item--copy_node_to,
+.allowed-action-item--copy_node_from {
+  background-color: #b2dfdb;
+  color: #004d40;
+  border-color: #00695c;
+}
+
+.allowed-action-item--fixed {
+  background-color: #ffe0b2;
+  color: #e65100;
+  border-color: #ef6c00;
+}
+
+.allowed-action-item--manual {
+  background-color: #fff9c4;
+  color: #f57f17;
+  border-color: #ffca28;
+}
+
+.allowed-action-item--medication_service {
+  background-color: #ffcdd2;
+  color: #b71c1c;
+  border-color: #d32f2f;
+}
+
+.allowed-action-item--dialog {
+  background-color: #eceff1;
+  color: #37474f;
+  border-color: #90a4ae;
+}
+
+.recommendation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid #ffd54f;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: #fff9e6;
+  color: #f57f17;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recommendation-chip:hover {
+  background-color: #fff59d;
+  border-color: #ffc107;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recommendation-chip mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Recommendation detail badge */
+.recommendation-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 0.8em;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.recommendation-detail-badge .detail-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.recommendation-detail-badge--copy_value_from,
+.recommendation-detail-badge--copy_value_to {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border-color: #90caf9;
+}
+
+/* Recommendation action-specific colors - lighter versions of action colors */
+.recommendation-chip--use {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #81c784;
+}
+
+.recommendation-chip--use_recursive {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+  border-color: #66bb6a;
+}
+
+.recommendation-chip--not_use {
+  background-color: #fce4ec;
+  color: #c2185b;
+  border-color: #f48fb1;
+}
+
+.recommendation-chip--empty {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border-color: #ce93d8;
+}
+
+.recommendation-chip--copy_value_from,
+.recommendation-chip--copy_value_to {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border-color: #90caf9;
+}
+
+.recommendation-chip--fixed {
+  background-color: #fff3e0;
+  color: #ef6c00;
+  border-color: #ffcc80;
+}
+
+.recommendation-chip--manual {
+  background-color: #fffde7;
+  color: #f57f17;
+  border-color: #fff59d;
+}
+
+.recommendation-chip--medication_service {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border-color: #ef9a9a;
+}
+
+/* Recommendation system remark */
+.recommendation-system-remark {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border-left: 3px solid #9e9e9e;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #666;
+}
+
+.recommendation-system-remark .remark-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: #757575;
+}
+
+.recommendation-system-remark .remark-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Compact mode for recommendations */
+.compact .recommendation-chip {
+  padding: 6px 12px;
+  font-size: 0.75em;
+}
+
+.compact .recommendation-chip mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.compact .recommendation-detail-badge {
+  padding: 6px 12px;
+  font-size: 0.75em;
+}
+
+.compact .recommendation-detail-badge .detail-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.compact .recommendation-system-remark {
+  padding: 6px 10px;
+  font-size: 0.75em;
+}
+
+.compact .recommendation-system-remark .remark-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}

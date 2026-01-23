@@ -1,0 +1,249 @@
+/* Action Selection */
+.action-selection {
+  margin-bottom: 24px;
+}
+
+.info-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-toggle-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.info-toggle-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.collapsible-info {
+  animation: slideDown 0.2s ease-out;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+  }
+}
+
+.info-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #2196f3;
+}
+
+.info-explanation {
+  margin: 4px 0 12px 28px;
+  font-size: 0.9em;
+  color: #666;
+  line-height: 1.4;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  color: #666;
+  font-size: 0.9em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-button mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.action-button.selected {
+  border-color: currentColor;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Action-specific colors */
+.action-button[data-action="use"] {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.action-button[data-action="use"].selected {
+  border-color: #4caf50;
+  background-color: #c8e6c9;
+}
+
+.action-button[data-action="use_recursive"] {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+}
+
+.action-button[data-action="use_recursive"].selected {
+  border-color: #388e3c;
+  background-color: #81c784;
+}
+
+.action-button[data-action="not_use"] {
+  background-color: #fce4ec;
+  color: #c2185b;
+}
+
+.action-button[data-action="not_use"].selected {
+  border-color: #e91e63;
+  background-color: #f8bbd0;
+}
+
+.action-button[data-action="empty"] {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.action-button[data-action="empty"].selected {
+  border-color: #9c27b0;
+  background-color: #e1bee7;
+}
+
+.action-button[data-action="copy_value_from"],
+.action-button[data-action="copy_value_to"] {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.action-button[data-action="copy_value_from"].selected,
+.action-button[data-action="copy_value_to"].selected {
+  border-color: #2196f3;
+  background-color: #bbdefb;
+}
+
+.action-button[data-action="fixed"] {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.action-button[data-action="fixed"].selected {
+  border-color: #ff9800;
+  background-color: #ffe0b2;
+}
+
+.action-button[data-action="manual"] {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.action-button[data-action="manual"].selected {
+  border-color: #ffeb3b;
+  background-color: #fff9c4;
+}
+
+.action-button[data-action="copy_node_to"],
+.action-button[data-action="copy_node_from"] {
+  background-color: #e0f2f1;
+  color: #00695c;
+}
+
+.action-button[data-action="copy_node_to"].selected,
+.action-button[data-action="copy_node_from"].selected {
+  border-color: #009688;
+  background-color: #b2dfdb;
+}
+
+.action-button[data-action="medication_service"] {
+  background-color: #ffebee;
+  color: #d32f2f;
+}
+
+.action-button[data-action="medication_service"].selected {
+  border-color: #f44336;
+  background-color: #ffcdd2;
+}
+
+/* Action Hints */
+.action-hints {
+  margin-top: 16px;
+}
+
+.hint-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid;
+  margin-bottom: 12px;
+}
+
+.hint-box mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.hint-box strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+}
+
+.hint-box p {
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+
+.hint-warning {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.hint-warning mat-icon {
+  color: #ffc107;
+}
+
+.hint-info {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  color: #1565c0;
+}
+
+.hint-info mat-icon {
+  color: #2196f3;
+}

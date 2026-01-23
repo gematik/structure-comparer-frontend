@@ -1,0 +1,547 @@
+/*
+ *
+ * Copyright 2025 gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.transformation-detail-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.error-container mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+/* Cards */
+mat-card {
+  margin-bottom: 20px;
+}
+
+mat-card-header {
+  margin-bottom: 16px;
+}
+
+mat-card-title {
+  font-size: 1.1rem !important;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item .label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.info-item .value {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-draft {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-published {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.status-deprecated {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Profiles Row Layout */
+.profiles-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.profile-section {
+  flex: 1;
+}
+
+.profile-section h4 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+}
+
+.profile-chip.source {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile-chip.target {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.profile-chip a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-chip a:hover {
+  text-decoration: underline;
+}
+
+.arrow-section {
+  display: flex;
+  align-items: center;
+  color: #999;
+}
+
+.arrow-section mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+
+/* Mappings Card with Tabs */
+.mappings-card {
+  margin-top: 20px;
+}
+
+.tab-icon {
+  margin-right: 8px;
+}
+
+.tab-count {
+  margin-left: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: normal;
+}
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.description {
+  margin-bottom: 20px;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  color: #999;
+}
+
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+/* Resource Mapping Table */
+.resource-mapping-table,
+.value-mapping-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: #f5f5f5;
+  border-bottom: 2px solid #e0e0e0;
+  font-weight: 600;
+  color: #333;
+}
+
+.value-mapping-table .table-header {
+  grid-template-columns: 1fr 1fr;
+}
+
+.table-header .col {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-header .col-icon {
+  font-size: 20px;
+  color: #666;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid #e8e8e8;
+  transition: background 0.15s;
+}
+
+.value-row {
+  grid-template-columns: 1fr 1fr;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-row:hover {
+  background: #f9f9f9;
+}
+
+.table-row.has-mapping,
+.table-row.has-copy-from {
+  background: #fafcff;
+}
+
+.table-row .col {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.source-col {
+  border-right: 1px solid #e8e8e8;
+}
+
+/* Multi-source layout */
+.source-col.multi-source,
+.mapping-col.multi-mapping {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px;
+  padding: 12px 16px;
+}
+
+.source-entry,
+.mapping-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.source-entry .source-select,
+.mapping-entry .mapping-select {
+  flex: 1;
+}
+
+.remove-source-btn {
+  color: #999;
+}
+
+.remove-source-btn:hover {
+  color: #f44336;
+}
+
+.add-source-btn {
+  align-self: flex-start;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.add-source-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
+}
+
+.mapping-col {
+  border-right: 1px solid #e8e8e8;
+}
+
+.mapping-col:not(.multi-mapping) {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px;
+}
+
+.target-col {
+  background: #fafafa;
+}
+
+/* Resource and Value Names */
+.resource-name,
+.value-field-name {
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.resource-path,
+.value-field-path {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+  word-break: break-all;
+}
+
+.expand-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+}
+
+/* Form Fields */
+.source-select,
+.mapping-select,
+.target-select,
+.copy-from-select {
+  width: 100%;
+}
+
+.source-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.mapping-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.target-select ::ng-deep .mat-mdc-form-field-subscript-wrapper,
+.copy-from-select ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+.mapping-link {
+  flex-shrink: 0;
+}
+
+/* Action Badges */
+.action-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.action-badge.copy-from {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* Actions Row */
+.actions-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.unsaved-hint {
+  color: #f57c00;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unsaved-hint::before {
+  content: '⚠';
+}
+
+/* Value Tab Specific Styles */
+.value-target-col {
+  min-width: 300px;
+}
+
+.value-source-col {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+.has-children {
+  background: #f5f7fa;
+}
+
+/* Unresolved References Warning Banner (Phase 2: UI-Verbesserungen) */
+.unresolved-references-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 1px solid #ff9800;
+  border-left: 4px solid #ff9800;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.unresolved-references-warning mat-icon {
+  color: #e65100;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.unresolved-references-warning .warning-content {
+  flex: 1;
+}
+
+.unresolved-references-warning strong {
+  color: #e65100;
+  font-size: 0.95rem;
+}
+
+.unresolved-references-warning .warning-subtitle {
+  margin: 4px 0 8px 0;
+  font-size: 0.85rem;
+  color: #795548;
+}
+
+.unresolved-details summary {
+  cursor: pointer;
+  color: #6d4c41;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.unresolved-details summary:hover {
+  color: #3e2723;
+}
+
+.unresolved-list {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+  font-size: 0.8rem;
+  color: #5d4037;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.unresolved-list li {
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+/* Source Fields Loading Indicator (Phase 2: UI-Verbesserungen) */
+.source-fields-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  color: #1565c0;
+  font-size: 0.9rem;
+}
+
+.source-fields-loading mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.source-fields-loading .spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

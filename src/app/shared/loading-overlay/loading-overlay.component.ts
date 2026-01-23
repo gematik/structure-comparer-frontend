@@ -1,4 +1,4 @@
-﻿/*
+/*
  *
  * Copyright 2025 gematik GmbH
  *
@@ -18,26 +18,24 @@
  *
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { MappingsListComponent } from './mappings-list.component';
-
-describe('MappingsListComponent', () => {
-  let component: MappingsListComponent;
-  let fixture: ComponentFixture<MappingsListComponent>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [MappingsListComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(MappingsListComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+@Component({
+  selector: 'app-loading-overlay',
+  standalone: true,
+  imports: [CommonModule, MatProgressSpinnerModule],
+  template: `
+    <div *ngIf="isVisible" class="loading-overlay">
+      <mat-spinner [diameter]="diameter" color="primary"></mat-spinner>
+      <div class="loading-text">{{ message }}</div>
+    </div>
+  `,
+  styleUrls: ['./loading-overlay.component.css']
+})
+export class LoadingOverlayComponent {
+  @Input() isVisible: boolean = false;
+  @Input() message: string = 'Loading...';
+  @Input() diameter: number = 60;
+}

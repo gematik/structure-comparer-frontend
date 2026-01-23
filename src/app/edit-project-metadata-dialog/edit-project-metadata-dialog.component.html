@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Projekt-Metadaten bearbeiten</h2>
+
+<mat-dialog-content>
+  <p class="dialog-description">
+    Bearbeiten Sie Version und Status für das Projekt "{{ data.projectName }}".
+  </p>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Version</mat-label>
+    <input matInput [(ngModel)]="version" placeholder="z.B. 1.0.0">
+    <mat-hint>Optionale Versionsnummer für das Projekt</mat-hint>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Status</mat-label>
+    <input matInput [(ngModel)]="status" placeholder="z.B. draft, active, retired">
+    <mat-hint>Optionaler Status des Projekts</mat-hint>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Abbrechen</button>
+  <button mat-raised-button color="primary" (click)="onSave()">Speichern</button>
+</mat-dialog-actions>

@@ -1,0 +1,95 @@
+<!-- Missing Dependencies List Component -->
+
+<!-- Loading Spinner -->
+<div *ngIf="isLoading" class="loading-container">
+  <mat-spinner diameter="20"></mat-spinner>
+  <span>Lade Abhängigkeiten...</span>
+</div>
+
+<!-- Error Message -->
+<div *ngIf="errorMessage && !isLoading" class="error-message">
+  <mat-icon>error</mat-icon>
+  <span>{{ errorMessage }}</span>
+</div>
+
+<!-- Missing Dependencies Table -->
+<div *ngIf="hasMissingDependencies && !isLoading" class="missing-dependencies-container">
+  <div class="section-header">
+    <h3 class="section-title">
+      <mat-icon class="warning-icon">warning</mat-icon>
+      Fehlende Package-Abhängigkeiten
+      <span class="count-badge">({{ missingDependencies.length }})</span>
+    </h3>
+    <div class="header-actions">
+      <button
+        mat-icon-button
+        (click)="refreshAnalysis()"
+        [disabled]="isLoading || isDownloading"
+        matTooltip="Abhängigkeiten neu laden"
+        class="refresh-button"
+      >
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="downloadAllMissing()"
+        [disabled]="isAnyDownloadInProgress"
+        class="download-all-button"
+      >
+        <mat-icon *ngIf="!isDownloading">cloud_download</mat-icon>
+        <mat-spinner *ngIf="isDownloading" diameter="18"></mat-spinner>
+        <span *ngIf="!isDownloading">Alle herunterladen</span>
+        <span *ngIf="isDownloading">Wird heruntergeladen...</span>
+      </button>
+    </div>
+  </div>
+
+  <table class="missing-table">
+    <tr>
+      <th class="col-package">Package</th>
+      <th class="col-type">Typ</th>
+      <th class="col-required-by">Benötigt von</th>
+      <th class="col-action">Aktion</th>
+    </tr>
+    <tr
+      *ngFor="let dep of missingDependencies"
+      [class.direct-row]="dep.is_direct_dependency"
+      [class.transitive-row]="!dep.is_direct_dependency"
+    >
+      <td>
+        <div class="package-cell">
+          <mat-icon class="dep-icon">{{ dep.is_direct_dependency ? 'link_off' : 'subdirectory_arrow_right' }}</mat-icon>
+          <span class="package-key">{{ dep.package_key }}</span>
+        </div>
+      </td>
+      <td class="type-cell">
+        <mat-chip
+          [class.direct-chip]="dep.is_direct_dependency"
+          [class.transitive-chip]="!dep.is_direct_dependency"
+        >
+          {{ dep.is_direct_dependency ? 'direkt' : 'transitiv' }}
+        </mat-chip>
+      </td>
+      <td
+        class="required-by-cell"
+        [matTooltip]="getRequiredByTooltip(dep.required_by)"
+        matTooltipClass="multiline-tooltip"
+      >
+        {{ formatRequiredBy(dep.required_by) }}
+      </td>
+      <td class="action-cell">
+        <button
+          mat-icon-button
+          color="primary"
+          (click)="downloadPackage(dep)"
+          [disabled]="isPackageDownloading(dep.package_key) || isDownloading"
+          [matTooltip]="'Package von FHIR Registry herunterladen'"
+        >
+          <mat-icon *ngIf="!isPackageDownloading(dep.package_key)">cloud_download</mat-icon>
+          <mat-spinner *ngIf="isPackageDownloading(dep.package_key)" diameter="18"></mat-spinner>
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>

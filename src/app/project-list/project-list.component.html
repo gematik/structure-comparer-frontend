@@ -12,28 +12,122 @@
       <fa-icon
         [icon]="faPlus"
         (click)="createProject()"
-       
+
         class="mat-icon-button-sm"
       ></fa-icon>
     </div>
   </div>
 
+  <!-- Loading indicator -->
+  <div *ngIf="isLoadingProgress" class="loading-indicator">
+    <mat-icon>refresh</mat-icon>
+    <span>Lade Projektfortschritte...</span>
+  </div>
+
   <!-- Tabelle darunter -->
   <table class="modern-table">
     <tr>
-      <th>Project name</th>
+      <th class="project-name-column">Project name</th>
+      <th class="progress-column">Fortschritt</th>
+      <th class="stats-column">Statistiken</th>
       <th class="actions-column">Actions</th>
     </tr>
-    <tr *ngFor="let project of projects.projects">
+    <tr *ngFor="let project of projectsWithProgress.length > 0 ? projectsWithProgress : projects.projects" class="project-row clickable-row" (click)="loadProject(project.url)">
       <td class="project-items">
-        {{ project.name }}
+        <div class="project-name">{{ project.name }}</div>
+        <div class="project-metadata">
+          <span *ngIf="project.version" class="project-version">
+            <strong>Version:</strong> {{ project.version }}
+          </span>
+          <span *ngIf="project.status" class="project-status-badge" [class.status-active]="project.status === 'active'" [class.status-draft]="project.status === 'draft'" [class.status-retired]="project.status === 'retired'">
+            {{ project.status }}
+          </span>
+        </div>
+        <div *ngIf="project.progressSummary" class="project-status" [ngClass]="getProjectProgressClass(project.progressSummary)">
+          {{ getProjectStatusDescription(project.progressSummary) }}
+        </div>
       </td>
-      <td class="actions-column" >
-        <button mat-icon-button (click)="loadProject(project.url)" class="mat-icon-button-sm" >
-          <mat-icon>remove_red_eye</mat-icon>
+
+      <!-- Progress Column -->
+      <td class="progress-column" *ngIf="project.progressSummary; else noProgressData">
+        <div class="progress-info">
+          <div class="completion-percentage" [ngClass]="getProjectProgressClass(project.progressSummary)">
+            {{ project.progressSummary.completionPercentage }}%
+          </div>
+          <div class="progress-bar-container">
+            <div class="mini-progress-bar">
+              <div
+                class="progress-segment compatible"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'compatible')"
+                [matTooltip]="project.progressSummary.compatible + ' kompatibel'"
+              ></div>
+              <div
+                class="progress-segment solved"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'solved')"
+                [matTooltip]="project.progressSummary.solved + ' gelöst'"
+              ></div>
+              <div
+                class="progress-segment warning"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'warning')"
+                [matTooltip]="project.progressSummary.warning + ' Warnung'"
+              ></div>
+              <div
+                class="progress-segment incompatible"
+                [style.width.%]="getProjectProgressPercentage(project.progressSummary, 'incompatible')"
+                [matTooltip]="project.progressSummary.incompatible + ' inkompatibel'"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </td>
+
+      <!-- Statistics Column -->
+      <td class="stats-column" *ngIf="project.progressSummary; else noStatsData">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Gesamt:</span>
+            <span class="stat-value total">{{ project.progressSummary.total || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Kompatibel:</span>
+            <span class="stat-value compatible">{{ project.progressSummary.compatible || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Gelöst:</span>
+            <span class="stat-value solved">{{ project.progressSummary.solved || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Warnung:</span>
+            <span class="stat-value warning">{{ project.progressSummary.warning || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Inkompatibel:</span>
+            <span class="stat-value incompatible">{{ project.progressSummary.incompatible || 0 }}</span>
+          </div>
+        </div>
+
+
+      </td>
+
+      <!-- No Progress Data Template -->
+      <ng-template #noProgressData>
+        <td class="progress-column">
+          <div class="no-data">Daten werden geladen...</div>
+        </td>
+      </ng-template>
+
+      <!-- No Stats Data Template -->
+      <ng-template #noStatsData>
+        <td class="stats-column">
+          <div class="no-data">-</div>
+        </td>
+      </ng-template>
+
+      <!-- Actions Column -->
+      <td class="actions-column" (click)="$event.stopPropagation()">
+        <button mat-icon-button (click)="deleteProject(project)" class="mat-icon-button-sm" color="warn">
+          <mat-icon>delete</mat-icon>
         </button>
-        <button mat-icon-button class="mat-icon-button-sm"><mat-icon>delete</mat-icon></button>
-        
       </td>
     </tr>
   </table>

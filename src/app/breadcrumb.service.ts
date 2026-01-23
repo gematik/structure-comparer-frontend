@@ -64,6 +64,16 @@ export class BreadcrumbService {
           finalLabel = `Project ${projectKey}`;
         }
 
+        // ===== PHASE 9.1: Target Creation Breadcrumb Enhancement =====
+        // Customize target creation detail breadcrumb to include entity identifier
+        // Note: Currently uses ID from route params. Future enhancement could
+        // load actual target creation name via async service call
+        if (label === 'Target Creation Detail' && currentRoute.params['targetCreationId']) {
+          const targetCreationId = currentRoute.params['targetCreationId'];
+          finalLabel = `Target Creation: ${targetCreationId}`;
+        }
+        // ===== END PHASE 9.1 =====
+
         breadcrumbs.push({ label: finalLabel, url });
       }
 

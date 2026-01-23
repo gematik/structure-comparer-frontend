@@ -27,6 +27,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import {
+  Package,
+  PackageListWithStatus,
+  PackageAddRequest,
+  PackageAddResult,
+  OrphanedCleanupResult,
+  OrphanedAdoptResult
+} from './models/package.model';
 
 @Injectable({
   providedIn: 'root'
@@ -77,6 +85,97 @@ export class PackageService {
     ).pipe(catchError(this.handleError));
   }
 
+  deletePackage(projectKey: string, packageId: string): Observable<any> {
+    const encodedPackageId = encodeURIComponent(packageId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // ============================================================================
+  // NEW METHODS: Package Config Management (Package List in Config Feature)
+  // ============================================================================
+
+  /**
+   * Gets all packages with their status (available/missing/orphaned)
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing packages with status information
+   */
+  getPackagesWithStatus(projectKey: string): Observable<PackageListWithStatus> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get<PackageListWithStatus>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/with-status`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Adds a package to config without downloading
+   * @param projectKey The unique identifier of the project
+   * @param request The package to add (name, version, optional display)
+   * @returns Observable containing the result
+   */
+  addPackageToConfig(projectKey: string, request: PackageAddRequest): Observable<PackageAddResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<PackageAddResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/add`,
+      request
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Removes a package from config (files remain as orphaned)
+   * @param projectKey The unique identifier of the project
+   * @param packageId The package identifier (name#version)
+   * @returns Observable containing the result
+   */
+  removePackageFromConfig(projectKey: string, packageId: string): Observable<any> {
+    const encodedPackageId = encodeURIComponent(packageId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}/config`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Deletes package files from data folder
+   * @param projectKey The unique identifier of the project
+   * @param packageId The package identifier (name#version)
+   * @returns Observable containing the result
+   */
+  deletePackageFiles(projectKey: string, packageId: string): Observable<any> {
+    const encodedPackageId = encodeURIComponent(packageId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/${encodedPackageId}/files`
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Cleans up all orphaned packages (deletes files not in config)
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing the cleanup result
+   */
+  cleanupOrphanedPackages(projectKey: string): Observable<OrphanedCleanupResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<OrphanedCleanupResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/cleanup-orphaned`,
+      {}
+    ).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Adopts all orphaned packages into config
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing the adopt result
+   */
+  adoptOrphanedPackages(projectKey: string): Observable<OrphanedAdoptResult> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.post<OrphanedAdoptResult>(
+      `${this.baseUrl}/project/${encodedProjectKey}/package/adopt-orphaned`,
+      {}
+    ).pipe(catchError(this.handleError));
+  }
+
   /**
    * Handles HTTP errors and provides user-friendly error messages
    * @param error The HTTP error response
@@ -96,4 +195,5 @@ export class PackageService {
       'Something bad happened; please try again later.');
   }
 }
+
 

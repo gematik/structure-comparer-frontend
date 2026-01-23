@@ -1,0 +1,113 @@
+<h2 mat-dialog-title>Legacy manual_entries.yaml importieren</h2>
+
+<mat-dialog-content>
+  <p class="description">
+    Hier können Sie eine alte <code>manual_entries.yaml</code> hochladen.
+    Die Einträge werden in das aktuelle Format migriert und den vorhandenen Mappings des Projekts zugeordnet.
+  </p>
+
+  <!-- File Input Section -->
+  <div class="file-input-section">
+    <div class="file-input-wrapper">
+      <label class="file-input-label" for="manual-entries-file">YAML-Datei auswählen</label>
+      <input
+        id="manual-entries-file"
+        type="file"
+        class="file-input"
+        (change)="onManualEntriesFileSelected($event)"
+        [disabled]="isImportingManualEntries"
+        accept=".yaml,.yml"
+      />
+      <div class="file-input-hint">
+        Unterstützte Formate: .yaml, .yml
+      </div>
+      <div class="selected-file" *ngIf="selectedImportFile">
+        <mat-icon>description</mat-icon>
+        <span>{{ selectedImportFile.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Progress -->
+  <div *ngIf="isImportingManualEntries" class="progress-section">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p class="progress-text">Import wird ausgeführt...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert-card error-card" *ngIf="importError">
+    <div class="alert-content">
+      <mat-icon class="error-icon">error</mat-icon>
+      <div class="alert-text">
+        <h4>Fehler beim Import</h4>
+        <p>{{ importError }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Message -->
+  <div class="alert-card success-card" *ngIf="importResult && isImportSuccessful(importResult)">
+    <div class="alert-content">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      <div class="success-content">
+        <h4>Import erfolgreich</h4>
+        <p>{{ importResult.message }}</p>
+
+        <div class="import-stats">
+          <div class="stats-grid">
+            <mat-chip class="success-chip">
+              Importierte Einträge: {{ importResult.imported_entries }}
+            </mat-chip>
+            <mat-chip class="info-chip">
+              Importierte Felder: {{ importResult.imported_fields }}
+            </mat-chip>
+            <mat-chip class="info-chip">
+              Datei: {{ importResult.filename }}
+            </mat-chip>
+          </div>
+        </div>
+
+        <div *ngIf="importResult.id_mapping" class="mapping-stats">
+          <div class="mapping-title">
+            <mat-icon>link</mat-icon>
+            <span>ID-Mapping Statistik</span>
+          </div>
+
+          <div class="stats-grid">
+            <mat-chip class="success-chip">
+              Gemappt: {{ importResult.id_mapping.mapped_entries }}
+            </mat-chip>
+            <mat-chip class="warning-chip" *ngIf="importResult.id_mapping.unmapped_entries > 0">
+              Nicht gemappt: {{ importResult.id_mapping.unmapped_entries }}
+            </mat-chip>
+            <mat-chip class="warning-chip" *ngIf="importResult.id_mapping.warnings_count > 0">
+              Warnungen: {{ importResult.id_mapping.warnings_count }}
+            </mat-chip>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isImportingManualEntries">
+    Abbrechen
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onImportManualEntries()"
+    [disabled]="!selectedImportFile || isImportingManualEntries"
+  >
+    {{ isImportingManualEntries ? 'Import läuft…' : 'Import starten' }}
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onClose()"
+    *ngIf="importResult && isImportSuccessful(importResult)"
+  >
+    Schließen
+  </button>
+</mat-dialog-actions>

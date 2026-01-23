@@ -1,69 +1,217 @@
+<!-- Loading Overlay Component -->
+<app-loading-overlay
+  [isVisible]="isLoading"
+  message="Loading project data..."
+>
+</app-loading-overlay>
+
 <div class="m-20">
-  <h1>Overview for project "{{ projectName }}"</h1>
 
-  <h2 class="section-heading">List of Packages</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide">Package Name</th>
-      <th class="col-narrow">Action
-        <button mat-icon-button (click)="openPackageUploadDialog(this.projectKey)"  title="Add new package" class="mat-icon-button-sm">
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
-    <tr *ngFor="let package of packages">
-      <td >
-        <div *ngIf="package.display; else elseBlock">{{ package.display }} ({{ package.name }}#{{ package.version }})
+  <!-- Project Progress Overview -->
+  <div class="project-progress-overview">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <h2>Übersicht Mapping: {{ projectName }}</h2>
+        <div style="display: flex; gap: 16px; margin-top: 8px; align-items: center;">
+          <div *ngIf="projectData?.version" style="font-size: 14px; color: #666;">
+            <strong>Version:</strong> {{ projectData.version }}
+          </div>
+          <div *ngIf="projectData?.status" style="font-size: 14px; color: #666;">
+            <strong>Status:</strong> {{ projectData.status }}
+          </div>
+          <button
+            mat-button
+            color="primary"
+            (click)="openEditProjectMetadataDialog()"
+            matTooltip="Projekt-Version und Status bearbeiten"
+          >
+            <mat-icon>edit</mat-icon>
+            Projekt-Metadaten bearbeiten
+          </button>
         </div>
-        <ng-template #elseBlock>{{ package.name }}#{{ package.version }}</ng-template>
-      </td>
-      <td>
-        <button mat-icon-button (click)="editPackage(this.package.display, this.projectKey, this.package.id )" class="mat-icon-button-sm"><mat-icon>edit</mat-icon></button>
-        
-      </td>
-    </tr>
-  </table>
+      </div>
+      <button
+        mat-raised-button
+        [color]="getProjectOverallSummary().incompatible > 0 ? 'warn' : 'accent'"
+        (click)="downloadAllStructureMaps()"
+        aria-label="Download all StructureMaps"
+        [matTooltip]="getProjectOverallSummary().incompatible > 0
+          ? 'Warnung: ' + getProjectOverallSummary().incompatible + ' Feld(er) ohne Aktion - Alle StructureMaps des Projekts herunterladen'
+          : 'Alle StructureMaps des Projekts herunterladen'"
+      >
+        <mat-icon>file_download</mat-icon>
+        Alle StructureMaps
+        <span *ngIf="getProjectOverallSummary().incompatible > 0" class="incomplete-badge">!</span>
+      </button>
+    </div>
 
-  <h2 class="section-heading">List of Comparisons</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide">Comparison</th>
-      <th class="col-narrow">Action
-        <button mat-icon-button (click)="openAddComparisonDialogAndSave(this.projectKey)"  title="Neuen Vergleich hinzufügen" class="mat-icon-button-sm">
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
-    <tr *ngFor="let comparison of comparisons" class="hover-highlight">
-      <td class="clickable-cell" (click)="goToComparison(comparison.id)">{{ comparison.name }}</td>
-      <td>
-        <button mat-icon-button (click)="goToComparison(comparison.id)" class="mat-icon-button-sm" > <mat-icon >remove_red_eye</mat-icon> </button>
-        <button mat-icon-button (click)="deleteComparisonWithConfirm(comparison.id)" class="mat-icon-button-sm" >
-          <mat-icon>delete</mat-icon>
-        </button>
-        
-      </td>
-    </tr>
-  </table>
+    <!-- Project Status -->
+    <div class="project-status-section">
+      <div class="status-indicator" [ngClass]="getProjectStatusClass()">
+        <div class="status-icon">
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 100">check_circle</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 80 && getProjectCompletionPercentage() < 100">radio_button_checked</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() >= 50 && getProjectCompletionPercentage() < 80">schedule</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() > 0 && getProjectCompletionPercentage() < 50">hourglass_empty</mat-icon>
+          <mat-icon *ngIf="getProjectCompletionPercentage() === 0">play_circle_outline</mat-icon>
+        </div>
+        <div class="status-text">
+          <div class="completion-percentage">{{ getProjectCompletionPercentage() }}% bearbeitet</div>
+          <div class="status-description">{{ getProjectStatusDescription() }}</div>
+        </div>
+      </div>
+    </div>
 
-  <h2 class="section-heading">List of Mappings</h2>
-  <table class="modern-table">
-    <tr>
-      <th class="col-wide">Mapping Name</th>
-      <th class="col-narrow">Action
-        <button mat-icon-button (click)="openAddMappingDialog(this.projectKey)"  title="Add new mapping" class="mat-icon-button-sm">
-          <mat-icon>add-box</mat-icon>
-        </button>
-      </th>
-    </tr>
-    <tr *ngFor="let mapping of mappings" class="hover-highlight">
-      <td class="clickable-cell" (click)="goToMapping(mapping.id)" >{{ mapping.name }}</td>
-      <td>
-        <button mat-icon-button (click)="goToMapping(mapping.id)" class="mat-icon-button-sm">
-          <mat-icon>edit</mat-icon> 
-        </button>
-       
-      </td>
-    </tr>
-  </table>
+    <!-- Overall Progress Cards -->
+    <div class="overview-cards">
+      <!-- Total Fields Card -->
+      <div class="overview-card total-card">
+        <div class="card-header">
+          <span class="card-title">Gesamt</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().total }}</div>
+        <div class="card-subtitle">Felder in {{ getProjectOverallSummary().totalMappings }} Mappings</div>
+      </div>
+
+      <!-- Compatible Card -->
+      <div class="overview-card success-card">
+        <div class="card-header">
+          <span class="card-title">Kompatibel</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().compatible }}</div>
+        <div class="card-subtitle">Keine Probleme</div>
+      </div>
+
+      <!-- Solved Card -->
+      <div class="overview-card resolved-card">
+        <div class="card-header">
+          <span class="card-title">Gelöst</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().solved }}</div>
+        <div class="card-subtitle">Durch Aktionen behoben</div>
+      </div>
+
+      <!-- Warning Card -->
+      <div class="overview-card attention-card">
+        <div class="card-header">
+          <span class="card-title">Warnung</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().warning }}</div>
+        <div class="card-subtitle">Überprüfung empfohlen</div>
+      </div>
+
+      <!-- Incompatible Card -->
+      <div class="overview-card danger-card">
+        <div class="card-header">
+          <span class="card-title">Inkompatibel</span>
+        </div>
+        <div class="card-value">{{ getProjectOverallSummary().incompatible }}</div>
+        <div class="card-subtitle">Aktion erforderlich</div>
+      </div>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-label">Gesamtfortschritt über alle Mappings</div>
+      <div class="progress-bar">
+        <div
+          class="progress-segment compatible"
+          [style.width.%]="getProjectProgressPercentage('compatible')"
+          [matTooltip]="getProjectOverallSummary().compatible + ' kompatibel'"
+        ></div>
+        <div
+          class="progress-segment solved"
+          [style.width.%]="getProjectProgressPercentage('solved')"
+          [matTooltip]="getProjectOverallSummary().solved + ' gelöst'"
+        ></div>
+        <div
+          class="progress-segment warning"
+          [style.width.%]="getProjectProgressPercentage('warning')"
+          [matTooltip]="getProjectOverallSummary().warning + ' Warnung'"
+        ></div>
+        <div
+          class="progress-segment incompatible"
+          [style.width.%]="getProjectProgressPercentage('incompatible')"
+          [matTooltip]="getProjectOverallSummary().incompatible + ' inkompatibel'"
+        ></div>
+      </div>
+      <div class="progress-text">
+        {{ getProjectCompletionPercentage() }}% aller Felder bearbeitet
+      </div>
+    </div>
+  </div>
+
+  <!-- Package List Component -->
+  <app-package-list
+    [packages]="packages"
+    [projectKey]="projectKey"
+    (packageDeleted)="onPackageDeleted($event)"
+    (packageUpdated)="onPackageUpdated($event)"
+    (projectReloadRequested)="onPackagesDownloaded()"
+  >
+  </app-package-list>
+
+  <!-- Comparison List Component -->
+  <app-comparison-list
+    [comparisons]="comparisons"
+    [projectKey]="projectKey"
+    (comparisonViewed)="onComparisonViewed($event)"
+    (comparisonDeleted)="onComparisonDeleted($event)"
+    (comparisonCreated)="onComparisonCreated($event)"
+  >
+  </app-comparison-list>
+
+  <!-- Mapping List Component -->
+  <app-mapping-list
+    [mappings]="mappings"
+    [projectKey]="projectKey"
+    (mappingViewed)="onMappingViewed($event)"
+    (mappingDeleted)="onMappingDeleted($event)"
+    (mappingCreated)="onMappingCreated($event)"
+  >
+  </app-mapping-list>
+
+  <!-- Transformation List Component -->
+  <app-transformation-list
+    [transformations]="transformations"
+    [projectKey]="projectKey"
+    (transformationViewed)="onTransformationViewed($event)"
+    (transformationDeleted)="onTransformationDeleted($event)"
+    (transformationCreated)="onTransformationCreated($event)"
+  >
+  </app-transformation-list>
+
+  <!-- Target Creation List Component -->
+  <app-target-creation-list
+    [targetCreations]="targetCreations"
+    [projectKey]="projectKey"
+    (targetCreationViewed)="onTargetCreationViewed($event)"
+    (targetCreationDeleted)="onTargetCreationDeleted($event)"
+    (targetCreationCreated)="onTargetCreationCreated($event)"
+  >
+  </app-target-creation-list>
+
+  <!-- Manual Entries Import Section -->
+  <div class="manual-entries-import-card mat-elevation-z2">
+    <div class="import-card-header">
+      <h2>Legacy Data Import</h2>
+      <p class="import-description">
+        Importieren Sie bestehende manual_entries.yaml Dateien und migrieren Sie diese automatisch
+        in das aktuelle Format mit Mapping-Zuordnung.
+      </p>
+    </div>
+    <div class="import-card-actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="openManualEntriesImportDialog(projectKey)"
+        class="import-button"
+      >
+        <mat-icon>upload_file</mat-icon>
+        Legacy manual_entries.yaml importieren
+      </button>
+    </div>
+  </div>
+
+  <div style="height: 40px"></div>
 </div>

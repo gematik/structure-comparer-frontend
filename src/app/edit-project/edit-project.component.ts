@@ -1,4 +1,4 @@
-﻿/*
+/*
  *
  * Copyright 2025 gematik GmbH
  *
@@ -26,30 +26,65 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { faPlus } from '@fortawesome/free-solid-svg-icons/faPlus';
-import { firstValueFrom } from 'rxjs';
-import { MappingsListComponent } from '../mappings-list/mappings-list.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
 import { MappingsService } from '../mappings.service';
 import { Comparison } from '../models/comparison.model';
 import { Mapping } from '../models/mapping.model';
 import { Package } from '../models/package.model';
 import { ProjectService } from '../project.service';
-import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { ComparisonService } from '../comparison.service';
+import { PackageService } from '../package.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
+import { AddComparisonDialogComponent } from '../add-comparison-dialog/add-comparison-dialog.component';
+import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
 import { PackageUploadDialogComponent } from '../package-upload-dialog/package-upload-dialog.component';
 import { UpdatePackageNameDialogComponent } from '../update-package-name-dialog/update-package-name-dialog.component';
-import { AddMappingDialogComponent } from '../add-mapping-dialog/add-mapping-dialog.component';
+import { ManualEntriesImportDialogComponent } from '../manual-entries-import-dialog/manual-entries-import-dialog.component';
+import { EditProjectMetadataDialogComponent, EditProjectMetadataDialogData, EditProjectMetadataDialogResult } from '../edit-project-metadata-dialog/edit-project-metadata-dialog.component';
+
+// Import new sub-components
+import { PackageListComponent } from '../shared/package-list/package-list.component';
+import { ComparisonListComponent } from '../shared/comparison-list/comparison-list.component';
+import { MappingListComponent } from '../shared/mapping-list/mapping-list.component';
+import { TransformationListComponent } from '../shared/transformation-list/transformation-list.component';
+import { LoadingOverlayComponent } from '../shared/loading-overlay/loading-overlay.component';
+
+// Import Transformation models and service
+import { Transformation } from '../models/transformation.model';
+import { TransformationService } from '../transformation.service';
+
+// Import Target Creation models and service
+import { TargetCreationListItem } from '../models/target-creation.model';
+import { TargetCreationService } from '../target-creation.service';
+import { TargetCreationListComponent } from '../shared/target-creation-list/target-creation-list.component';
+import { DependencyWarningComponent } from '../shared/dependency-warning/dependency-warning.component';
+
+
+
 
 @Component({
   selector: 'app-edit-project',
   standalone: true,
-  imports: [MappingsListComponent, CommonModule, FontAwesomeModule, MatButtonModule, MatIcon],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    PackageListComponent,
+    ComparisonListComponent,
+    MappingListComponent,
+    TransformationListComponent,
+    TargetCreationListComponent,
+    LoadingOverlayComponent,
+    DependencyWarningComponent
+  ],
   templateUrl: './edit-project.component.html',
   styleUrl: './edit-project.component.css'
 })
@@ -59,24 +94,97 @@ export class EditProjectComponent implements OnInit {
   packages: Package[] = [];
   comparisons: Comparison[] = [];
   mappings: Mapping[] = [];
-  
+  transformations: Transformation[] = [];
+  targetCreations: TargetCreationListItem[] = [];
+
   // Project identification
   projectName: string = '';
   projectKey: string = '';
   projectData: any;
-  
-  // FontAwesome icons for UI elements
-  faEdit = faEdit;   // Icon fÃ¼r den Edit-Button
-  faPlus = faPlus;   // Icon fÃ¼r den Plus-Button
-  faTrash = faTrash; // Icon fÃ¼r den Delete-Button
-  
+
+  // Loading state for global operations
+  isLoading = false;  // Track global loading state
+
+  // Event handlers for sub-components
+  onPackageDeleted(event: { id: string; name: string }): void {
+    this.packages = this.packages.filter(p => p.name !== event.name);
+    console.log(`Package ${event.name} deleted`);
+  }
+
+  onPackageUpdated(updatedPackage: Package): void {
+    const index = this.packages.findIndex(p => p.name === updatedPackage.name);
+    if (index !== -1) {
+      this.packages[index] = updatedPackage;
+    }
+    console.log(`Package ${updatedPackage.name} updated`);
+  }
+
+  onComparisonViewed(comparisonId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'comparison', comparisonId]);
+  }
+
+  onComparisonDeleted(comparisonId: string): void {
+    this.comparisons = this.comparisons.filter(c => c.id !== comparisonId);
+    console.log(`Comparison ${comparisonId} deleted`);
+  }
+
+  onComparisonCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
+  onMappingViewed(mappingId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'mapping', mappingId]);
+  }
+
+  onMappingDeleted(event: { id: string; name: string }): void {
+    this.mappings = this.mappings.filter(m => m.id !== event.id);
+    console.log(`Mapping ${event.name} deleted`);
+  }
+
+  onMappingCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
+  // Transformation event handlers
+  onTransformationViewed(transformationId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'transformation', transformationId]);
+  }
+
+  onTransformationDeleted(event: { id: string; name: string }): void {
+    this.transformations = this.transformations.filter(t => t.id !== event.id);
+    console.log(`Transformation ${event.name} deleted`);
+  }
+
+  onTransformationCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
+  // Target Creation event handlers
+  onTargetCreationViewed(targetCreationId: string): void {
+    this.router.navigate(['/project', this.projectKey, 'target-creation', targetCreationId]);
+  }
+
+  onTargetCreationDeleted(event: { id: string; name: string }): void {
+    this.targetCreations = this.targetCreations.filter(tc => tc.id !== event.id);
+    console.log(`Target Creation ${event.name} deleted`);
+  }
+
+  onTargetCreationCreated(event: any): void {
+    this.refreshProjectData();
+  }
+
   constructor(
     private route: ActivatedRoute,
     private mappingsService: MappingsService,
     private projectService: ProjectService,
     private comparisonService: ComparisonService,
+    private transformationService: TransformationService,
+    private targetCreationService: TargetCreationService,
     private router: Router,
-    private dialog: MatDialog) { }
+    private dialog: MatDialog,
+    private packageService: PackageService,
+    private snackBar: MatSnackBar
+  ) { }
 
   /**
    * Initializes the component by loading project data
@@ -86,7 +194,7 @@ export class EditProjectComponent implements OnInit {
   async ngOnInit() {
     this.projectData = this.projectService.getProjectData();
     this.projectKey = this.route.snapshot.paramMap.get('projectKey') || '';
-    
+
     // If no cached data exists, reload from server
     if (!this.projectData) {
       console.warn('Project data not found in service. Reloading...');
@@ -99,9 +207,49 @@ export class EditProjectComponent implements OnInit {
       this.mappings = this.projectData.mappings;
       this.packages = this.projectData.packages;
       this.comparisons = this.projectData.comparisons;
+
+      // Load transformations from API
+      this.loadTransformations();
+
+      // Load target creations from API
+      this.loadTargetCreations();
+
+      this.hydrateCounts();
     } else {
       console.error('Project data could not be loaded!');
     }
+  }
+
+  /**
+   * Loads transformations for the current project from the API
+   */
+  private loadTransformations(): void {
+    this.transformationService.getTransformations(this.projectKey).subscribe({
+      next: (transformations) => {
+        this.transformations = transformations;
+        console.log('Transformations loaded:', transformations.length);
+      },
+      error: (err) => {
+        console.error('Error loading transformations:', err);
+        this.transformations = [];
+      }
+    });
+  }
+
+  /**
+   * Loads target creations for the current project from the API
+   */
+  private loadTargetCreations(): void {
+    this.targetCreationService.getTargetCreations(this.projectKey).subscribe({
+      next: (targetCreations) => {
+        this.targetCreations = targetCreations;
+        console.log('Target Creations loaded:', targetCreations.length);
+      },
+      error: (err) => {
+        console.error('Error loading target creations:', err);
+        this.targetCreations = [];
+      }
+    });
   }
 
   /**
@@ -115,48 +263,47 @@ export class EditProjectComponent implements OnInit {
       try {
         const data = await firstValueFrom(this.projectService.reloadProjectData(projectKey));
         this.projectData = data;
-        console.log('Projekt geladen:', data);
+        console.log('Project loaded:', data);
       } catch (error) {
-        console.error('Fehler beim Laden des Projekts:', error);
+        console.error('Error loading project:', error);
       }
     }
     console.log('Project data:', this.projectData);
   }
 
-  /**
-   * Navigates to the mapping detail page for a specific mapping
-   * @param mappingId The ID of the mapping to view
-   */
-  goToMapping(mappingId: string): void {
-    this.router.navigate([`/project`, this.projectKey, `mapping`, mappingId]);
+
+  // Hilfsfunktion: robustes Auslesen inkl. Fallbacks
+  private valueFor<T extends object>(row: any, col: string): any {
+    if (!row) return null;
+    // Spezialfall: Packages anzeigen/sortieren nach displayName
+    if (col === 'displayName') return (row.display ?? `${row.name}#${row.version}`) ?? '';
+    return (row as any)[col];
   }
 
-  /**
-   * Navigates to the comparison page for a specific comparison
-   * @param comparisonId The ID of the comparison to view
-   */
-  goToComparison(comparisonId: string): void {
-    this.router.navigate([`/project`, this.projectKey, `comparison`, comparisonId]);
+  // Zahlenerkennung: "49" -> 49, "09" -> 9, null -> NaN
+  private toNumber(v: any): number {
+    if (typeof v === 'number') return v;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : NaN;
   }
 
-  /**
-   * Opens the package upload dialog for adding new packages to the project
-   * @param projectKey The key of the current project
-   */
-  openPackageUploadDialog(projectKey: string) {
-    const dialogRef = this.dialog.open(PackageUploadDialogComponent, {
-      width: '400px',
-      data: { projectKey }
-    });
-    
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        console.log('Datei erhalten:', result);
-        // Add the uploaded package to the local list
-        this.packages.push(result);
-      }
-    });
+  // Vergleicher mit Auto-Erkennung: wenn beide Werte numerisch sind -> numerisch
+  private smartCompare(a: any, b: any): number {
+    const na = this.toNumber(a);
+    const nb = this.toNumber(b);
+    const bothNumeric = Number.isFinite(na) && Number.isFinite(nb);
+
+    if (bothNumeric) return na - nb;
+
+    // Stringvergleich (localeCompare) mit Null-Handling
+    const sa = (a ?? '').toString();
+    const sb = (b ?? '').toString();
+    return sa.localeCompare(sb, undefined, { numeric: true, sensitivity: 'base' });
   }
+
+
+
+
 
   /**
    * Opens the package name edit dialog for updating package display names
@@ -172,44 +319,92 @@ export class EditProjectComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== null) {
-        console.log('Neuer Name:', result);
+        console.log('New name:', result);
         // API call zum Umbenennen would be implemented here
       }
     });
   }
 
   /**
-   * Deletes a comparison after user confirmation
-   * @param id The ID of the comparison to delete
+   * Deletes a package after user confirmation and refreshes the component
+   * Shows global loading overlay during deletion process
+   * @param packageId The ID of the package to delete
+   * @param packageName The display name of the package for confirmation message
    */
-  deleteComparisonWithConfirm(id: string) {
+  deletePackageWithConfirm(packageId: string, packageName: string) {
     this.dialog.open(ConfirmDialogComponent, {
       width: '300px',
-      data: { message: 'Willst du diesen Vergleich wirklich lÃ¶schen?' }
+      data: { message: `Do you really want to delete the package "${packageName}"?` }
     }).afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.comparisonService.deleteComparison(this.projectKey, id).subscribe(() => {
-          // Remove the deleted comparison from the local array
-          this.comparisons = this.comparisons.filter(c => c.id !== id);
+        this.isLoading = true;
+
+        this.packageService.deletePackage(this.projectKey, packageId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting package:', error);
+            this.isLoading = false;
+          }
         });
       }
     });
   }
 
   /**
-   * Deletes a comparison directly without confirmation dialog
-   * @param comparisonId The ID of the comparison to delete
+   * Deletes a mapping after user confirmation and refreshes the data
+   * Shows global loading overlay during deletion process
+   * @param mappingId The ID of the mapping to delete
+   * @param mappingName The name of the mapping for confirmation message
    */
-  deleteComparison(comparisonId: string) {
-    this.comparisonService.deleteComparison(this.projectKey, comparisonId).subscribe(
-      response => {
-        console.log('Comparison deleted successfully:', response);
-        // Remove the deleted comparison from the local array
-        this.comparisons = this.comparisons.filter(comparison => comparison.id !== comparisonId);
-      },
-      error => {
-        console.error('Error deleting comparison:', error);
-      });
+  deleteMappingWithConfirm(mappingId: string, mappingName: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: `Do you really want to delete the mapping "${mappingName}"?` }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.isLoading = true;
+
+        this.mappingsService.deleteMapping(this.projectKey, mappingId).subscribe({
+          next: () => {
+            this.refreshProjectData();
+          },
+          error: (error) => {
+            console.error('Error deleting mapping:', error);
+            this.isLoading = false;
+          }
+        });
+      }
+    });
+  }
+
+  /**
+   * Deletes a comparison after user confirmation
+   * Shows global loading overlay during deletion process
+   * @param id The ID of the comparison to delete
+   */
+  deleteComparisonWithConfirm(id: string) {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '300px',
+      data: { message: 'Do you really want to delete this comparison?' }
+    }).afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.isLoading = true;
+
+        this.comparisonService.deleteComparison(this.projectKey, id).subscribe({
+          next: () => {
+            // Remove the deleted comparison from the local array
+            this.comparisons = this.comparisons.filter(c => c.id !== id);
+            this.isLoading = false;
+          },
+          error: (error) => {
+            console.error('Error deleting comparison:', error);
+            this.isLoading = false;
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -263,6 +458,23 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
+   * Saves a new comparison to the project
+   * @param projectKey The key of the current project
+   * @param payload The comparison data to save
+   */
+  private saveComparison(projectKey: string, payload: any) {
+    this.comparisonService.createComparison(projectKey, payload).subscribe(
+      comparison => {
+        // Add the new comparison to the local list
+        this.comparisons.push(comparison);
+      },
+      error => {
+        console.error('Error creating comparison:', error);
+      }
+    );
+  }
+
+  /**
    * Maps dialog result to API payload format
    * @param result The result from the dialog
    * @returns Formatted payload for API calls
@@ -276,19 +488,379 @@ export class EditProjectComponent implements OnInit {
   }
 
   /**
-   * Saves a new comparison to the project
-   * @param projectKey The key of the current project
-   * @param payload The comparison data to save
+   * Refreshes project data without full page reload
+   * Uses global loading state for better UX
+   * Recommended approach for better performance
    */
-  private saveComparison(projectKey: string, payload: any) {
-    this.comparisonService.createComparison(projectKey, payload).subscribe(
-      comparison => {
-        // Add the new comparison to the local list
-        this.comparisons.push(comparison);
-      },
-      error => {
-        console.error('Fehler beim Erstellen des Vergleichs:', error);
+  private async refreshProjectData() {
+    try {
+      const data = await firstValueFrom(this.projectService.reloadProjectData(this.projectKey));
+      this.projectData = data;
+      this.projectName = data.name;
+      this.mappings = data.mappings;
+      this.packages = data.packages;
+      this.comparisons = data.comparisons;
+
+      // Reload transformations
+      this.loadTransformations();
+
+      this.hydrateCounts();
+      console.log('Project data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing project data:', error);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  /**
+   * Called when packages are downloaded from the dependency warning component.
+   * Reloads the project data to reflect the newly added packages.
+   */
+  async onPackagesDownloaded(): Promise<void> {
+    console.log('Packages downloaded, reloading project data...');
+    this.isLoading = true;
+    await this.refreshProjectData();
+  }
+
+  /**
+   * Maps backend evaluation summary to frontend mapping counts
+   * Uses new 4-category status system from backend
+   */
+  private mapEvaluationSummaryToCounts(summary: any) {
+    return {
+      // New 4-category status counts from backend
+      total: summary.total || 0,
+      compatible: summary.compatible || 0,
+      solved: summary.solved || 0,
+      warning: summary.warning || 0,
+      incompatible: summary.incompatible || 0
+    };
+  }
+
+  private hydrateCounts(): void {
+    // Comparisons - Keep existing basic logic for now (no enhanced evaluation API yet)
+    if (this.comparisons?.length) {
+      const jobs = this.comparisons.map(c =>
+        this.comparisonService.getComparisonData(this.projectKey, c.id).pipe(
+          map(detail => ({ id: c.id, ...this.countFieldsByBasicClassification(detail?.fields ?? []) })),
+          catchError(() => of({ id: c.id, warning: 0, incompatible: 0 }))
+        )
+      );
+      forkJoin(jobs).subscribe(results => {
+        const byId = new Map(results.map(r => [r.id, r]));
+        this.comparisons = this.comparisons.map(c => {
+          const r = byId.get(c.id);
+          return { ...c, warningCount: r?.warning ?? 0, incompatibleCount: r?.incompatible ?? 0 };
+        });
+
+      });
+    }
+
+    // Mappings - Use backend evaluation summary API
+    if (this.mappings?.length) {
+      const jobs = this.mappings.map(m =>
+        this.comparisonService.getMappingEvaluationSummary(this.projectKey, m.id).pipe(
+          map(summary => ({ id: m.id, ...this.mapEvaluationSummaryToCounts(summary) })),
+          catchError((error) => {
+            console.warn(`Failed to load evaluation summary for mapping ${m.id}:`, error);
+            // Fallback to loading mapping details and counting locally
+            return this.mappingsService.getMapping(this.projectKey, m.id).pipe(
+              map(detail => ({ id: m.id, ...this.countFieldsByBasicClassification(detail?.fields ?? []) })),
+              catchError(() => of({
+                id: m.id,
+                total: 0,
+                compatible: 0,
+                solved: 0,
+                warning: 0,
+                incompatible: 0
+              }))
+            );
+          })
+        )
+      );
+      forkJoin(jobs).subscribe(results => {
+        const byId = new Map(results.map(r => [r.id, r]));
+        this.mappings = this.mappings.map(m => {
+          const r = byId.get(m.id);
+          return {
+            ...m,
+            // New 4-category status counts from backend
+            total: r?.total ?? 0,
+            compatible: r?.compatible ?? 0,
+            solved: r?.solved ?? 0,
+            warning: r?.warning ?? 0,
+            incompatible: r?.incompatible ?? 0
+          };
+        });
+      });
+    }
+  }
+
+  /**
+   * Fallback method for basic field classification counting
+   * Used when backend evaluation API is not available
+   */
+  private countFieldsByBasicClassification(fields: any[]) {
+    let warning = 0, incompatible = 0, compatible = 0;
+
+    for (const f of fields ?? []) {
+      const cls = (f?.classification ?? '').toString().toLowerCase();
+      switch (cls) {
+        case 'compatible':
+          compatible++;
+          break;
+        case 'warning':
+          warning++;
+          break;
+        case 'incompatible':
+          incompatible++;
+          break;
       }
-    );
+    }
+
+    return {
+      total: fields?.length ?? 0,
+      compatible,
+      solved: 0, // Backend evaluation required for this
+      warning,
+      incompatible
+    };
+  }
+
+  /**
+   * Calculates overall project progress by aggregating all mapping statistics
+   * Uses the same 4 categories as the detail page: compatible, solved, warning, incompatible
+   */
+  getProjectOverallSummary(): any {
+    if (!this.mappings || this.mappings.length === 0) {
+      return {
+        total: 0,
+        compatible: 0,
+        solved: 0,
+        warning: 0,
+        incompatible: 0,
+        totalMappings: 0
+      };
+    }
+
+    const summary = {
+      total: 0,
+      compatible: 0,
+      solved: 0,
+      warning: 0,
+      incompatible: 0,
+      totalMappings: this.mappings.length
+    };
+
+    this.mappings.forEach(mapping => {
+      // Use the backend-calculated status counts (same 4 categories as detail page)
+      summary.total += mapping.total || 0;
+      summary.compatible += mapping.compatible || 0;
+      summary.solved += mapping.solved || 0;
+      summary.warning += mapping.warning || 0;
+      summary.incompatible += mapping.incompatible || 0;
+    });
+
+    return summary;
+  }
+
+  /**
+   * Calculates the overall project completion percentage
+   * Considers compatible and solved fields as "completed"
+   */
+  getProjectCompletionPercentage(): number {
+    const summary = this.getProjectOverallSummary();
+    if (summary.total === 0) {
+      return 0;
+    }
+
+    const completed = summary.compatible + summary.solved;
+    return Math.round((completed / summary.total) * 100);
+  }
+
+  /**
+   * Gets the percentage for a specific category in the progress bar
+   * @param category The category to calculate percentage for ('completed', 'resolved', 'needs_action')
+   */
+  getProjectProgressPercentage(category: string): number {
+    const summary = this.getProjectOverallSummary();
+    if (summary.total === 0) {
+      return 0;
+    }
+
+    const value = (summary as any)[category] || 0;
+    return (value / summary.total) * 100;
+  }
+
+  /**
+   * Gets a human-readable status description for the project
+   */
+  getProjectStatusDescription(): string {
+    const summary = this.getProjectOverallSummary();
+    const completionPercentage = this.getProjectCompletionPercentage();
+
+    if (summary.total === 0) {
+      return 'Keine Mappings im Projekt vorhanden';
+    }
+
+    if (completionPercentage >= 100) {
+      return 'Alle Felder sind vollständig bearbeitet';
+    } else if (completionPercentage >= 80) {
+      return 'Projekt ist fast vollständig';
+    } else if (completionPercentage >= 50) {
+      return 'Projekt ist zur Hälfte bearbeitet';
+    } else if (completionPercentage > 0) {
+      return 'Projekt ist teilweise bearbeitet';
+    } else {
+      return 'Projekt noch nicht bearbeitet';
+    }
+  }
+
+  /**
+   * Gets the appropriate CSS class for the project progress status
+   */
+  getProjectStatusClass(): string {
+    const completionPercentage = this.getProjectCompletionPercentage();
+
+    if (completionPercentage >= 100) {
+      return 'status-completed';
+    } else if (completionPercentage >= 80) {
+      return 'status-nearly-done';
+    } else if (completionPercentage >= 50) {
+      return 'status-half-done';
+    } else if (completionPercentage > 0) {
+      return 'status-in-progress';
+    } else {
+      return 'status-not-started';
+    }
+  }
+
+  /**
+   * Opens the manual entries import dialog
+   * @param projectKey The key of the current project
+   */
+  openManualEntriesImportDialog(projectKey: string): void {
+    this.dialog.open(ManualEntriesImportDialogComponent, {
+      width: '600px',
+      data: { projectKey }
+    }).afterClosed().subscribe(result => {
+      if (result) {
+        console.log('Manual entries import completed:', result);
+        // Optionally refresh project data after successful import
+        this.refreshProjectData();
+      }
+    });
+  }
+
+  /**
+   * Downloads all StructureMaps for all mappings in the project
+   * Shows a warning dialog if there are incomplete mappings
+   */
+  downloadAllStructureMaps(): void {
+    const summary = this.getProjectOverallSummary();
+    const incompleteCount = summary.incompatible || 0;
+
+    if (incompleteCount > 0) {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        data: {
+          title: 'Unvollständige Mappings',
+          message: `Achtung: Das Projekt enthält noch ${incompleteCount} unvollständige Feld(er) ohne gesetzte Aktion. Möchten Sie die StructureMaps trotzdem herunterladen?`,
+          confirmText: 'Trotzdem herunterladen',
+          cancelText: 'Abbrechen'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          this.performAllStructureMapsDownload();
+        }
+      });
+    } else {
+      this.performAllStructureMapsDownload();
+    }
+  }
+
+  /**
+   * Performs the actual download of all StructureMaps
+   */
+  private performAllStructureMapsDownload(): void {
+    this.mappingsService.downloadProjectStructureMaps(this.projectKey)
+      .pipe(catchError(err => {
+        console.error('Error downloading project StructureMaps', err);
+        this.snackBar.open('Fehler beim Herunterladen der StructureMap-Dateien', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        return of(new Blob());
+      }))
+      .subscribe(data => {
+        if (data.size > 0) {
+          this.saveFile(data, `${this.projectKey}_all_structuremaps.zip`);
+          this.snackBar.open('Alle StructureMap-Dateien erfolgreich heruntergeladen', 'Schließen', { duration: 3000 });
+        }
+      });
+  }
+
+  /**
+   * Opens the dialog to edit project metadata (version and status)
+   */
+  openEditProjectMetadataDialog(): void {
+    const dialogData: EditProjectMetadataDialogData = {
+      projectKey: this.projectKey,
+      projectName: this.projectName,
+      currentVersion: this.projectData?.version,
+      currentStatus: this.projectData?.status
+    };
+
+    this.dialog.open(EditProjectMetadataDialogComponent, {
+      width: '500px',
+      data: dialogData
+    }).afterClosed().subscribe((result: EditProjectMetadataDialogResult) => {
+      if (result) {
+        this.updateProjectMetadata(result);
+      }
+    });
+  }
+
+  /**
+   * Updates project metadata (version and status) via API
+   */
+  private updateProjectMetadata(metadata: EditProjectMetadataDialogResult): void {
+    const updateData = {
+      name: this.projectName,
+      version: metadata.version,
+      status: metadata.status
+    };
+
+    this.projectService.updateProject(this.projectKey, updateData).subscribe({
+      next: (updatedProject) => {
+        this.projectData = updatedProject;
+        this.snackBar.open('Projekt-Metadaten erfolgreich aktualisiert', 'Schließen', { duration: 3000 });
+      },
+      error: (error) => {
+        console.error('Error updating project metadata:', error);
+        this.snackBar.open('Fehler beim Aktualisieren der Projekt-Metadaten', 'Schließen', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  /**
+   * Helper method to save a blob as a file
+   * @param blob The blob to save
+   * @param filename The filename to use
+   */
+  private saveFile(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }

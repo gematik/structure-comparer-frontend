@@ -19,7 +19,7 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 import { Component, Inject } from '@angular/core';
-import { Profile } from '../models/profile.model'; 
+import { Profile } from '../models/profile.model';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
@@ -28,22 +28,23 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { GroupedSelectComponent, GroupedSelectOption } from '../shared/grouped-select/grouped-select.component';
 
 @Component({
   selector: 'app-add-mapping-dialog',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, FormsModule, MatSelectModule, MatFormFieldModule, MatButtonModule, MatIconModule, GroupedSelectComponent],
   templateUrl: './add-mapping-dialog.component.html',
   styleUrl: './add-mapping-dialog.component.css'
 })
 export class AddMappingDialogComponent {
- projectKey: string;
+  projectKey: string;
   sourceProfileKeys: string[] = [''];
   targetProfileKey = '';
-  collapsedGroups = new Set<string>(); // enthÃ¤lt zugeklappte package-Namen
-  
+  collapsedGroups = new Set<string>();
 
   packageGroups: { package: string; profiles: Profile[] }[] = [];
+  profileOptions: GroupedSelectOption[] = [];
 
   constructor(private dialogRef: MatDialogRef<AddMappingDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { projectKey: string },
@@ -54,10 +55,10 @@ export class AddMappingDialogComponent {
   }
 
   ngOnInit() {
-    
+
    this.loadProfiles(this.projectKey);
-   
-   
+
+
   }
 
   groupProfilesByPackage(profiles: Profile[]) {
@@ -74,16 +75,23 @@ export class AddMappingDialogComponent {
       package: pkg,
       profiles
     }));
+
+    // Build profile options for grouped select
+    this.profileOptions = profiles.map(profile => ({
+      value: profile.key,
+      label: profile.name,
+      group: profile.package
+    }));
   }
 
   loadProfiles(projectKey: string) {
-    
+
     console.log('Lade Profile fÃ¼r Projekt:', projectKey);
     this.projectService.getProjectProfiles(projectKey).subscribe(
       (profiles) => {
         console.log('Profile geladen:', profiles);
         this.groupProfilesByPackage(profiles.profiles);
-       
+
       },
       (error) => {
         console.error('Fehler beim Laden der Profile:', error);
@@ -125,7 +133,7 @@ trackByIndex(index: number): number {
   save(): void {
     // Filter out empty profile keys
     const validSourceProfileKeys = this.sourceProfileKeys.filter(key => key.trim() !== '');
-    
+
     this.dialogRef.close({
       sourceProfileKeys: validSourceProfileKeys,
       targetProfileKey: this.targetProfileKey

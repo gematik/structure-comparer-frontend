@@ -1,0 +1,225 @@
+<!-- Target Creation Detail Component - Phase 8.2 Template -->
+<div class="m-20" *ngIf="targetCreation">
+  <!-- Header with Actions -->
+  <div class="header-actions">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="exportAsYaml()"
+      aria-label="Export as YAML"
+    >
+      <mat-icon>file_download</mat-icon>
+      Export YAML
+    </button>
+  </div>
+
+  <!-- Target Creation Overview -->
+  <div class="target-creation-overview">
+    <h3>Target Creation: {{ targetCreation.name }}</h3>
+
+    <!-- General Information -->
+    <div class="info-section">
+      <h4>Details</h4>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Target Profile:</span>
+          <a [href]="targetCreation.target.webUrl || targetCreation.target.url" target="_blank">
+            {{ targetCreation.target.name }}
+          </a>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Version:</span>
+          <span class="info-value">{{ targetCreation.version }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Status:</span>
+          <span class="info-value status-badge" [ngClass]="'status-' + targetCreation.status">
+            {{ targetCreation.status }}
+          </span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Last Updated:</span>
+          <span class="info-value">{{ targetCreation.last_updated | date: 'dd.MM.yyyy HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Summary Cards -->
+    <div class="overview-cards">
+      <div class="overview-card total-card">
+        <div class="card-header">
+          <span class="card-title">Total</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusCounts().total }}
+          <span *ngIf="isFilteredView()" class="card-value-filtered">
+            ({{ getFilteredStatusCounts().total }} shown)
+          </span>
+        </div>
+        <div class="card-subtitle">Fields</div>
+      </div>
+
+      <div class="overview-card action-required-card">
+        <div class="card-header">
+          <span class="card-title">Action Required</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusCounts().action_required }}
+          <span *ngIf="isFilteredView()" class="card-value-filtered">
+            ({{ getFilteredStatusCounts().action_required }} shown)
+          </span>
+        </div>
+        <div class="card-subtitle">Mandatory without action</div>
+      </div>
+
+      <div class="overview-card resolved-card">
+        <div class="card-header">
+          <span class="card-title">Resolved</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusCounts().resolved }}
+          <span *ngIf="isFilteredView()" class="card-value-filtered">
+            ({{ getFilteredStatusCounts().resolved }} shown)
+          </span>
+        </div>
+        <div class="card-subtitle">Action defined</div>
+      </div>
+
+      <div class="overview-card optional-card">
+        <div class="card-header">
+          <span class="card-title">Optional</span>
+        </div>
+        <div class="card-value">
+          {{ getStatusCounts().optional_pending }}
+          <span *ngIf="isFilteredView()" class="card-value-filtered">
+            ({{ getFilteredStatusCounts().optional_pending }} shown)
+          </span>
+        </div>
+        <div class="card-subtitle">No action needed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <div class="controls-left">
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Search fields</mat-label>
+        <input
+          matInput
+          [(ngModel)]="textFilterValue"
+          (ngModelChange)="applyTextFilter()"
+          placeholder="Field name, type, description..."
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          *ngIf="textFilterValue"
+          (click)="clearTextFilter()"
+          aria-label="Clear"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <div class="controls-right">
+      <button
+        mat-raised-button
+        (click)="toggleViewMode()"
+        aria-label="Toggle view mode"
+      >
+        <mat-icon>{{ viewMode === 'flat' ? 'account_tree' : 'view_list' }}</mat-icon>
+        {{ viewMode === 'flat' ? 'Tree View' : 'Flat View' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Fields Table (Flat View) -->
+  <div *ngIf="viewMode === 'flat'" class="fields-table-container">
+    <table class="fields-table">
+      <thead>
+        <tr>
+          <th>Field Name</th>
+          <th>Types</th>
+          <th>Cardinality</th>
+          <th>Action</th>
+          <th>Value/Remark</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let field of filteredFields.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize)"
+          (click)="openEditFieldDialog(field)"
+          class="field-row"
+        >
+          <td class="field-name">
+            {{ field.name }}
+            <span *ngIf="field.extension" class="extension-indicator" [title]="field.extension">
+              [ext]
+            </span>
+          </td>
+          <td class="field-types">{{ formatTypes(field.types) }}</td>
+          <td class="field-cardinality" [style]="getCardinalityStyle(field)">
+            {{ formatCardinality(field) }}
+          </td>
+          <td class="field-action">
+            <div *ngIf="field.action" class="action-display">
+              <mat-icon class="action-icon">{{ getActionIcon(field.action) }}</mat-icon>
+              <span>{{ getActionLabel(field.action) }}</span>
+            </div>
+            <span *ngIf="!field.action" class="no-action">—</span>
+          </td>
+          <td class="field-value">
+            <span *ngIf="field.action === 'fixed'" class="fixed-value">
+              {{ field.fixed || '—' }}
+            </span>
+            <span *ngIf="field.action === 'manual'" class="manual-remark">
+              {{ field.remark || '—' }}
+            </span>
+            <span *ngIf="!field.action">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="filteredFields.length === 0" class="no-results">
+      No fields match your filter criteria.
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-info" *ngIf="filteredFields.length > pageSize">
+    Showing {{ pageIndex * pageSize + 1 }} - {{ Math.min((pageIndex + 1) * pageSize, filteredFields.length) }}
+    of {{ filteredFields.length }} fields
+
+    <div class="pagination-controls">
+      <button
+        mat-icon-button
+        [disabled]="pageIndex === 0"
+        (click)="pageIndex = pageIndex - 1"
+        aria-label="Previous page"
+      >
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+
+      <span>Page {{ pageIndex + 1 }} of {{ Math.ceil(filteredFields.length / pageSize) }}</span>
+
+      <button
+        mat-icon-button
+        [disabled]="(pageIndex + 1) * pageSize >= filteredFields.length"
+        (click)="pageIndex = pageIndex + 1"
+        aria-label="Next page"
+      >
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!targetCreation" class="loading">
+  Loading...
+</div>

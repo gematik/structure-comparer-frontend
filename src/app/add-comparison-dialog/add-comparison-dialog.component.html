@@ -5,44 +5,22 @@
   <!-- Source Profile Selection -->
   <div class="source-profiles-container">
     <h3>Source Profiles</h3>
-    
-    <div *ngFor="let sourceKey of sourceProfileKeys; let i = index; trackBy: trackByIndex" class="source-profile-row">
-      <mat-form-field appearance="fill" class="wide source-selector">
-        <mat-label>Source-profile {{i + 1}}</mat-label>
-        <mat-select [(ngModel)]="sourceProfileKeys[i]">
-          <ng-container *ngFor="let group of packageGroups">
-            <!-- Klickbare Gruppe -->
-            <div
-              class="group-toggle"
-              (click)="toggleGroup(group.package)"
-              role="option"
-              tabindex="0"
-            >
-              <strong>
-                {{ group.package }}
-                {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
-              </strong>
-            </div>
 
-            <!-- Profile nur anzeigen, wenn Gruppe geöffnet -->
-            <ng-container *ngIf="!isGroupCollapsed(group.package)">
-              <mat-option
-                *ngFor="let profile of group.profiles"
-                [value]="profile.key"
-              >
-                {{ profile.name }}
-              </mat-option>
-            </ng-container>
-          </ng-container>
-        </mat-select>
-      </mat-form-field>
-      
+    <div *ngFor="let sourceKey of sourceProfileKeys; let i = index; trackBy: trackByIndex" class="source-profile-row">
+      <app-grouped-select
+        class="wide source-selector"
+        [label]="'Source-profile ' + (i + 1)"
+        [options]="profileOptions"
+        [value]="sourceProfileKeys[i]"
+        (valueChange)="sourceProfileKeys[i] = $event || ''">
+      </app-grouped-select>
+
       <div class="button-group">
         <!-- Remove button (only show if more than one selector) -->
-        <button 
+        <button
           *ngIf="sourceProfileKeys.length > 1"
-          mat-icon-button 
-          color="warn" 
+          mat-icon-button
+          color="warn"
           (click)="removeSourceProfileSelector(i)"
           type="button"
           title="Remove this source profile"
@@ -50,15 +28,15 @@
         >
           <mat-icon>remove</mat-icon>
         </button>
-        
+
         <!-- Invisible spacer when remove button is not shown to maintain alignment -->
         <div *ngIf="sourceProfileKeys.length <= 1" class="button-spacer-small"></div>
-        
+
         <!-- Add button (only show on the last item) -->
-        <button 
+        <button
           *ngIf="i === sourceProfileKeys.length - 1"
-          mat-icon-button 
-          color="primary" 
+          mat-icon-button
+          color="primary"
           (click)="addSourceProfileSelector()"
           type="button"
           title="Add another source profile"
@@ -66,7 +44,7 @@
         >
           <mat-icon>add</mat-icon>
         </button>
-        
+
         <!-- Invisible spacer when add button is not shown to maintain alignment -->
         <div *ngIf="i !== sourceProfileKeys.length - 1" class="button-spacer-small"></div>
       </div>
@@ -75,34 +53,14 @@
 
   <!-- Target Profile Selection -->
   <div class="selector-container">
-    <mat-form-field appearance="fill" class="selector-field">
-      <mat-label>Target-profile</mat-label>
-      <mat-select [(ngModel)]="targetProfileKey">
-        <ng-container *ngFor="let group of packageGroups">
-          <div
-            class="group-toggle"
-            (click)="toggleGroup(group.package)"
-            role="option"
-            tabindex="0"
-          >
-            <strong>
-              {{ group.package }}
-              {{ isGroupCollapsed(group.package) ? '▸' : '▾' }}
-            </strong>
-          </div>
+    <app-grouped-select
+      class="selector-field"
+      [label]="'Target-profile'"
+      [options]="profileOptions"
+      [value]="targetProfileKey"
+      (valueChange)="targetProfileKey = $event || ''">
+    </app-grouped-select>
 
-          <ng-container *ngIf="!isGroupCollapsed(group.package)">
-            <mat-option
-              *ngFor="let profile of group.profiles"
-              [value]="profile.key"
-            >
-              {{ profile.name }}
-            </mat-option>
-          </ng-container>
-        </ng-container>
-      </mat-select>
-    </mat-form-field>
-    
     <!-- Empty spacer to maintain alignment with source profile rows -->
     <div class="button-spacer"></div>
   </div>

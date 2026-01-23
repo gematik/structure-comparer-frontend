@@ -1,0 +1,151 @@
+<div class="transformation-detail-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-container">
+    <p>Lade Transformation...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error" class="error-container">
+    <mat-icon color="warn">error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button (click)="goBack()">Zurück</button>
+  </div>
+
+  <!-- Main content -->
+  <div *ngIf="!loading && !error && transformation" class="content">
+    <!-- Header with back button -->
+    <div class="header">
+      <button mat-icon-button (click)="goBack()" matTooltip="Zurück zur Projektübersicht">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1>{{ transformation.name }}</h1>
+      <span class="status-badge" [ngClass]="getStatusClass(transformation.status)">
+        {{ transformation.status }}
+      </span>
+    </div>
+
+    <!-- Transformation Overview Card -->
+    <mat-card class="overview-card">
+      <mat-card-header>
+        <mat-card-title>Transformation Details</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Version:</span>
+            <span class="value">{{ transformation.version }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Letztes Update:</span>
+            <span class="value">{{ transformation.last_updated | date:'dd.MM.yyyy HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- Profiles Row -->
+        <div class="profiles-row">
+          <div class="profile-section source-section">
+            <h4>Source Profile(s)</h4>
+            <div class="profile-chips">
+              <span *ngFor="let source of transformation.sources" class="profile-chip source">
+                <a *ngIf="source.webUrl" [href]="source.webUrl" target="_blank">
+                  {{ source.name || source.url }}
+                </a>
+                <span *ngIf="!source.webUrl">{{ source.name || source.url }}</span>
+              </span>
+            </div>
+          </div>
+          <div class="arrow-section">
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+          <div class="profile-section target-section">
+            <h4>Target Profile</h4>
+            <div class="profile-chips">
+              <span class="profile-chip target">
+                <a *ngIf="transformation.target.webUrl" [href]="transformation.target.webUrl" target="_blank">
+                  {{ transformation.target.name || transformation.target.url }}
+                </a>
+                <span *ngIf="!transformation.target.webUrl">{{ transformation.target.name || transformation.target.url }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Warning Banner for Unresolved References (Phase 2: UI-Verbesserungen) -->
+    <div *ngIf="unresolvedReferences.length > 0" class="unresolved-references-warning">
+      <mat-icon>warning</mat-icon>
+      <div class="warning-content">
+        <strong>{{ unresolvedReferences.length }} Profil-Referenz(en) konnten nicht aufgelöst werden</strong>
+        <p class="warning-subtitle">Einige fixedUri/fixedCanonical Referenzen verweisen auf Profile, die nicht im Projekt geladen sind.</p>
+        <details class="unresolved-details">
+          <summary>Details anzeigen</summary>
+          <ul class="unresolved-list">
+            <li *ngFor="let ref of unresolvedReferences">{{ ref }}</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <!-- Loading Indicator for Source Fields (Phase 2: UI-Verbesserungen) -->
+    <div *ngIf="loadingSourceFields" class="source-fields-loading">
+      <mat-icon class="spin">sync</mat-icon>
+      <span>Lade Quell-Profil-Felder...</span>
+    </div>
+
+    <!-- Tabs for Resources and Values -->
+    <mat-card class="mappings-card">
+      <mat-tab-group [(selectedIndex)]="activeTabIndex" animationDuration="200ms">
+        <!-- ==================== -->
+        <!-- RESSOURCEN TAB       -->
+        <!-- ==================== -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">folder_special</mat-icon>
+            Ressourcen
+            <span class="tab-count">({{ filteredResourceMappings.length }})</span>
+          </ng-template>
+
+          <div class="tab-content">
+            <app-resource-mapping-table
+              [rows]="resourceMappings"
+              [sourceFields]="sourceResourceFields"
+              [availableMappings]="availableMappings"
+              [filterEnabled]="resourceFilterEnabled"
+              [textFilter]="resourceTextFilter"
+              (filterToggleChange)="onResourceFilterToggleChange($event)"
+              (textFilterChange)="onResourceTextFilterChange($event)"
+              (rowsChange)="onResourceMappingsChange($event)"
+              (saveRequested)="saveResourceChanges()"
+              (viewMappingRequested)="viewMapping($event)">
+            </app-resource-mapping-table>
+          </div>
+        </mat-tab>
+
+        <!-- ==================== -->
+        <!-- VALUES TAB           -->
+        <!-- ==================== -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">data_object</mat-icon>
+            Values
+            <span class="tab-count">({{ filteredValueMappings.length }})</span>
+          </ng-template>
+
+          <div class="tab-content">
+            <app-value-mapping-table
+              [rows]="valueMappings"
+              [sourceFields]="allSourceFields"
+              [filterEnabled]="valueFilterEnabled"
+              [textFilter]="valueTextFilter"
+              (filterToggleChange)="onValueFilterToggleChange($event)"
+              (textFilterChange)="onValueTextFilterChange($event)"
+              (rowsChange)="onValueMappingsChange($event)"
+              (saveRequested)="saveValueChanges()">
+            </app-value-mapping-table>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<!-- Add Target Creation Dialog - Phase 8.4 Template -->
+<h2 mat-dialog-title>Create New Target Creation</h2>
+
+<mat-dialog-content>
+  <p class="dialog-description">
+    Create a new Target Creation by selecting a target profile.
+    Target Creations define how to populate profile structures without source data.
+  </p>
+
+  <!-- Target Profile Selection -->
+  <div class="profile-selection">
+    <h3>Select Target Profile</h3>
+
+    <app-grouped-select
+      [value]="targetProfileKey"
+      (valueChange)="onProfileSelected($event)"
+      [options]="profileOptions"
+      placeholder="Choose target profile..."
+      label="Target Profile"
+      [required]="true"
+    ></app-grouped-select>
+
+    <div class="help-text" *ngIf="!targetProfileKey">
+      <mat-icon>info</mat-icon>
+      <span>Select the FHIR profile structure you want to create</span>
+    </div>
+
+    <div class="profile-info" *ngIf="targetProfileKey">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      <div class="info-content">
+        <strong>Selected:</strong>
+        <span>{{ getSelectedProfileName() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Box -->
+  <div class="info-box">
+    <mat-icon>lightbulb</mat-icon>
+    <div class="info-content">
+      <strong>What is a Target Creation?</strong>
+      <p>
+        Target Creations are used to define how to populate FHIR resources
+        when you need to create them from scratch (without transforming source data).
+        You'll define actions for each field: <strong>manual</strong> implementation
+        or <strong>fixed</strong> values.
+      </p>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()" [disabled]="isCreating">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="create()"
+    [disabled]="!canCreate()"
+  >
+    <mat-icon *ngIf="isCreating">hourglass_empty</mat-icon>
+    <mat-icon *ngIf="!isCreating">add</mat-icon>
+    <span *ngIf="!isCreating">Create Target Creation</span>
+    <span *ngIf="isCreating">Creating...</span>
+  </button>
+</mat-dialog-actions>

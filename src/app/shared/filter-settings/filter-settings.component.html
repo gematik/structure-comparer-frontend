@@ -1,0 +1,44 @@
+<div class="filter-settings-container">
+  <button
+    mat-icon-button
+    (click)="toggleExpansion()"
+    class="filter-toggle-btn"
+    [class.expanded]="isExpanded"
+    matTooltip="Filter-Einstellungen"
+    aria-label="Filter-Einstellungen öffnen/schließen"
+  >
+    <mat-icon>tune</mat-icon>
+  </button>
+
+  <div class="filter-settings-panel" *ngIf="isExpanded">
+    <div class="filter-settings-header">
+      <h4>Filter-Einstellungen</h4>
+      <button
+        mat-icon-button
+        (click)="toggleExpansion()"
+        class="close-btn"
+        aria-label="Schließen"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="filter-settings-content">
+      <mat-checkbox
+        [(ngModel)]="settings.showParentNodes"
+        (change)="onSettingChanged()"
+        matTooltip="Bei aktivem Filter (Status/Aktion): Zeigt auch die Elternknoten der gefilterten Felder an, um die Hierarchie zu erhalten"
+      >
+        Elternknoten immer anzeigen
+      </mat-checkbox>
+
+      <mat-checkbox
+        [(ngModel)]="settings.hideChildrenOfMaxZeroFields"
+        (change)="onSettingChanged()"
+        matTooltip="Blendet Kinder-Felder aus, wenn das Elternfeld eine maximale Kardinalität von 0 hat (im Zielprofil ausgeschlossen)"
+      >
+        Kinder von max=0 Feldern ausblenden
+      </mat-checkbox>
+    </div>
+  </div>
+</div>

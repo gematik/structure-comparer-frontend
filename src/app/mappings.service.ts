@@ -65,8 +65,9 @@ export class MappingsService {
    * @returns Observable containing the list of available actions
    */
   getActions(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/action`)
+    const actions = this.http.get(`${this.baseUrl}/action`)
       .pipe(catchError(this.handleError));
+    return actions;
   }
 
   /**
@@ -80,6 +81,38 @@ export class MappingsService {
     const encodedProjectKey = encodeURIComponent(projectKey);
     return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field`)
       .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Retrieves mapping fields with recursive resolution of profile references.
+   *
+   * This method returns all fields in a mapping, including fields from profiles
+   * that are referenced via fixedUri, fixedCanonical, type[].profile[], or
+   * type[].targetProfile[]. References are followed recursively up to the
+   * specified maxDepth.
+   *
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param maxDepth Maximum recursion depth for resolving references (default: 3)
+   * @param includeReferences Whether to resolve references (default: true)
+   * @returns Observable containing the resolved fields response
+   */
+  getResolvedMappingFields(
+    projectKey: string,
+    mappingId: string,
+    maxDepth: number = 3,
+    includeReferences: boolean = true
+  ): Observable<any> {
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const params = new HttpParams()
+      .set('max_depth', maxDepth.toString())
+      .set('include_references', includeReferences.toString());
+
+    return this.http.get(
+      `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/resolved-fields`,
+      { params }
+    ).pipe(catchError(this.handleError));
   }
 
   /**
@@ -98,6 +131,62 @@ export class MappingsService {
     const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldId}`;
     const requestData = { action, ...updateData };
     return this.http.post(requestUrl, requestData)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Updates a mapping field with the new action configuration
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param fieldName The name of the field to update
+   * @param updateRequest The update request with action and additional data
+   * @returns Observable containing the updated field data
+   */
+  updateMappingFieldAction(projectKey: string, mappingId: string, fieldName: string, updateRequest: any): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}`;
+
+    return this.http.post(requestUrl, updateRequest)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Applies a recommendation to convert it into an active action
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param fieldName The name of the field with the recommendation
+   * @param index Optional index of the recommendation to apply (default: 0)
+   * @returns Observable containing the updated field data
+   */
+  applyRecommendation(projectKey: string, mappingId: string, fieldName: string, index: number = 0): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(fieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}/apply-recommendation`;
+
+    // Add index as query parameter
+    const params = new HttpParams().set('index', index.toString());
+
+    return this.http.post(requestUrl, {}, { params })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Apply all recommendations for all children of a parent field
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @param parentFieldName The name of the parent field
+   * @returns Observable containing the list of updated field data
+   */
+  applyAllChildrenRecommendations(projectKey: string, mappingId: string, parentFieldName: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    const encodedFieldName = encodeURIComponent(parentFieldName);
+    const requestUrl = `${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/field/${encodedFieldName}/apply-all-children-recommendations`;
+
+    return this.http.post(requestUrl, {})
       .pipe(catchError(this.handleError));
   }
 
@@ -132,6 +221,17 @@ export class MappingsService {
       .pipe(catchError(this.handleError));
   }
 
+  /**
+   * Deletes a project
+   * @param projectKey The unique identifier of the project to delete
+   * @returns Observable containing the deletion response
+   */
+  deleteProject(projectKey: string): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectKey}`)
+      .pipe(catchError(this.handleError));
+  }
+
 
 
 
@@ -159,31 +259,65 @@ export class MappingsService {
   }
 
   /**
-   * Deletes a mapping
-   * @param mappingId The unique identifier of the mapping to delete
-   * @returns Observable containing the deletion response
+   * Updates mapping metadata (status, version)
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping to update
+   * @param updateData Object containing status and/or version to update
+   * @returns Observable containing the updated mapping details
    */
-  deleteMapping(mappingId: string): Observable<any> {
+  updateMappingMetadata(projectKey: string, mappingId: string, updateData: { status?: string; version?: string }): Observable<any> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
-    return this.http.delete(`${this.baseUrl}/mappings/${encodedMappingId}`)
+    return this.http.patch(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}`, updateData)
       .pipe(catchError(this.handleError));
   }
 
   /**
-   * Retrieves a static HTML representation of a mapping
+   * Deletes a mapping
+   * @param mappingId The unique identifier of the mapping to delete
+   * @returns Observable containing the deletion response
+   */
+  deleteMapping(projectId: string, mappingId: string): Observable<any> {
+    const encodedProjectId = encodeURIComponent(projectId);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.delete(`${this.baseUrl}/project/${encodedProjectId}/mapping/${encodedMappingId}`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Retrieves mapping evaluation summary with counts for different categories
    * @param projectKey The unique identifier of the project
    * @param mappingId The unique identifier of the mapping
-   * @param showRemarks Whether to include remarks in the output
-   * @param showWarnings Whether to include warnings in the output
-   * @returns Observable containing the HTML blob response
+   * @returns Observable containing the evaluation summary with counts
    */
-  getStaticMapping(projectKey: string, mappingId: string, showRemarks: boolean, showWarnings: boolean): Observable<any> {
+  getMappingEvaluationSummary(projectKey: string, mappingId: string): Observable<any> {
     const encodedProjectKey = encodeURIComponent(projectKey);
     const encodedMappingId = encodeURIComponent(mappingId);
-    let params = new HttpParams()
-      .set('show_remarks', showRemarks.toString())
-      .set('show_warnings', showWarnings.toString());
-    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/html`, { params, responseType: 'blob' })
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/evaluation/summary`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Downloads a FHIR StructureMap for a mapping
+   * @param projectKey The unique identifier of the project
+   * @param mappingId The unique identifier of the mapping
+   * @returns Observable containing the StructureMap file as a blob
+   */
+  downloadStructureMap(projectKey: string, mappingId: string): Observable<Blob> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    const encodedMappingId = encodeURIComponent(mappingId);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/mapping/${encodedMappingId}/structuremap`, { responseType: 'blob' })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Downloads all FHIR StructureMaps for all mappings in a project
+   * @param projectKey The unique identifier of the project
+   * @returns Observable containing a ZIP file with all StructureMaps as a blob
+   */
+  downloadProjectStructureMaps(projectKey: string): Observable<Blob> {
+    const encodedProjectKey = encodeURIComponent(projectKey);
+    return this.http.get(`${this.baseUrl}/project/${encodedProjectKey}/structuremaps`, { responseType: 'blob' })
       .pipe(catchError(this.handleError));
   }
 

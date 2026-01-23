@@ -1,0 +1,245 @@
+<!-- Tree Controls -->
+<div class="tree-controls" style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+  <div style="display: flex; gap: 8px;">
+    <button
+      mat-button
+      (click)="expandAllNodes()"
+      matTooltip="Alle Knoten aufklappen"
+    >
+      <span>▼</span>
+      Alle aufklappen
+    </button>
+    <button
+      mat-button
+      (click)="collapseAllNodes()"
+      matTooltip="Alle Knoten zuklappen"
+    >
+      <span>►</span>
+      Alle zuklappen
+    </button>
+  </div>
+</div>
+
+<!-- Tree Table View -->
+<table
+  id="treeResultsTable"
+  class="sticky-table modern-table detailed-view"
+  style="width: 100%"
+  *ngIf="getVisibleTreeRows().length"
+  matSort
+  [matSortActive]="'status'"
+  [matSortDirection]="'desc'"
+  (matSortChange)="onSortChange($event)"
+>
+  <thead>
+    <tr>
+      <th class="default-th" mat-sort-header="name">Property</th>
+
+      <!-- Dynamische Profilspalten (alle Sources + Target) -->
+      <ng-container *ngFor="let p of config.profileColumns">
+        <th class="default-th" [mat-sort-header]="'profile-' + p.key">
+          {{ p.name }}
+        </th>
+      </ng-container>
+
+      <!-- Status Column -->
+      <th class="default-th" mat-sort-header="status">Status</th>
+
+      <!-- Mapping-Aktion -->
+      <th class="default-th" mat-sort-header="remark">Mapping</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr
+      *ngFor="let row of getVisibleTreeRows(); let i = index"
+      [ngClass]="getClassificationCssClass(row.field?.action)"
+      [class.hover-locked]="quickMenuRowIndex === i"
+    >
+      <!-- Property Column with Tree Structure -->
+      <td class="default-td" [matTooltip]="row.field?.name || row.node.label" matTooltipPosition="above">
+        <div
+          class="tree-cell"
+          [class.clickable]="row.hasChildren"
+          (click)="handleTreeCellClick(row, $event)"
+        >
+          <!-- Depth indicator bars -->
+          <div class="tree-depth">
+            <span
+              *ngFor="let _ of getDepthArray(row.depth)"
+              class="tree-depth-bar"
+            ></span>
+          </div>
+
+          <!-- Expand/collapse toggle button (only for nodes with children) -->
+          <button
+            *ngIf="row.hasChildren"
+            class="tree-toggle-btn"
+            (click)="toggleNode(row.node); $event.stopPropagation()"
+            [attr.aria-expanded]="isExpanded(row.node)"
+            [attr.data-node-id]="row.node.id"
+            [title]="isExpanded(row.node) ? 'Zuklappen' : 'Aufklappen'"
+          >
+            {{ isExpanded(row.node) ? '▼' : '►' }}
+          </button>
+
+          <!-- Spacing for leaf nodes without toggle -->
+          <span *ngIf="!row.hasChildren" class="tree-toggle-spacer"></span>
+
+          <!-- Node icon and label -->
+          <span class="tree-node-icon">
+            {{ row.isLeaf ? '📄' : '📁' }}
+          </span>
+          <span class="tree-node-label">{{ row.node.label }}</span>
+
+          <!-- Type info -->
+          <ng-container *ngIf="row.isLeaf && row.field && getFieldTypes(row.field)">
+            <br /><span
+              class="field-type"
+              [matTooltip]="getFieldTypesTooltip(row.field)">
+              {{ getFieldTypes(row.field) }}
+            </span>
+          </ng-container>
+
+          <!-- Extension info for leaf nodes -->
+          <ng-container *ngIf="row.isLeaf && row.field?.extension">
+            <br /><span class="muted">({{ row.field.extension }})</span>
+          </ng-container>
+        </div>
+      </td>
+
+      <!-- Profile Columns -->
+      <ng-container *ngFor="let p of config.profileColumns">
+        <td class="default-td">
+          <ng-container *ngIf="row.field">
+            <ng-container
+              *ngIf="row.field?.profiles?.[p.key] as fp; else notAvailable"
+            >
+              <app-profile-badges
+                [profile]="fp"
+                [refTooltip]="getRefTooltip(row.field, p.key)"
+                [showRefWarning]="fp.ref_types?.length && hasRefDifferences(row.field)"
+              ></app-profile-badges>
+            </ng-container>
+            <ng-template #notAvailable>—</ng-template>
+          </ng-container>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <td class="default-td">
+        <ng-container *ngIf="row.field">
+          <app-mapping-status-display
+            [field]="row.field"
+            [showTooltip]="true">
+          </app-mapping-status-display>
+
+          <div
+            *ngIf="row.field.evaluation?.reasons?.length"
+            class="evaluation-reasons"
+          >
+            <div
+              *ngFor="let reason of row.field.evaluation?.reasons"
+              class="reason-message"
+              [ngClass]="'severity-' + reason.severity"
+            >
+              {{ reason.message_key }}
+            </div>
+          </div>
+        </ng-container>
+      </td>
+
+      <!-- Mapping-Aktion -->
+      <td
+        class="default-td clickable-mapping-cell"
+        (click)="editingIndex !== i && onEditPropertyAction(row.field, i)"
+      >
+        <ng-container *ngIf="row.field">
+        <div *ngIf="editingIndex !== i">
+          <!-- Use the shared mapping action display component with recommendation support -->
+          <app-mapping-action-display
+            [field]="row.field"
+            [compact]="true"
+            [allFields]="fields"
+            (applyRecommendation)="onApplyRecommendation($event)"
+            (editField)="onEditPropertyAction($event.field, i)"
+            (quickActionSelected)="onQuickActionSelected($event)"
+            (menuVisibleChange)="onMenuVisibleChange($event, i)">
+          </app-mapping-action-display>
+        </div>
+
+        <div *ngIf="editingIndex === i" (click)="$event.stopPropagation()">
+          <div>
+            Aktueller Stand: {{ getDescriptionForMapping(row.field.action) }}
+          </div>
+
+          <select [(ngModel)]="row.field.remark">
+            <option
+              *ngFor="let classification of row.field.actions_allowed"
+              [value]="classification"
+            >
+              {{ getClassificationInstruction(classification) }}
+            </option>
+          </select>
+
+          <div *ngIf="row.field.action === 'copy_value_from'">
+            <span>Wird aus&nbsp;</span>
+            <select [(ngModel)]="row.field.targetField">
+              <option
+                *ngFor="let availableField of availableFields"
+                [value]="availableField.name"
+              >
+                {{ availableField.name }}
+              </option>
+            </select>
+            <span>&nbsp;übernommen</span>
+          </div>
+
+          <div *ngIf="row.field.action === 'copy_value_to'">
+            <span>Wird in&nbsp;</span>
+            <select [(ngModel)]="row.field.targetField">
+              <option
+                *ngFor="let availableField of availableFields"
+                [value]="availableField.name"
+              >
+                {{ availableField.name }}
+              </option>
+            </select>
+            <span>&nbsp;übernommen</span>
+          </div>
+
+          <div *ngIf="row.field.action === 'fixed'">
+            <span>Wird fix auf&nbsp;</span>
+            <input type="text" [(ngModel)]="row.field.fixedValue" />
+            <span>&nbsp;gesetzt</span>
+          </div>
+
+          <div *ngIf="row.field.action === 'manual'">
+            <span>Manuelle Anpassung erforderlich</span>
+          </div>
+
+          <button
+            mat-button
+            (click)="onConfirmChanges(row.field)"
+            class="mat-icon-button-sm confirm"
+          >
+            <i class="fas fa-check"></i>
+          </button>
+          <button
+            mat-button
+            class="mat-icon-button-sm cancel"
+            (click)="onStopHover()"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        </ng-container>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Empty state -->
+<div *ngIf="!getVisibleTreeRows().length" class="tree-empty-state">
+  <p>Keine Einträge gefunden.</p>
+</div>
